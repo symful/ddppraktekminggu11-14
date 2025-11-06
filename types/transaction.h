@@ -7,7 +7,7 @@ struct Transaction {
     char name[20];
     long long maximumCost;
     char description[200];
-    TransactionType type;
+    enum TransactionType type;
     long long realCost;
     long long restCost;
     long long amount;

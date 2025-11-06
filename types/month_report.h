@@ -3,5 +3,5 @@
 struct MonthReport {
     time_t date;
     int transactionsAmount;
-    Transaction transactions[];
+    struct Transaction transactions[];
 };
