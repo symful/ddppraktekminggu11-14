@@ -13,7 +13,7 @@ void openMonthlyListMenu(struct MonthReportList *monthReportList);
 void openMonthlyMenu(struct MonthReportList *monthReportList);
 void openMonthReport(struct MonthReport *monthReport);
 void openTransactionAddMenu(struct MonthReportList *monthReportList);
-void showMonthReportSummary(struct MonthReportList *monthReportList);
+void showAllMonthReportSummary(struct MonthReportList *monthReportList);
 void showMonthlyMenu(struct MonthReportList *monthReportList);
 void showMonthlyList(struct MonthReportList *monthReportList);
 void showMonthReportTransactions(struct MonthReport *monthReport);

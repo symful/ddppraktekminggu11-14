@@ -660,7 +660,7 @@ void openMonthReportDeleteMenu(struct MonthReportList *monthReportList) {
   showSuccessMessage("Laporan berhasil dihapus! 🗑️");
 }
 
-void showMonthReportSummary(struct MonthReportList *monthReportList) {
+void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
   clearScreen();
   if (monthReportList->amount == 0) {
     showInfoMessage("Tidak ada laporan bulanan.");

@@ -83,7 +83,7 @@ void openSummaryMenu(struct MonthReportList *monthReportList) {
   }
 
   showLoadingMessage("Menghitung ringkasan keuangan");
-  showMonthReportSummary(monthReportList);
+  showAllMonthReportSummary(monthReportList);
 }
 
 void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
