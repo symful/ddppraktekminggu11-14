@@ -6,6 +6,8 @@
 #define DB_TRANSACTION_GROUP_H
 
 
+
+
 struct TransactionGroup* newTransactionGroup(enum TransactionCategory category, long long maximumCost);
 void addTransactionToGroup(struct TransactionGroup* group, struct Transaction* transaction);
 void removeTransactionFromGroup(struct TransactionGroup* group, int index);

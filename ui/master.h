@@ -1,6 +1,6 @@
 void showMainMenu();
 void clearScreen();
-void clearInputBuffer();
+
 void waitForEnter();
 void showWelcomeBanner();
 void showMainMenu();
@@ -15,4 +15,10 @@ void openBudgetSettingsMenu(struct MonthReportList *monthReportList);
 void openSetCategoryBudgetMenu(struct MonthReportList *monthReportList);
 void openViewBudgetMenu(struct MonthReportList *monthReportList);
 void openResetBudgetMenu(struct MonthReportList *monthReportList);
+void openConfigurationMenu(struct MonthReportList *monthReportList);
+void openSetMinimumAmountMenu();
+void openSetMinimumBudgetMenu();
+void openSetMinimumTransactionMenu();
+void openViewConfigurationMenu();
+void openResetConfigurationMenu();
 void openMainMenu(struct MonthReportList *monthReportList);

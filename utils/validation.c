@@ -1,4 +1,6 @@
 #include "../types/include.h"
+#include "enhanced_validation.c"
+#include "input_handler.c"
 #include <ctype.h>
 #include <limits.h>
 #include <stdio.h>
@@ -156,16 +158,6 @@ int validateDateFormat(const char *input, time_t *result) {
   return (*result != -1);
 }
 
-int validateBudgetAmount(long long amount) {
-
-  return (amount > 0 && amount <= 1000000000000LL);
-}
-
-int validateTransactionAmount(long long amount) {
-
-  return (amount > 0 && amount <= 1000000000000LL);
-}
-
 int validateDescription(const char *description) {
   if (description == NULL) {
     return 0;
@@ -180,23 +172,7 @@ int validateDescription(const char *description) {
 }
 
 int validateTransactionName(const char *name) {
-  if (name == NULL) {
-    return 0;
-  }
-
-  size_t len = strlen(name);
-  if (len == 0 || len >= 20) {
-    return 0;
-  }
-
-  for (size_t i = 0; i < len; i++) {
-    if (!isalnum(name[i]) && name[i] != ' ' && name[i] != '_' &&
-        name[i] != '-') {
-      return 0;
-    }
-  }
-
-  return 1;
+  return validateNameFormat(name);
 }
 
 int validateBudgetExceeded(struct TransactionGroup *group,
@@ -301,131 +277,59 @@ void trimString(char *str) {
 
 int readAndValidateInteger(const char *prompt, int minValue, int maxValue,
                            int *result) {
-  char buffer[100];
-  int attempts = 0;
-  const int maxAttempts = 3;
-
-  while (attempts < maxAttempts) {
-    printf("%s", prompt);
-    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
-
-      buffer[strcspn(buffer, "\n")] = 0;
-
-      int value;
-      if (validateIntegerInput(buffer, &value)) {
-        if (value >= minValue && value <= maxValue) {
-          *result = value;
-          return 1;
-        } else {
-          printf("Nilai harus antara %d dan %d.\n", minValue, maxValue);
-        }
-      } else {
-        printf("Format tidak valid. Harap masukkan angka.\n");
-      }
-    } else {
-      printf("Error membaca input.\n");
-    }
-
-    attempts++;
-    if (attempts < maxAttempts) {
-      printf("Silakan coba lagi (%d/%d).\n", attempts + 1, maxAttempts);
-    }
-  }
-
-  return 0;
+  InputResult inputResult =
+      promptForInteger(prompt, minValue, maxValue, result);
+  return (inputResult == INPUT_SUCCESS) ? 1 : 0;
 }
 
 int readAndValidateLongLong(const char *prompt, long long minValue,
                             long long maxValue, long long *result) {
-  char buffer[100];
-  int attempts = 0;
-  const int maxAttempts = 3;
+  if (minValue == 1 && maxValue == 1000000000000LL) {
+    InputResult inputResult = promptForAmount(prompt, result);
+    return (inputResult == INPUT_SUCCESS) ? 1 : 0;
+  } else {
+    char buffer[32];
+    int attempts = 0;
+    const int maxAttempts = globalConfig.validation.maxValidationAttempts;
 
-  while (attempts < maxAttempts) {
-    printf("%s", prompt);
-    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+    while (attempts < maxAttempts) {
+      printf("%s", prompt);
+      if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+        buffer[strcspn(buffer, "\n")] = 0;
 
-      buffer[strcspn(buffer, "\n")] = 0;
-
-      long long value;
-      if (validateLongLongInput(buffer, &value)) {
-        if (value >= minValue && value <= maxValue) {
-          *result = value;
-          return 1;
+        long long value;
+        if (validateLongLongInput(buffer, &value)) {
+          if (value >= minValue && value <= maxValue) {
+            *result = value;
+            return 1;
+          } else {
+            printf("Nilai harus antara %lld dan %lld.\n", minValue, maxValue);
+          }
         } else {
-          printf("Nilai harus antara %lld dan %lld.\n", minValue, maxValue);
+          printf("Format tidak valid. Harap masukkan angka.\n");
         }
       } else {
-        printf("Format tidak valid. Harap masukkan angka.\n");
+        printf("Error membaca input.\n");
       }
-    } else {
-      printf("Error membaca input.\n");
+
+      attempts++;
+      if (attempts < maxAttempts) {
+        printf("Silakan coba lagi (%d/%d).\n", attempts + 1, maxAttempts);
+      }
     }
 
-    attempts++;
-    if (attempts < maxAttempts) {
-      printf("Silakan coba lagi (%d/%d).\n", attempts + 1, maxAttempts);
-    }
+    return 0;
   }
-
-  return 0;
 }
 
 int readAndValidateString(const char *prompt, char *result, size_t maxLength) {
-  char buffer[500];
-  int attempts = 0;
-  const int maxAttempts = 3;
-
-  while (attempts < maxAttempts) {
-    printf("%s", prompt);
-    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
-
-      buffer[strcspn(buffer, "\n")] = 0;
-
-      if (validateStringInput(buffer, result, maxLength)) {
-        return 1;
-      } else {
-        printf("Input tidak valid. Teks terlalu panjang atau kosong.\n");
-      }
-    } else {
-      printf("Error membaca input.\n");
-    }
-
-    attempts++;
-    if (attempts < maxAttempts) {
-      printf("Silakan coba lagi (%d/%d).\n", attempts + 1, maxAttempts);
-    }
-  }
-
-  return 0;
+  InputResult inputResult = promptForString(prompt, result, maxLength);
+  return (inputResult == INPUT_SUCCESS) ? 1 : 0;
 }
 
 int readAndValidateDate(const char *prompt, time_t *result) {
-  char buffer[15];
-  int attempts = 0;
-  const int maxAttempts = 3;
-
-  while (attempts < maxAttempts) {
-    printf("%s", prompt);
-    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
-      buffer[strcspn(buffer, "\n")] = 0;
-
-      if (validateDateFormat(buffer, result)) {
-        return 1;
-      } else {
-        printf("Format tanggal tidak valid. Gunakan format DD/MM/YYYY.\n");
-      }
-    } else {
-      printf("Error membaca input.\n");
-    }
-
-    attempts++;
-    if (attempts < maxAttempts) {
-      printf("Silakan coba lagi (%d/%d).\n", attempts + 1, maxAttempts);
-    }
-  }
-
-  return 0;
+  InputResult inputResult = promptForDate(prompt, result);
+  return (inputResult == INPUT_SUCCESS) ? 1 : 0;
 }
 
 #endif

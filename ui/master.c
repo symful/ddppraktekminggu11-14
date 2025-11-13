@@ -6,12 +6,6 @@
 
 void clearScreen() { system("clear"); }
 
-void clearInputBuffer() {
-  int c;
-  while ((c = getchar()) != '\n' && c != EOF)
-    ;
-}
-
 void waitForEnter() {
   printf("\n📱 Tekan Enter untuk melanjutkan...");
   clearInputBuffer();
@@ -24,7 +18,8 @@ void showMainMenu() {
   printf("│  1. 📊 Kelola Laporan Bulanan                           │\n");
   printf("│  2. 📈 Lihat Ringkasan Keuangan                         │\n");
   printf("│  3. ⚙️  Pengaturan Budget                                │\n");
-  printf("│  4. ❌ Keluar                                           │\n");
+  printf("│  4. 🔧 Pengaturan Sistem                                │\n");
+  printf("│  5. ❌ Keluar                                           │\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
   printf("\n💡 Tip: Pilih nomor menu yang diinginkan\n");
   printf("🎯 Pilihan Anda: ");
@@ -90,12 +85,12 @@ void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
   while (1) {
     clearScreen();
     printf("┌─────────────────────────────────────────────────────────┐\n");
-    printf("│                 ⚙️  PENGATURAN BUDGET                   │\n");
+    printf("│                 ⚙️  PENGATURAN BUDGET                    │\n");
     printf("├─────────────────────────────────────────────────────────┤\n");
-    printf("│  1. 🏷️  Atur Budget per Kategori                        │\n");
+    printf("│  1. 🏷️  Atur Budget per Kategori                         │\n");
     printf("│  2. 📋 Lihat Budget Saat Ini                            │\n");
     printf("│  3. 🔄 Reset Semua Budget                               │\n");
-    printf("│  4. ⬅️  Kembali ke Menu Utama                          │\n");
+    printf("│  4. ⬅️  Kembali ke Menu Utama                            │\n");
     printf("└─────────────────────────────────────────────────────────┘\n");
     printf("\n🎯 Pilihan Anda: ");
 
@@ -162,9 +157,11 @@ void openSetCategoryBudgetMenu(struct MonthReportList *monthReportList) {
       (enum TransactionCategory)(categoryChoice - 1);
 
   long long budget;
-  if (!readAndValidateLongLong("💰 Masukkan budget baru (Rp): ", 1,
-                               1000000000000LL, &budget)) {
-    showErrorMessage("Input budget tidak valid.");
+  InputResult result =
+      promptForBudget("💰 Masukkan budget baru (Rp): ", &budget);
+  if (result != INPUT_SUCCESS) {
+    showErrorMessage(
+        "Budget tidak valid atau di bawah minimum yang diizinkan.");
     return;
   }
 
@@ -258,11 +255,203 @@ void openResetBudgetMenu(struct MonthReportList *monthReportList) {
   showSuccessMessage("Semua budget berhasil direset ke Rp 1,000,000!");
 }
 
+void openConfigurationMenu(struct MonthReportList *monthReportList) {
+  while (1) {
+    clearScreen();
+    printf("┌─────────────────────────────────────────────────────────┐\n");
+    printf("│                🔧 PENGATURAN SISTEM                     │\n");
+    printf("├─────────────────────────────────────────────────────────┤\n");
+    printf("│  1. 💰 Atur Minimum Jumlah Uang                         │\n");
+    printf("│  2. 📊 Atur Minimum Budget                              │\n");
+    printf("│  3. 💳 Atur Minimum Transaksi                           │\n");
+    printf("│  4. 📋 Lihat Pengaturan Saat Ini                        │\n");
+    printf("│  5. 🔄 Reset ke Pengaturan Default                      │\n");
+    printf("│  6. ⬅️  Kembali ke Menu Utama                            │\n");
+    printf("└─────────────────────────────────────────────────────────┘\n");
+    printf("\n🎯 Pilihan Anda: ");
+
+    int choice = getValidatedMenuChoice(1, 6);
+    if (choice == -1)
+      continue;
+
+    switch (choice) {
+    case 1:
+      openSetMinimumAmountMenu();
+      break;
+    case 2:
+      openSetMinimumBudgetMenu();
+      break;
+    case 3:
+      openSetMinimumTransactionMenu();
+      break;
+    case 4:
+      openViewConfigurationMenu();
+      break;
+    case 5:
+      openResetConfigurationMenu();
+      break;
+    case 6:
+      return;
+    default:
+      showErrorMessage("Pilihan tidak valid.");
+      break;
+    }
+  }
+}
+
+void openSetMinimumAmountMenu() {
+  clearScreen();
+  printf("┌─────────────────────────────────────────────────────────┐\n");
+  printf("│             💰 ATUR MINIMUM JUMLAH UANG                 │\n");
+  printf("└─────────────────────────────────────────────────────────┘\n");
+
+  printf("💰 Minimum saat ini: Rp %lld\n", getMinimumAmount());
+
+  long long newMinimum;
+  if (!readAndValidateLongLong("💰 Masukkan minimum baru (minimal 1): ", 1,
+                               getMaximumAmount(), &newMinimum)) {
+    showErrorMessage("Input tidak valid.");
+    return;
+  }
+
+  setMinimumAmount(newMinimum);
+  saveConfigToFile("./config.txt");
+
+  char successMsg[200];
+  snprintf(successMsg, sizeof(successMsg),
+           "Minimum jumlah uang berhasil diatur menjadi Rp %lld", newMinimum);
+  showSuccessMessage(successMsg);
+}
+
+void openSetMinimumBudgetMenu() {
+  clearScreen();
+  printf("┌─────────────────────────────────────────────────────────┐\n");
+  printf("│                📊 ATUR MINIMUM BUDGET                   │\n");
+  printf("└─────────────────────────────────────────────────────────┘\n");
+
+  printf("📊 Minimum saat ini: Rp %lld\n", getMinimumBudget());
+
+  long long newMinimum;
+  if (!readAndValidateLongLong("📊 Masukkan minimum baru (minimal 1): ", 1,
+                               getMaximumBudget(), &newMinimum)) {
+    showErrorMessage("Input tidak valid.");
+    return;
+  }
+
+  setMinimumBudget(newMinimum);
+  saveConfigToFile("./config.txt");
+
+  char successMsg[200];
+  snprintf(successMsg, sizeof(successMsg),
+           "Minimum budget berhasil diatur menjadi Rp %lld", newMinimum);
+  showSuccessMessage(successMsg);
+}
+
+void openSetMinimumTransactionMenu() {
+  clearScreen();
+  printf("┌─────────────────────────────────────────────────────────┐\n");
+  printf("│              💳 ATUR MINIMUM TRANSAKSI                  │\n");
+  printf("└─────────────────────────────────────────────────────────┘\n");
+
+  printf("💳 Minimum saat ini: Rp %lld\n",
+         globalConfig.money.minimumTransactionAmount);
+
+  long long newMinimum;
+  if (!readAndValidateLongLong("💳 Masukkan minimum baru (minimal 1): ", 1,
+                               globalConfig.money.maximumTransactionAmount,
+                               &newMinimum)) {
+    showErrorMessage("Input tidak valid.");
+    return;
+  }
+
+  globalConfig.money.minimumTransactionAmount = newMinimum;
+  saveConfigToFile("./config.txt");
+
+  char successMsg[200];
+  snprintf(successMsg, sizeof(successMsg),
+           "Minimum transaksi berhasil diatur menjadi Rp %lld", newMinimum);
+  showSuccessMessage(successMsg);
+}
+
+void openViewConfigurationMenu() {
+  clearScreen();
+  printf("┌─────────────────────────────────────────────────────────┐\n");
+  printf("│              📋 PENGATURAN SAAT INI                     │\n");
+  printf("└─────────────────────────────────────────────────────────┘\n");
+
+  printf("╔════════════════════════════════════════════════════════════════════"
+         "══════════════╗\n");
+  printf("║                              💰 PENGATURAN KEUANGAN                "
+         "            ║\n");
+  printf("╠════════════════════════════════════════════════════════════════════"
+         "══════════════╣\n");
+  printf("║ %-30s │ %-20s │ %-20s ║\n", "KATEGORI", "MINIMUM", "MAXIMUM");
+  printf("╠════════════════════════════════════════════════════════════════════"
+         "══════════════╣\n");
+  printf("║ %-30s │ Rp %-17lld │ Rp %-17lld ║\n", "Jumlah Uang",
+         getMinimumAmount(), getMaximumAmount());
+  printf("║ %-30s │ Rp %-17lld │ Rp %-17lld ║\n", "Budget", getMinimumBudget(),
+         getMaximumBudget());
+  printf("║ %-30s │ Rp %-17lld │ Rp %-17lld ║\n", "Transaksi",
+         globalConfig.money.minimumTransactionAmount,
+         globalConfig.money.maximumTransactionAmount);
+  printf("╚════════════════════════════════════════════════════════════════════"
+         "══════════════╝\n");
+
+  printf("\n╔══════════════════════════════════════════════════════════════════"
+         "════════════════╗\n");
+  printf("║                             ⚙️  PENGATURAN VALIDASI                 "
+         "           ║\n");
+  printf("╠════════════════════════════════════════════════════════════════════"
+         "══════════════╣\n");
+  printf("║ %-40s │ %-40d ║\n", "Maksimal Panjang Nama",
+         globalConfig.validation.maxNameLength);
+  printf("║ %-40s │ %-40d ║\n", "Maksimal Panjang Deskripsi",
+         globalConfig.validation.maxDescriptionLength);
+  printf("║ %-40s │ %-40d ║\n", "Maksimal Percobaan Input",
+         globalConfig.validation.maxValidationAttempts);
+  printf("║ %-40s │ %-40d ║\n", "Tahun Minimum",
+         globalConfig.validation.minYear);
+  printf("║ %-40s │ %-40d ║\n", "Tahun Maksimum",
+         globalConfig.validation.maxYear);
+  printf("╚════════════════════════════════════════════════════════════════════"
+         "══════════════╝\n");
+
+  waitForEnter();
+}
+
+void openResetConfigurationMenu() {
+  clearScreen();
+  printf("┌─────────────────────────────────────────────────────────┐\n");
+  printf("│            🔄 RESET PENGATURAN DEFAULT                  │\n");
+  printf("└─────────────────────────────────────────────────────────┘\n");
+
+  printf(
+      "⚠️  PERINGATAN: Ini akan mereset semua pengaturan ke nilai default!\n\n");
+
+  char confirmation;
+  printf("❓ Apakah Anda yakin? (y/n): ");
+  scanf(" %c", &confirmation);
+  clearInputBuffer();
+
+  if (confirmation != 'y' && confirmation != 'Y') {
+    showInfoMessage("Reset pengaturan dibatalkan.");
+    return;
+  }
+
+  showLoadingMessage("Mereset pengaturan");
+
+  initializeDefaultConfig();
+  saveConfigToFile("./config.txt");
+
+  showSuccessMessage("Semua pengaturan berhasil direset ke nilai default!");
+}
+
 void openMainMenu(struct MonthReportList *monthReportList) {
   while (1) {
     showMainMenu();
 
-    int choice = getValidatedMenuChoice(1, 4);
+    int choice = getValidatedMenuChoice(1, 5);
     if (choice == -1)
       continue;
 
@@ -278,6 +467,9 @@ void openMainMenu(struct MonthReportList *monthReportList) {
       openBudgetSettingsMenu(monthReportList);
       break;
     case 4:
+      openConfigurationMenu(monthReportList);
+      break;
+    case 5:
       clearScreen();
       printf("╔══════════════════════════════════════════════════════════╗\n");
       printf("║                    👋 TERIMA KASIH!                     ║\n");

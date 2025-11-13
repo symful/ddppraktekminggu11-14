@@ -13,14 +13,4 @@ struct TransactionGroup {
     long long remainingCost;
 };
 
-
-struct TransactionGroup* newTransactionGroup(enum TransactionCategory category, long long maximumCost);
-void addTransactionToGroup(struct TransactionGroup* group, struct Transaction* transaction);
-void removeTransactionFromGroup(struct TransactionGroup* group, int index);
-void updateGroupCalculations(struct TransactionGroup* group);
-void freeTransactionGroup(struct TransactionGroup* group);
-int validateTransactionForGroup(struct TransactionGroup* group, struct Transaction* transaction);
-long long getGroupBudgetUsagePercentage(struct TransactionGroup* group);
-const char* getGroupBudgetStatus(struct TransactionGroup* group);
-
 #endif

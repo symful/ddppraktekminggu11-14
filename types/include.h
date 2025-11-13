@@ -1,3 +1,4 @@
+#include "./config.h"
 #include "./transaction.h"
 #include "./transaction_type.h"
 #include "./transaction_category.h"

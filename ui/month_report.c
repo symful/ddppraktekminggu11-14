@@ -387,9 +387,15 @@ void openTransactionEditMenu(struct MonthReport *monthReport) {
   }
 
   long long newAmount;
-  if (readAndValidateLongLong("💰 Nominal baru (0 jika tidak ingin ubah): ", 0,
-                              1000000000000LL, &newAmount)) {
-    if (newAmount > 0) {
+  printf("💰 Edit nominal? (y/n): ");
+  char editChoice;
+  scanf(" %c", &editChoice);
+  clearInputBuffer();
+
+  if (editChoice == 'y' || editChoice == 'Y') {
+    InputResult result =
+        promptForTransaction("💰 Nominal baru (Rp): ", &newAmount);
+    if (result == INPUT_SUCCESS) {
       transaction->realCost = newAmount;
       transaction->maximumCost = newAmount;
     }
@@ -491,9 +497,11 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
     return;
   }
 
-  if (!readAndValidateLongLong("💰 Nominal (Rp): ", 1, 1000000000000LL,
-                               &newTransaction.realCost)) {
-    showErrorMessage("Nominal tidak valid.");
+  InputResult result =
+      promptForTransaction("💰 Nominal (Rp): ", &newTransaction.realCost);
+  if (result != INPUT_SUCCESS) {
+    showErrorMessage(
+        "Nominal transaksi tidak valid atau di bawah minimum yang diizinkan.");
     return;
   }
 

@@ -1,4 +1,5 @@
 #include "../types/transaction_group.h"
+#include "./transaction_group.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

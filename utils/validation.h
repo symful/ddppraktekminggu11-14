@@ -1,4 +1,6 @@
 #include "../types/include.h"
+#include "enhanced_validation.h"
+#include "input_handler.h"
 #include <time.h>
 
 #ifndef VALIDATION_H
@@ -13,8 +15,6 @@ int validateTransactionType(int type);
 int validateTransactionCategory(int category);
 int validateMonthYearFormat(const char *input, time_t *result);
 int validateDateFormat(const char *input, time_t *result);
-int validateBudgetAmount(long long amount);
-int validateTransactionAmount(long long amount);
 int validateDescription(const char *description);
 int validateTransactionName(const char *name);
 
