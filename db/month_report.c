@@ -196,7 +196,6 @@ void saveMonthReport(struct MonthReport *report, const char *filename) {
 
   fclose(file);
 }
-
 struct MonthReport *loadMonthReport(const char *filename) {
   FILE *file = fopen(filename, "r");
   if (file == NULL) {
@@ -211,31 +210,6 @@ struct MonthReport *loadMonthReport(const char *filename) {
 
   char line[512];
   int groupsCount = 0;
-  int isOldFormat = 0;
-  int transactionCount = 0;
-
-  while (fgets(line, sizeof(line), file)) {
-    if (sscanf(line, "TRANSACTION_COUNT=%d", &transactionCount) == 1) {
-      isOldFormat = 1;
-      break;
-    }
-    if (sscanf(line, "GROUPS_COUNT=%d", &groupsCount) == 1) {
-      isOldFormat = 0;
-      break;
-    }
-  }
-
-  fseek(file, 0, SEEK_SET);
-
-  if (isOldFormat) {
-    while (fgets(line, sizeof(line), file)) {
-      if (sscanf(line, "DATE=%ld", &report->date) == 1) {
-        break;
-      }
-    }
-    fclose(file);
-    return report;
-  }
 
   while (fgets(line, sizeof(line), file)) {
     if (sscanf(line, "DATE=%ld", &report->date) == 1)

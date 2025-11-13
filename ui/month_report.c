@@ -70,7 +70,7 @@ void showTransactionGroupsList(struct MonthReport *monthReport) {
       struct TransactionGroup *group = &monthReport->groups[i];
       const char *status = getGroupBudgetStatus(group);
 
-      printf("║ %-3d │ %-15s │ %-12lld │ %-12lld │ %-12lld │ %-8d │ %-10s ║\n",
+      printf("║ %-3d │ %-15s │ %-12lld │ %-12lld │ %-12lld │ %-9d │ %-12s ║\n",
              i + 1, transactionCategoryToString(group->category),
              group->maximumCost, group->totalRealCost, group->remainingCost,
              group->transactionsAmount, status);
@@ -268,8 +268,17 @@ void openTransactionViewMenu(struct MonthReport *monthReport) {
 void showTransactionDetails(struct TransactionGroup *group) {
   clearScreen();
   printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│           💳 DETAIL TRANSAKSI - %s",
-         transactionCategoryToString(group->category));
+
+  const char *categoryStr = transactionCategoryToString(group->category);
+  int categoryLen = strlen(categoryStr);
+  int totalWidth = 59;
+  int prefixLen = 21;
+  int remainingSpaces = totalWidth - prefixLen - categoryLen;
+
+  printf("│           💳 DETAIL TRANSAKSI - %s", categoryStr);
+  for (int i = 0; i < remainingSpaces; i++) {
+    printf(" ");
+  }
   printf("│\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
 
@@ -285,21 +294,21 @@ void showTransactionDetails(struct TransactionGroup *group) {
   }
 
   printf("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-         "━━━━━━━━━━━━━━━━━━━━\n");
+         "━━━━━━━━━━━━━━━━━━━━━━\n");
   printf("║ No. │ %-15s │ %-10s │ %-15s │ %-30s ║\n", "NAMA", "JENIS",
          "NOMINAL", "DESKRIPSI");
   printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-         "━━━━━━━━━━━━━━━━━━\n");
+         "━━━━━━━━━━━━━━━━━━━━\n");
 
   for (int i = 0; i < group->transactionsAmount; i++) {
     struct Transaction *t = &group->transactions[i];
     const char *typeIcon = (t->type == TT_INCOME) ? "💚 Masuk" : "❤️  Keluar";
 
-    printf("║ %-3d │ %-15s │ %-10s │ Rp %-12lld │ %-30s ║\n", i + 1, t->name,
+    printf("║ %-3d │ %-15s │ %-15s │ Rp %-12lld │ %-30s ║\n", i + 1, t->name,
            typeIcon, t->realCost, t->description);
   }
   printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-         "━━━━━━━━━━━━━━━━━━\n");
+         "━━━━━━━━━━━━━━━━━━━━\n");
 
   waitForEnter();
 }
