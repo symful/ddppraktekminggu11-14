@@ -12,8 +12,9 @@ char *dateToString(time_t date) {
 }
 
 char *dateToMonthYearString(time_t date) {
-  char *str = (char *)malloc(sizeof(char) * 11);
-  strftime(str, 11, "%B %Y", localtime(&date));
+  char *str = (char *)malloc(sizeof(char) * 20);
+  struct tm *tm_ptr = localtime(&date);
+  strftime(str, 20, "%B %Y", tm_ptr);
   return str;
 }
 
@@ -23,16 +24,16 @@ time_t dateFromMMYYYY(char *str) {
 
   int month, year;
   if (sscanf(str, "%d/%d", &month, &year) != 2) {
-    return -1; // Invalid format
+    return -1;
   }
 
   if (month < 1 || month > 12 || year < 1900 || year > 3000) {
-    return -1; // Invalid date values
+    return -1;
   }
 
-  tm.tm_mon = month - 1;    // tm_mon is 0-based
-  tm.tm_year = year - 1900; // tm_year is years since 1900
-  tm.tm_mday = 1;           // First day of the month
+  tm.tm_mon = month - 1;
+  tm.tm_year = year - 1900;
+  tm.tm_mday = 1;
 
   return mktime(&tm);
 }

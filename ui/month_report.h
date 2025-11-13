@@ -17,5 +17,13 @@ void showMonthReportSummary(struct MonthReportList *monthReportList);
 void showMonthlyMenu(struct MonthReportList *monthReportList);
 void showMonthlyList(struct MonthReportList *monthReportList);
 void showMonthReportTransactions(struct MonthReport *monthReport);
+void showTransactionGroupsList(struct MonthReport *monthReport);
+void openTransactionViewMenu(struct MonthReport *monthReport);
+void showTransactionDetails(struct TransactionGroup *group);
+void openSelectReportMenu(struct MonthReportList *monthReportList);
+void openCategoryBudgetMenu(struct MonthReport *monthReport);
+void showMonthReportSummary2(struct MonthReport *monthReport);
+
+extern char temp_input[100];
 
 #endif

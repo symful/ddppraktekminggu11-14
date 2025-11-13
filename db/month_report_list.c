@@ -28,7 +28,6 @@ struct MonthReportList *listAllMonthReports(DIR *dir) {
   monthReportList->reports = NULL;
   monthReportList->amount = 0;
 
-  // Check if directory is NULL (doesn't exist or couldn't be opened)
   if (dir == NULL) {
     printf("Reports directory not found or could not be opened.\n");
     return monthReportList;

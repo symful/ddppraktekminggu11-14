@@ -2,17 +2,24 @@
 #include <stdio.h>
 #include <dirent.h>
 
-#ifndef MONTH_REPORT_H
-#define MONTH_REPORT_H
+#ifndef DB_MONTH_REPORT_H
+#define DB_MONTH_REPORT_H
 
 void saveMonthReport(struct MonthReport* report, const char *filename);
 struct MonthReport *loadMonthReport(const char *filename);
 struct MonthReport *newMonthReport();
 void addMonthReportTransaction(struct MonthReport *monthReport, struct Transaction *transaction);
-void removeMonthReportTransaction(struct MonthReport *monthReport, int index);
+void removeMonthReportTransaction(struct MonthReport *monthReport, int groupIndex, int transactionIndex);
 void removeMonthReport(struct MonthReport *monthReport);
 char *generateReportFilename(time_t date);
 void saveMonthReportToFile(struct MonthReport *report);
 void deleteMonthReportFile(struct MonthReport *report);
+void addTransactionGroupToReport(struct MonthReport *report, struct TransactionGroup *group);
+void removeTransactionGroupFromReport(struct MonthReport *report, int index);
+struct TransactionGroup *findGroupByCategory(struct MonthReport *report, enum TransactionCategory category);
+void updateReportCalculations(struct MonthReport *report);
+void freeMonthReport(struct MonthReport *report);
+void setBudgetForCategory(struct MonthReport *report, enum TransactionCategory category, long long budget);
+int getTotalTransactions(struct MonthReport *report);
 
 #endif

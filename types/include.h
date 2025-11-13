@@ -1,1 +1,7 @@
-#include "../types/month_report_list.h"
+#include "./transaction.h"
+#include "./transaction_type.h"
+#include "./transaction_category.h"
+#include "./transaction_status.h"
+#include "./transaction_group.h"
+#include "./month_report.h"
+#include "./month_report_list.h"
