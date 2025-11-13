@@ -214,7 +214,6 @@ struct MonthReport *loadMonthReport(const char *filename) {
   int isOldFormat = 0;
   int transactionCount = 0;
 
-  // First pass: check if it's old format
   while (fgets(line, sizeof(line), file)) {
     if (sscanf(line, "TRANSACTION_COUNT=%d", &transactionCount) == 1) {
       isOldFormat = 1;
@@ -226,13 +225,9 @@ struct MonthReport *loadMonthReport(const char *filename) {
     }
   }
 
-  // Reset file pointer
   fseek(file, 0, SEEK_SET);
 
-  // If it's old format, just load the date and return empty report
   if (isOldFormat) {
-    printf("Warning: Old format file detected, creating empty report for "
-           "migration.\n");
     while (fgets(line, sizeof(line), file)) {
       if (sscanf(line, "DATE=%ld", &report->date) == 1) {
         break;
@@ -242,7 +237,6 @@ struct MonthReport *loadMonthReport(const char *filename) {
     return report;
   }
 
-  // Process new format
   while (fgets(line, sizeof(line), file)) {
     if (sscanf(line, "DATE=%ld", &report->date) == 1)
       continue;
@@ -259,7 +253,6 @@ struct MonthReport *loadMonthReport(const char *filename) {
             groupsCount * sizeof(struct TransactionGroup));
         report->groupsAmount = groupsCount;
 
-        // Initialize groups
         for (int i = 0; i < groupsCount; i++) {
           report->groups[i].transactions = NULL;
           report->groups[i].transactionsAmount = 0;
