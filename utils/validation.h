@@ -26,10 +26,7 @@ int validateGroupIndex(struct MonthReport *report, int index);
 int validateTransactionIndex(struct TransactionGroup *group, int index);
 
 
-const char *getValidationErrorMessage(int errorType);
 
-
-void trimString(char *str);
 int readAndValidateInteger(const char *prompt, int minValue, int maxValue, int *result);
 int readAndValidateLongLong(const char *prompt, long long minValue, long long maxValue, long long *result);
 int readAndValidateString(const char *prompt, char *result, size_t maxLength);

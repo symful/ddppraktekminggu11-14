@@ -38,82 +38,20 @@ int containsOnlyDigits(const char *str) {
   return 1;
 }
 
-int containsValidCharacters(const char *str, const char *validChars) {
-  if (isNullOrEmpty(str) || validChars == NULL) {
-    return 0;
-  }
-
-  for (int i = 0; str[i] != '\0'; i++) {
-    if (strchr(validChars, str[i]) == NULL) {
-      return 0;
-    }
-  }
-  return 1;
-}
-
-int hasMinimumLength(const char *str, int minLength) {
-  if (isNullOrEmpty(str)) {
-    return 0;
-  }
-  return strlen(str) >= minLength;
-}
-
-int hasMaximumLength(const char *str, int maxLength) {
-  if (str == NULL) {
-    return 0;
-  }
-  return strlen(str) <= maxLength;
-}
-
 int isValidPositiveNumber(const char *str) {
   if (isNullOrEmpty(str)) {
     return 0;
   }
 
-  if (str[0] == '-' || str[0] == '+') {
+  if (str[0] == '-') {
     return 0;
+  }
+
+  if (str[0] == '+') {
+    str++;
   }
 
   return containsOnlyDigits(str);
-}
-
-int isValidLongLongRange(const char *str, long long min, long long max) {
-  if (!isValidPositiveNumber(str)) {
-    return 0;
-  }
-
-  char *endptr;
-  errno = 0;
-  long long value = strtoll(str, &endptr, 10);
-
-  if (errno == ERANGE || *endptr != '\0') {
-    return 0;
-  }
-
-  return (value >= min && value <= max);
-}
-
-int isOverflowSafe(const char *str) {
-  if (isNullOrEmpty(str) || strlen(str) > 19) {
-    return 0;
-  }
-
-  char *endptr;
-  errno = 0;
-  strtoll(str, &endptr, 10);
-
-  return (errno != ERANGE && *endptr == '\0');
-}
-
-int hasDecimalPlaces(const char *str) {
-  return (strchr(str, '.') != NULL || strchr(str, ',') != NULL);
-}
-
-int hasLeadingZeros(const char *str) {
-  if (isNullOrEmpty(str) || strlen(str) < 2) {
-    return 0;
-  }
-  return (str[0] == '0' && isdigit((unsigned char)str[1]));
 }
 
 int isLeapYear(int year) {
@@ -153,61 +91,6 @@ int isValidYear(int year) {
 int isValidDateCombination(int day, int month, int year) {
   return (isValidYear(year) && isValidMonth(month) &&
           isValidDay(day, month, year));
-}
-
-int validateAmountRange(long long amount, long long min, long long max) {
-  if (min < 0 || max < 0 || min > max) {
-    return 0;
-  }
-  return (amount >= min && amount <= max);
-}
-
-int validateBudgetRange(long long budget) {
-  if (budget < globalConfig.money.minimumBudget) {
-    return 0;
-  }
-  if (budget > globalConfig.money.maximumBudget) {
-    return 0;
-  }
-  return 1;
-}
-
-int validateTransactionRange(long long transaction) {
-  if (transaction < globalConfig.money.minimumTransactionAmount) {
-    return 0;
-  }
-  if (transaction > globalConfig.money.maximumTransactionAmount) {
-    return 0;
-  }
-  return 1;
-}
-
-int validateMoneyFormat(const char *input) {
-  if (isNullOrEmpty(input)) {
-    return 0;
-  }
-
-  if (hasDecimalPlaces(input)) {
-    return 0;
-  }
-
-  if (hasLeadingZeros(input)) {
-    return 0;
-  }
-
-  return isValidPositiveNumber(input);
-}
-
-int validateCurrencyAmount(long long amount) {
-  if (amount < 1) {
-    return 0;
-  }
-
-  if (amount > globalConfig.money.maximumAmount) {
-    return 0;
-  }
-
-  return 1;
 }
 
 int validateNameFormat(const char *name) {
@@ -274,68 +157,12 @@ int validateMenuRange(int choice, int min, int max) {
   return (choice >= min && choice <= max);
 }
 
-int validatePositiveInteger(int value) { return (value > 0); }
-
-int validateArrayIndex(int index, int arraySize) {
-  return (index >= 0 && index < arraySize);
-}
-
-int validateListBounds(int index, int listCount) {
-  return (index >= 0 && index < listCount);
-}
-
-int isInputBufferOverflow(const char *buffer, size_t maxSize) {
-  if (buffer == NULL || maxSize == 0) {
-    return 1;
-  }
-
-  return (strlen(buffer) >= maxSize);
-}
-
-int isInputSanitized(const char *input) {
-  if (isNullOrEmpty(input)) {
-    return 0;
-  }
-
-  return validateStringContent(input);
-}
-
-int validateUserInput(const char *input, size_t maxLength) {
-  if (isNullOrEmpty(input)) {
-    return 0;
-  }
-
-  if (strlen(input) > maxLength) {
-    return 0;
-  }
-
-  return isInputSanitized(input);
-}
-
-int checkForInjection(const char *input) {
-  if (isNullOrEmpty(input)) {
-    return 0;
-  }
-
-  const char *dangerous[] = {";", "&&", "||", "|",   ">",      "<",    "&",
-                             "$", "`",  "rm", "del", "format", "exit", "quit"};
-  int dangerousCount = sizeof(dangerous) / sizeof(dangerous[0]);
-
-  for (int i = 0; i < dangerousCount; i++) {
-    if (strstr(input, dangerous[i]) != NULL) {
-      return 1;
-    }
-  }
-
-  return 0;
-}
-
 long long parseAmountSafely(const char *input) {
-  if (!validateMoneyFormat(input)) {
+  if (!isValidPositiveNumber(input)) {
     return -1;
   }
 
-  if (!isOverflowSafe(input)) {
+  if (isNullOrEmpty(input) || strlen(input) > 19) {
     return -1;
   }
 
@@ -410,72 +237,12 @@ int parseChoiceSafely(const char *input, int min, int max) {
   return choice;
 }
 
-int validateEdgeCaseAmount(long long amount) {
-  if (amount == 0) {
-    return 0;
-  }
-
-  if (amount < 0) {
-    return 0;
-  }
-
-  if (amount == LLONG_MAX) {
-    return 0;
-  }
-
-  return validateCurrencyAmount(amount);
-}
-
-int validateEdgeCaseString(const char *str) {
-  if (str == NULL) {
-    return 0;
-  }
-
-  if (strlen(str) == 0) {
-    return 0;
-  }
-
-  if (checkForInjection(str)) {
-    return 0;
-  }
-
-  return validateStringContent(str);
-}
-
-int validateEdgeCaseInteger(int value) {
-  if (value == INT_MIN || value == INT_MAX) {
-    return 0;
-  }
-
-  return 1;
-}
-
-int validateEdgeCaseDate(time_t date) {
-  if (date == -1) {
-    return 0;
-  }
-
-  if (date == 0) {
-    return 0;
-  }
-
-  struct tm *timeinfo = localtime(&date);
-  if (timeinfo == NULL) {
-    return 0;
-  }
-
-  return isValidDateCombination(timeinfo->tm_mday, timeinfo->tm_mon + 1,
-                                timeinfo->tm_year + 1900);
-}
-
 void sanitizeInput(char *input) {
   if (input == NULL) {
     return;
   }
 
   trimWhitespace(input);
-  removeExtraSpaces(input);
-  normalizeInput(input);
 }
 
 void trimWhitespace(char *str) {
@@ -495,45 +262,6 @@ void trimWhitespace(char *str) {
   size_t len = strlen(str);
   while (len > 0 && isspace((unsigned char)str[len - 1])) {
     str[--len] = '\0';
-  }
-}
-
-void removeExtraSpaces(char *str) {
-  if (str == NULL) {
-    return;
-  }
-
-  char *src = str;
-  char *dst = str;
-  int spaceFound = 0;
-
-  while (*src != '\0') {
-    if (isspace((unsigned char)*src)) {
-      if (!spaceFound) {
-        *dst = ' ';
-        dst++;
-        spaceFound = 1;
-      }
-    } else {
-      *dst = *src;
-      dst++;
-      spaceFound = 0;
-    }
-    src++;
-  }
-
-  *dst = '\0';
-}
-
-void normalizeInput(char *input) {
-  if (input == NULL) {
-    return;
-  }
-
-  for (int i = 0; input[i] != '\0'; i++) {
-    if (input[i] >= 'A' && input[i] <= 'Z') {
-      input[i] = input[i] + ('a' - 'A');
-    }
   }
 }
 

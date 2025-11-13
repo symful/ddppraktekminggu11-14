@@ -1,9 +1,6 @@
 void showMainMenu();
 void clearScreen();
-
 void waitForEnter();
-void showWelcomeBanner();
-void showMainMenu();
 void showSuccessMessage(const char *message);
 void showErrorMessage(const char *message);
 void showWarningMessage(const char *message);

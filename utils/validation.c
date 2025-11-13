@@ -229,52 +229,6 @@ int validateTransactionIndex(struct TransactionGroup *group, int index) {
   return (index >= 0 && index < group->transactionsAmount);
 }
 
-const char *getValidationErrorMessage(int errorType) {
-  switch (errorType) {
-  case 1:
-    return "Input tidak valid. Harap masukkan angka yang benar.";
-  case 2:
-    return "Pilihan tidak valid. Silakan pilih dari opsi yang tersedia.";
-  case 3:
-    return "Teks terlalu panjang atau mengandung karakter tidak valid.";
-  case 4:
-    return "Format tanggal tidak valid. Gunakan format MM/YYYY.";
-  case 5:
-    return "Jumlah tidak valid. Harap masukkan angka positif.";
-  case 6:
-    return "Deskripsi tidak boleh kosong.";
-  case 7:
-    return "Budget akan terlampaui jika transaksi ini ditambahkan.";
-  case 8:
-    return "Laporan untuk bulan ini sudah ada.";
-  case 9:
-    return "Index tidak valid.";
-  case 10:
-    return "Nama transaksi tidak valid.";
-  default:
-    return "Kesalahan validasi tidak dikenal.";
-  }
-}
-
-void trimString(char *str) {
-  if (str == NULL)
-    return;
-
-  char *start = str;
-  while (isspace(*start)) {
-    start++;
-  }
-
-  if (start != str) {
-    memmove(str, start, strlen(start) + 1);
-  }
-
-  size_t len = strlen(str);
-  while (len > 0 && isspace(str[len - 1])) {
-    str[--len] = '\0';
-  }
-}
-
 int readAndValidateInteger(const char *prompt, int minValue, int maxValue,
                            int *result) {
   InputResult inputResult =

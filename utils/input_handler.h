@@ -28,8 +28,6 @@ typedef enum {
 
 int readRawInput(char *buffer, size_t bufferSize);
 void clearInputBuffer();
-int validateBufferSize(const char *buffer, size_t maxSize);
-int detectInputOverflow(const char *buffer);
 
 InputResult promptForAmount(const char *message, long long *result);
 InputResult promptForBudget(const char *message, long long *result);
@@ -51,21 +49,16 @@ int attemptDateInput(const char *buffer, time_t *result);
 
 void displayPrompt(const char *message);
 void displayErrorMessage(InputResult error);
-void displayValidationHelp(PromptType type);
+
 void displayRetryMessage(int attempt, int maxAttempts);
 
 int shouldRetryInput(int attempt);
 int hasExceededMaxAttempts(int attempt);
-void resetInputState();
-void logInputAttempt(PromptType type, int attempt);
 
 InputResult validateInputResult(const char *buffer, PromptType type);
-int isInputComplete(const char *buffer);
-int requiresAdditionalValidation(PromptType type);
 void preprocessInput(char *buffer);
 
 const char* getInputErrorMessage(InputResult error);
-const char* getPromptTypeDescription(PromptType type);
 int getMaxAttemptsForPrompt(PromptType type);
 size_t getMaxLengthForPrompt(PromptType type);
 

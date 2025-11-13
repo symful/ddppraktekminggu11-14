@@ -26,17 +26,6 @@ void clearInputBuffer() {
   }
 }
 
-int validateBufferSize(const char *buffer, size_t maxSize) {
-  if (buffer == NULL) {
-    return 0;
-  }
-  return strlen(buffer) < maxSize;
-}
-
-int detectInputOverflow(const char *buffer) {
-  return isInputBufferOverflow(buffer, 1024);
-}
-
 InputResult promptForAmount(const char *message, long long *result) {
   char buffer[32];
   int attempt = 0;
@@ -48,12 +37,6 @@ InputResult promptForAmount(const char *message, long long *result) {
     if (!readRawInput(buffer, sizeof(buffer))) {
       attempt++;
       displayErrorMessage(INPUT_ERROR_BUFFER_OVERFLOW);
-      continue;
-    }
-
-    if (detectInputOverflow(buffer)) {
-      attempt++;
-      displayErrorMessage(INPUT_ERROR_TOO_LONG);
       continue;
     }
 
@@ -305,7 +288,7 @@ int attemptAmountInput(const char *buffer, long long *result) {
     return 0;
   }
 
-  if (!validateEdgeCaseAmount(amount)) {
+  if (amount <= 0) {
     return 0;
   }
 
@@ -327,11 +310,11 @@ int attemptBudgetInput(const char *buffer, long long *result) {
     return 0;
   }
 
-  if (!validateEdgeCaseAmount(budget)) {
+  if (budget <= 0) {
     return 0;
   }
 
-  if (!validateBudgetRange(budget)) {
+  if (!validateBudgetAmount(budget)) {
     return 0;
   }
 
@@ -349,11 +332,11 @@ int attemptTransactionInput(const char *buffer, long long *result) {
     return 0;
   }
 
-  if (!validateEdgeCaseAmount(transaction)) {
+  if (transaction <= 0) {
     return 0;
   }
 
-  if (!validateTransactionRange(transaction)) {
+  if (!validateTransactionAmount(transaction)) {
     return 0;
   }
 
@@ -371,7 +354,7 @@ int attemptIntegerInput(const char *buffer, int min, int max, int *result) {
     return 0;
   }
 
-  if (!validateEdgeCaseInteger(value)) {
+  if (value <= 0) {
     return 0;
   }
 
@@ -388,11 +371,11 @@ int attemptStringInput(const char *buffer, char *result, size_t maxLength) {
     return 0;
   }
 
-  if (!validateUserInput(buffer, maxLength)) {
+  if (strlen(buffer) > maxLength) {
     return 0;
   }
 
-  if (checkForInjection(buffer)) {
+  if (!validateStringContent(buffer)) {
     return 0;
   }
 
@@ -414,7 +397,7 @@ int attemptDateInput(const char *buffer, time_t *result) {
     return 0;
   }
 
-  if (!validateEdgeCaseDate(date)) {
+  if (date == -1) {
     return 0;
   }
 
@@ -434,11 +417,6 @@ void displayErrorMessage(InputResult error) {
   printf("❌ %s\n", message);
 }
 
-void displayValidationHelp(PromptType type) {
-  const char *description = getPromptTypeDescription(type);
-  printf("💡 %s\n", description);
-}
-
 void displayRetryMessage(int attempt, int maxAttempts) {
   printf("⚠️  Silakan coba lagi (%d/%d)\n", attempt + 1, maxAttempts);
 }
@@ -451,17 +429,9 @@ int hasExceededMaxAttempts(int attempt) {
   return attempt >= globalConfig.validation.maxValidationAttempts;
 }
 
-void resetInputState() { clearInputBuffer(); }
-
-void logInputAttempt(PromptType type, int attempt) {}
-
 InputResult validateInputResult(const char *buffer, PromptType type) {
   if (isNullOrEmpty(buffer)) {
     return INPUT_ERROR_EMPTY;
-  }
-
-  if (checkForInjection(buffer)) {
-    return INPUT_ERROR_INJECTION_DETECTED;
   }
 
   size_t maxLength = getMaxLengthForPrompt(type);
@@ -470,13 +440,6 @@ InputResult validateInputResult(const char *buffer, PromptType type) {
   }
 
   return INPUT_SUCCESS;
-}
-
-int isInputComplete(const char *buffer) { return !isNullOrEmpty(buffer); }
-
-int requiresAdditionalValidation(PromptType type) {
-  return (type == PROMPT_AMOUNT || type == PROMPT_BUDGET ||
-          type == PROMPT_TRANSACTION || type == PROMPT_DATE);
 }
 
 void preprocessInput(char *buffer) {
@@ -507,27 +470,6 @@ const char *getInputErrorMessage(InputResult error) {
     return "Input berbahaya terdeteksi";
   default:
     return "Kesalahan input tidak dikenal";
-  }
-}
-
-const char *getPromptTypeDescription(PromptType type) {
-  switch (type) {
-  case PROMPT_AMOUNT:
-    return "Masukkan jumlah uang (minimal 1)";
-  case PROMPT_BUDGET:
-    return "Masukkan anggaran (minimal sesuai konfigurasi)";
-  case PROMPT_TRANSACTION:
-    return "Masukkan nominal transaksi (minimal 1)";
-  case PROMPT_NAME:
-    return "Masukkan nama (maksimal 19 karakter)";
-  case PROMPT_DESCRIPTION:
-    return "Masukkan deskripsi (maksimal 199 karakter)";
-  case PROMPT_DATE:
-    return "Masukkan tanggal format DD/MM/YYYY";
-  case PROMPT_CHOICE:
-    return "Pilih nomor menu";
-  default:
-    return "Masukkan input yang valid";
   }
 }
 
