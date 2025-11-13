@@ -113,6 +113,49 @@ int validateMonthYearFormat(const char *input, time_t *result) {
   return (*result != -1);
 }
 
+int validateDateFormat(const char *input, time_t *result) {
+  if (input == NULL || result == NULL) {
+    return 0;
+  }
+
+  int day, month, year;
+  if (sscanf(input, "%d/%d/%d", &day, &month, &year) != 3) {
+    return 0;
+  }
+
+  if (month < 1 || month > 12) {
+    return 0;
+  }
+
+  if (year < 1900 || year > 2100) {
+    return 0;
+  }
+
+  // Check day validity based on month and year
+  int daysInMonth;
+  if (month == 2) {
+    // Check for leap year
+    int isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    daysInMonth = isLeap ? 29 : 28;
+  } else if (month == 4 || month == 6 || month == 9 || month == 11) {
+    daysInMonth = 30;
+  } else {
+    daysInMonth = 31;
+  }
+
+  if (day < 1 || day > daysInMonth) {
+    return 0;
+  }
+
+  struct tm timeinfo = {0};
+  timeinfo.tm_year = year - 1900;
+  timeinfo.tm_mon = month - 1;
+  timeinfo.tm_mday = day;
+
+  *result = mktime(&timeinfo);
+  return (*result != -1);
+}
+
 int validateBudgetAmount(long long amount) {
 
   return (amount > 0 && amount <= 1000000000000LL);
@@ -343,6 +386,34 @@ int readAndValidateString(const char *prompt, char *result, size_t maxLength) {
         return 1;
       } else {
         printf("Input tidak valid. Teks terlalu panjang atau kosong.\n");
+      }
+    } else {
+      printf("Error membaca input.\n");
+    }
+
+    attempts++;
+    if (attempts < maxAttempts) {
+      printf("Silakan coba lagi (%d/%d).\n", attempts + 1, maxAttempts);
+    }
+  }
+
+  return 0;
+}
+
+int readAndValidateDate(const char *prompt, time_t *result) {
+  char buffer[15];
+  int attempts = 0;
+  const int maxAttempts = 3;
+
+  while (attempts < maxAttempts) {
+    printf("%s", prompt);
+    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+      buffer[strcspn(buffer, "\n")] = 0;
+
+      if (validateDateFormat(buffer, result)) {
+        return 1;
+      } else {
+        printf("Format tanggal tidak valid. Gunakan format DD/MM/YYYY.\n");
       }
     } else {
       printf("Error membaca input.\n");

@@ -294,21 +294,27 @@ void showTransactionDetails(struct TransactionGroup *group) {
   }
 
   printf("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-         "━━━━━━━━━━━━━━━━━━━━━━\n");
-  printf("║ No. │ %-15s │ %-10s │ %-15s │ %-30s ║\n", "NAMA", "JENIS",
-         "NOMINAL", "DESKRIPSI");
+         "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+         "━━━━━━━━━\n");
+  printf("║ No. │ %-12s │ %-15s │ %-10s │ %-15s │ %-30s ║\n", "TANGGAL", "NAMA",
+         "JENIS", "NOMINAL", "DESKRIPSI");
   printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-         "━━━━━━━━━━━━━━━━━━━━\n");
+         "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+         "━━━━━━━\n");
 
   for (int i = 0; i < group->transactionsAmount; i++) {
     struct Transaction *t = &group->transactions[i];
     const char *typeIcon = (t->type == TT_INCOME) ? "💚 Masuk" : "❤️  Keluar";
+    char *dateStr = dateToString(t->date);
 
-    printf("║ %-3d │ %-15s │ %-15s │ Rp %-12lld │ %-30s ║\n", i + 1, t->name,
-           typeIcon, t->realCost, t->description);
+    printf("║ %-3d │ %-12s │ %-15s │ %-15s │ Rp %-12lld │ %-30s ║\n", i + 1,
+           dateStr, t->name, typeIcon, t->realCost, t->description);
+
+    free(dateStr);
   }
   printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-         "━━━━━━━━━━━━━━━━━━━━\n");
+         "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+         "━━━━━━━\n");
 
   waitForEnter();
 }
@@ -354,6 +360,18 @@ void openTransactionEditMenu(struct MonthReport *monthReport) {
 
   printf("\n✏️  Edit Transaksi ID %d:\n", transaction->id);
   printf("─────────────────────────\n");
+
+  char dateChoice;
+  printf("📅 Edit tanggal? (y/n): ");
+  scanf(" %c", &dateChoice);
+  clearInputBuffer();
+
+  if (dateChoice == 'y' || dateChoice == 'Y') {
+    time_t newDate;
+    if (readAndValidateDate("📅 Tanggal baru (DD/MM/YYYY): ", &newDate)) {
+      transaction->date = newDate;
+    }
+  }
 
   char newName[20];
   if (readAndValidateString("💼 Nama baru (kosongkan jika tidak ingin ubah): ",
@@ -423,9 +441,12 @@ void openTransactionDeleteMenu(struct MonthReport *monthReport) {
 
   printf("\n⚠️  KONFIRMASI HAPUS\n");
   printf("───────────────────\n");
+  char *dateStr = dateToString(group->transactions[transactionIndex - 1].date);
+  printf("Tanggal: %s\n", dateStr);
   printf("Transaksi: %s - Rp %lld\n",
          group->transactions[transactionIndex - 1].name,
          group->transactions[transactionIndex - 1].realCost);
+  free(dateStr);
 
   char confirmation;
   printf("❓ Yakin ingin menghapus? (y/n): ");
@@ -458,6 +479,12 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
     return;
   }
 
+  if (!readAndValidateDate("📅 Tanggal transaksi (DD/MM/YYYY): ",
+                           &newTransaction.date)) {
+    showErrorMessage("Format tanggal tidak valid.");
+    return;
+  }
+
   if (!readAndValidateString("📝 Deskripsi: ", newTransaction.description,
                              sizeof(newTransaction.description))) {
     showErrorMessage("Deskripsi tidak valid.");
@@ -473,7 +500,7 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
   printf("\n💳 JENIS TRANSAKSI:\n");
   printf("──────────────────\n");
   printf("  1. 💚 Pemasukan\n");
-  printf("  2. ❤️  Pengeluaran\n");
+  printf("  2. ❤️ Pengeluaran\n");
 
   int typeChoice;
   if (!readAndValidateInteger("🎯 Pilihan: ", 1, 2, &typeChoice)) {
@@ -498,7 +525,6 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
   newTransaction.category = (enum TransactionCategory)(categoryChoice - 1);
 
   newTransaction.id = getTotalTransactions(monthReport) + 1;
-  newTransaction.date = monthReport->date;
   newTransaction.maximumCost = newTransaction.realCost;
   newTransaction.restCost = 0;
   newTransaction.amount = 1;

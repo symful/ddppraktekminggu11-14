@@ -12,6 +12,7 @@ int validateMenuChoice(int choice, int minChoice, int maxChoice);
 int validateTransactionType(int type);
 int validateTransactionCategory(int category);
 int validateMonthYearFormat(const char *input, time_t *result);
+int validateDateFormat(const char *input, time_t *result);
 int validateBudgetAmount(long long amount);
 int validateTransactionAmount(long long amount);
 int validateDescription(const char *description);
@@ -32,5 +33,6 @@ void trimString(char *str);
 int readAndValidateInteger(const char *prompt, int minValue, int maxValue, int *result);
 int readAndValidateLongLong(const char *prompt, long long minValue, long long maxValue, long long *result);
 int readAndValidateString(const char *prompt, char *result, size_t maxLength);
+int readAndValidateDate(const char *prompt, time_t *result);
 
 #endif
