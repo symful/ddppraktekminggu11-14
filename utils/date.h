@@ -5,7 +5,6 @@
 
 char *dateToString(time_t date);
 char *dateToMonthYearString(time_t date);
-time_t dateFromMonthYearString(char *str);
 time_t dateFromMMYYYY(char *str);
 
 #endif

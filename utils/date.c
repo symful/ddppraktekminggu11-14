@@ -1,4 +1,3 @@
-#define _XOPEN_SOURCE 700
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,13 +15,6 @@ char *dateToMonthYearString(time_t date) {
   char *str = (char *)malloc(sizeof(char) * 11);
   strftime(str, 11, "%B %Y", localtime(&date));
   return str;
-}
-
-time_t dateFromMonthYearString(char *str) {
-  struct tm tm;
-  memset(&tm, 0, sizeof(struct tm));
-  strptime(str, "%B %Y", &tm);
-  return mktime(&tm);
 }
 
 time_t dateFromMMYYYY(char *str) {
