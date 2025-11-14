@@ -29,7 +29,7 @@ struct MonthReportList *listAllMonthReports(DIR *dir) {
   monthReportList->amount = 0;
 
   if (dir == NULL) {
-    printf("Reports directory not found or could not be opened.\n");
+    printf("Direktori laporan tidak ditemukan atau tidak dapat dibuka.\n");
     return monthReportList;
   }
 
@@ -38,14 +38,43 @@ struct MonthReportList *listAllMonthReports(DIR *dir) {
     if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
       continue;
     }
-    strcpy(path, "./reports/");
-    strcat(path, entry->d_name);
+    snprintf(path, sizeof(path), "%s/%s", "./reports", entry->d_name);
 
     struct MonthReport *report = loadMonthReport(path);
     if (report != NULL) {
       addMonthReport(monthReportList, report);
     }
   }
+  return monthReportList;
+}
+
+struct MonthReportList *listUserMonthReports(DIR *dir,
+                                             const char *userReportsPath) {
+  struct dirent *entry;
+  struct MonthReportList *monthReportList =
+      (struct MonthReportList *)malloc(sizeof(struct MonthReportList));
+  monthReportList->reports = NULL;
+  monthReportList->amount = 0;
+
+  if (dir == NULL) {
+    printf("Direktori laporan pengguna tidak ditemukan atau tidak dapat "
+           "dibuka.\n");
+    return monthReportList;
+  }
+
+  char path[512];
+  while ((entry = readdir(dir)) != NULL) {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+      continue;
+    }
+    snprintf(path, sizeof(path), "%s/%s", userReportsPath, entry->d_name);
+
+    struct MonthReport *report = loadMonthReport(path);
+    if (report != NULL) {
+      addMonthReport(monthReportList, report);
+    }
+  }
+  closedir(dir);
   return monthReportList;
 }
 

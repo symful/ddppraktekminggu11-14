@@ -1,3 +1,4 @@
+#include "../auth/auth.h"
 #include "../types/include.c"
 #include "../utils/validation.c"
 #include "./month_report.c"
@@ -14,12 +15,26 @@ void waitForEnter() {
 void showMainMenu() {
   printf("┌─────────────────────────────────────────────────────────┐\n");
   printf("│                    🏠 MENU UTAMA                        │\n");
+  if (currentUser != NULL) {
+    if (currentUser->isAdmin) {
+      printf("│              👤 Admin: %-30s │\n", currentUser->username);
+    } else {
+      printf("│              👤 Pengguna: %-27s │\n", currentUser->username);
+    }
+  }
   printf("├─────────────────────────────────────────────────────────┤\n");
   printf("│  1. 📊 Kelola Laporan Bulanan                           │\n");
   printf("│  2. 📈 Lihat Ringkasan Keuangan                         │\n");
   printf("│  3. ⚙️  Pengaturan Budget                                │\n");
   printf("│  4. 🔧 Pengaturan Sistem                                │\n");
-  printf("│  5. ❌ Keluar                                           │\n");
+  if (currentUser != NULL && currentUser->isAdmin) {
+    printf("│  5. 👑 Admin Panel                                      │\n");
+    printf("│  6. 🔓 Logout                                           │\n");
+    printf("│  7. ❌ Keluar                                           │\n");
+  } else {
+    printf("│  5. 🔓 Logout                                           │\n");
+    printf("│  6. ❌ Keluar                                           │\n");
+  }
   printf("└─────────────────────────────────────────────────────────┘\n");
   printf("\n💡 Tip: Pilih nomor menu yang diinginkan\n");
   printf("🎯 Pilihan Anda: ");
@@ -451,7 +466,8 @@ void openMainMenu(struct MonthReportList *monthReportList) {
   while (1) {
     showMainMenu();
 
-    int choice = getValidatedMenuChoice(1, 5);
+    int maxChoice = (currentUser && currentUser->isAdmin) ? 7 : 6;
+    int choice = getValidatedMenuChoice(1, maxChoice);
     if (choice == -1)
       continue;
 
@@ -470,16 +486,124 @@ void openMainMenu(struct MonthReportList *monthReportList) {
       openConfigurationMenu(monthReportList);
       break;
     case 5:
-      clearScreen();
-      printf("╔══════════════════════════════════════════════════════════╗\n");
-      printf("║                    👋 TERIMA KASIH!                     ║\n");
-      printf("║                                                          ║\n");
-      printf("║          Semoga keuangan Anda selalu terjaga! 💰        ║\n");
-      printf("║                                                          ║\n");
-      printf("║                   Sampai jumpa lagi! 😊                 ║\n");
-      printf("╚══════════════════════════════════════════════════════════╝\n");
-      printf("\n");
-      exit(0);
+      if (currentUser && currentUser->isAdmin) {
+        // Admin Panel
+        clearScreen();
+        showAdminMenu();
+
+        int adminChoice;
+        if (scanf("%d", &adminChoice) == 1) {
+          int c;
+          while ((c = getchar()) != '\n' && c != EOF)
+            ;
+
+          switch (adminChoice) {
+          case 1:
+            handleAdminUserManagement();
+            break;
+          case 2:
+            viewAllUserReports();
+            break;
+          case 3:
+            showSystemStatistics();
+            break;
+          case 4:
+            // Continue as regular user - do nothing, just continue
+            break;
+          case 5:
+            // Logout from admin panel
+            clearScreen();
+            printf("╔══════════════════════════════════════════════════════════"
+                   "╗\n");
+            printf("║                      🔓 LOGOUT                          "
+                   "║\n");
+            printf("║                                                          "
+                   "║\n");
+            printf("║               Logout admin: %-23s     ║\n",
+                   currentUser ? currentUser->username : "Tidak Diketahui");
+            printf("║                                                          "
+                   "║\n");
+            printf("║                 Kembali ke layar login...               "
+                   "║\n");
+            printf("╚══════════════════════════════════════════════════════════"
+                   "╝\n");
+            printf("\n");
+            return;
+          }
+        }
+      } else {
+        // Regular user logout
+        clearScreen();
+        printf(
+            "╔══════════════════════════════════════════════════════════╗\n");
+        printf("║                      🔓 LOGOUT                          ║\n");
+        printf(
+            "║                                                          ║\n");
+        printf("║               Logout pengguna: %-21s     ║\n",
+               currentUser ? currentUser->username : "Tidak Diketahui");
+        printf(
+            "║                                                          ║\n");
+        printf("║                 Kembali ke layar login...               ║\n");
+        printf(
+            "╚══════════════════════════════════════════════════════════╝\n");
+        printf("\n");
+        return; // Return to main() which will handle re-authentication
+      }
+      break;
+    case 6:
+      if (currentUser && currentUser->isAdmin) {
+        // Admin logout
+        clearScreen();
+        printf(
+            "╔══════════════════════════════════════════════════════════╗\n");
+        printf("║                      🔓 LOGOUT                          ║\n");
+        printf(
+            "║                                                          ║\n");
+        printf("║               Logout admin: %-23s     ║\n",
+               currentUser ? currentUser->username : "Tidak Diketahui");
+        printf(
+            "║                                                          ║\n");
+        printf("║                 Kembali ke layar login...               ║\n");
+        printf(
+            "╚══════════════════════════════════════════════════════════╝\n");
+        printf("\n");
+        return;
+      } else {
+        // Regular user exit
+        clearScreen();
+        printf(
+            "╔══════════════════════════════════════════════════════════╗\n");
+        printf("║                    👋 TERIMA KASIH!                     ║\n");
+        printf(
+            "║                                                          ║\n");
+        printf("║          Semoga keuangan Anda selalu terjaga! 💰        ║\n");
+        printf(
+            "║                                                          ║\n");
+        printf("║                   Sampai jumpa lagi! 😊                 ║\n");
+        printf(
+            "╚══════════════════════════════════════════════════════════╝\n");
+        printf("\n");
+        exit(0);
+      }
+      break;
+    case 7:
+      if (currentUser && currentUser->isAdmin) {
+        // Admin exit
+        clearScreen();
+        printf(
+            "╔══════════════════════════════════════════════════════════╗\n");
+        printf("║                    👋 TERIMA KASIH!                     ║\n");
+        printf(
+            "║                                                          ║\n");
+        printf("║          Semoga keuangan Anda selalu terjaga! 💰👑      ║\n");
+        printf(
+            "║                                                          ║\n");
+        printf("║                   Sampai jumpa lagi! 😊                 ║\n");
+        printf(
+            "╚══════════════════════════════════════════════════════════╝\n");
+        printf("\n");
+        exit(0);
+      }
       break;
     default:
       showErrorMessage("Pilihan tidak valid.");

@@ -5,5 +5,6 @@
 #define LIST_ALL_MONTH_REPORTS_H
 
 struct MonthReportList *listAllMonthReports(DIR *dir);
+struct MonthReportList *listUserMonthReports(DIR *dir, const char *userReportsPath);
 
 #endif
