@@ -4,6 +4,7 @@
 #include "./month_report.c"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 void clearScreen() { system("clear"); }
 
@@ -12,21 +13,30 @@ void waitForEnter() {
   clearInputBuffer();
 }
 
-void showMainMenu() {
+void printMainMenuHeader() {
   printf("┌─────────────────────────────────────────────────────────┐\n");
   printf("│                    🏠 MENU UTAMA                        │\n");
-  if (currentUser != NULL) {
-    if (currentUser->isAdmin) {
-      printf("│              👤 Admin: %-30s │\n", currentUser->username);
-    } else {
-      printf("│              👤 Pengguna: %-27s │\n", currentUser->username);
-    }
+}
+
+void printInfoUser() {
+  if (currentUser == NULL) return;
+
+  if (currentUser->isAdmin) {
+    printf("│              👤 Admin: %-30s │\n", currentUser->username);
+  } else {
+    printf("│              👤 Pengguna: %-27s │\n", currentUser->username);
   }
+}
+
+void printFiturMenu() {
   printf("├─────────────────────────────────────────────────────────┤\n");
   printf("│  1. 📊 Kelola Laporan Bulanan                           │\n");
   printf("│  2. 📈 Lihat Ringkasan Keuangan                         │\n");
   printf("│  3. ⚙️  Pengaturan Budget                                │\n");
   printf("│  4. 🔧 Pengaturan Sistem                                │\n");
+}
+
+void printFiturMenuRole() {
   if (currentUser != NULL && currentUser->isAdmin) {
     printf("│  5. 👑 Admin Panel                                      │\n");
     printf("│  6. 🔓 Logout                                           │\n");
@@ -35,9 +45,20 @@ void showMainMenu() {
     printf("│  5. 🔓 Logout                                           │\n");
     printf("│  6. ❌ Keluar                                           │\n");
   }
+}
+
+void printMainMenuFooter() {
   printf("└─────────────────────────────────────────────────────────┘\n");
   printf("\n💡 Tip: Pilih nomor menu yang diinginkan\n");
   printf("🎯 Pilihan Anda: ");
+}
+
+void showMainMenu() {
+  printMainMenuHeader();
+  printInfoUser();
+  printFiturMenu();
+  printFiturMenuRole();
+  printMainMenuFooter();  
 }
 
 void showSuccessMessage(const char *message) {
@@ -96,24 +117,26 @@ void openSummaryMenu(struct MonthReportList *monthReportList) {
   showAllMonthReportSummary(monthReportList);
 }
 
-void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
-  while (1) {
-    clearScreen();
-    printf("┌─────────────────────────────────────────────────────────┐\n");
-    printf("│                 ⚙️  PENGATURAN BUDGET                    │\n");
-    printf("├─────────────────────────────────────────────────────────┤\n");
-    printf("│  1. 🏷️  Atur Budget per Kategori                         │\n");
-    printf("│  2. 📋 Lihat Budget Saat Ini                            │\n");
-    printf("│  3. 🔄 Reset Semua Budget                               │\n");
-    printf("│  4. ⬅️  Kembali ke Menu Utama                            │\n");
-    printf("└─────────────────────────────────────────────────────────┘\n");
-    printf("\n🎯 Pilihan Anda: ");
 
-    int choice = getValidatedMenuChoice(1, 4);
-    if (choice == -1)
-      continue;
+void printBudgetHeader() {
+  clearScreen();
+  printf("┌─────────────────────────────────────────────────────────┐\n");
+  printf("│                 ⚙️  PENGATURAN BUDGET                    │\n");
+  printf("├─────────────────────────────────────────────────────────┤\n");
+  printf("│  1. 🏷️  Atur Budget per Kategori                         │\n");
+  printf("│  2. 📋 Lihat Budget Saat Ini                            │\n");
+  printf("│  3. 🔄 Reset Semua Budget                               │\n");
+  printf("│  4. ⬅️  Kembali ke Menu Utama                            │\n");
+  printf("└─────────────────────────────────────────────────────────┘\n");
+  printf("\n🎯 Pilihan Anda: ");
+}
 
-    switch (choice) {
+int validasiInputBudget() {
+  return getValidatedMenuChoice(1, 4);
+}
+
+void handleInputBudget(int choice,struct MonthReportList *monthReportList, bool *shouldExit) {
+  switch (choice) {
     case 1:
       openSetCategoryBudgetMenu(monthReportList);
       break;
@@ -124,11 +147,26 @@ void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
       openResetBudgetMenu(monthReportList);
       break;
     case 4:
-      return;
+      *shouldExit = true;
+      break;
     default:
       showErrorMessage("Pilihan tidak valid.");
       break;
+  }
+}
+
+void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
+  bool shouldExit = false;
+
+  while (!shouldExit) {
+    printBudgetHeader();
+
+    int choice = validasiInputBudget();
+    if (choice == -1) {
+      continue;
     }
+
+    handleInputBudget(choice, monthReportList, &shouldExit);
   }
 }
 

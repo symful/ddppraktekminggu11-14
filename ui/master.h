@@ -1,3 +1,4 @@
+#include <stdbool.h>
 void showMainMenu();
 void clearScreen();
 void waitForEnter();
@@ -19,3 +20,11 @@ void openSetMinimumTransactionMenu();
 void openViewConfigurationMenu();
 void openResetConfigurationMenu();
 void openMainMenu(struct MonthReportList *monthReportList);
+void printMainMenuHeader();
+void printFiturMenu();
+void printInfoUser();
+void printFiturMenuRole();
+void printMainMenuFooter();
+void printBudgetHeader();
+int validasiInputBudget();
+void handleInputBudget(int choice,struct MonthReportList *monthReportList, bool *shouldExit);
