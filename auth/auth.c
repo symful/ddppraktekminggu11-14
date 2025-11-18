@@ -13,7 +13,7 @@ struct User *currentUser = NULL;
 
 #define ADMIN_FILE "admin_status"
 
-// Simple hash function (in production, use proper cryptographic hash)
+// Simple hash function
 char *hashPassword(const char *password) {
   static char hash[HASH_LENGTH];
   const char *salt = "$6$rounds=5000$mysalt123456$";
