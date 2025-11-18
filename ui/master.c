@@ -146,7 +146,9 @@ void printBudgetHeader() {
   printf("\n🎯 Pilihan Anda: ");
 }
 
-int validasiInputBudget() { return getValidatedMenuChoice(1, 4); }
+int validasiInputBudget() { 
+  return getValidatedMenuChoice(1, 4); 
+}
 
 void handleInputBudget(int choice, struct MonthReportList *monthReportList,
                        bool *shouldExit) {
@@ -184,109 +186,176 @@ void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
   }
 }
 
-void openSetCategoryBudgetMenu(struct MonthReportList *monthReportList) {
-  if (monthReportList->amount == 0) {
-    showInfoMessage("Tidak ada laporan bulanan. Buat laporan terlebih dahulu.");
-    return;
-  }
+bool hasMonthReports(struct MonthReportList *monthReportList) {
+  return monthReportList != NULL && monthReportList->amount > 0;
+}
 
+void printBudgetCategoryHeader() {
   clearScreen();
   printf("┌─────────────────────────────────────────────────────────┐\n");
   printf("│             🏷️  ATUR BUDGET PER KATEGORI                │\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
+}
 
+struct MonthReport *selectMonthReport(struct MonthReportList *monthReportList) {
   showMonthlyList(monthReportList);
 
   int reportChoice;
-  if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1,
-                              monthReportList->amount, &reportChoice)) {
+  if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1, monthReportList->amount, &reportChoice)) {
     showErrorMessage("Input tidak valid.");
-    return;
+    return NULL;
   }
 
-  struct MonthReport *report = monthReportList->reports[reportChoice - 1];
+  return monthReportList->reports[reportChoice - 1];
+}
 
+bool selectCategory(enum TransactionCategory *outCategory) {
   printf("\n📂 Pilih Kategori untuk Mengatur Budget:\n");
   printf("─────────────────────────────────────────\n");
   for (int i = 0; i <= TC_OTHER; i++) {
-    printf("  %d. %s\n", i + 1,
-           transactionCategoryToString((enum TransactionCategory)i));
+    printf("  %d. %s\n", i + 1, transactionCategoryToString((enum TransactionCategory)i));
   }
 
   int categoryChoice;
-  if (!readAndValidateInteger("\n🎯 Pilihan kategori: ", 1, TC_OTHER + 1,
-                              &categoryChoice)) {
+  if (!readAndValidateInteger("\n🎯 Pilihan kategori: ", 1, TC_OTHER + 1, &categoryChoice)) {
     showErrorMessage("Input tidak valid.");
-    return;
+    return false;
   }
 
-  enum TransactionCategory category =
-      (enum TransactionCategory)(categoryChoice - 1);
+  *outCategory = (enum TransactionCategory)(categoryChoice - 1);
+  return true;
+}
 
-  long long budget;
+bool inputNewBudget(long long *outBudget) {
   InputResult result =
-      promptForBudget("💰 Masukkan budget baru (Rp): ", &budget);
+      promptForBudget("💰 Masukkan budget baru (Rp): ", outBudget);
   if (result != INPUT_SUCCESS) {
     showErrorMessage(
         "Budget tidak valid atau di bawah minimum yang diizinkan.");
+    return false;
+  }
+  return true;
+}
+
+void showSetBudgetSuccessMessage(enum TransactionCategory category, long long budget) {
+  char successMsg[200];
+  snprintf(successMsg, sizeof(successMsg), "Budget untuk kategori '%s' berhasil diatur menjadi Rp %lld", transactionCategoryToString(category), budget);
+  showSuccessMessage(successMsg);
+}
+
+bool hasMonthReports(struct MonthReportList *monthReportList) {
+  if (monthReportList == NULL || monthReportList->amount == 0) {
+    showInfoMessage("Tidak ada laporan bulanan. Buat laporan terlebih dahulu.");
+    return false;
+  }
+  return true;
+}
+
+void openSetCategoryBudgetMenu(struct MonthReportList *monthReportList) {
+  if (!ensureHasMonthReports(monthReportList)) {
+    return;
+  }
+
+  printBudgetCategoryHeader();
+
+  struct MonthReport *report = selectMonthReport(monthReportList);
+  if (report == NULL) {
+    return;
+  }
+
+  enum TransactionCategory category;
+  if (!selectCategory(&category)) {
+    return;
+  }
+
+  long long budget;
+  if (!inputNewBudget(&budget)) {
     return;
   }
 
   setBudgetForCategory(report, category, budget);
   saveMonthReportToFile(report);
 
-  char successMsg[200];
-  snprintf(successMsg, sizeof(successMsg),
-           "Budget untuk kategori '%s' berhasil diatur menjadi Rp %lld",
-           transactionCategoryToString(category), budget);
-  showSuccessMessage(successMsg);
+  showSetBudgetSuccessMessage(category, budget);
 }
 
-void openViewBudgetMenu(struct MonthReportList *monthReportList) {
-  if (monthReportList->amount == 0) {
+bool hasMonthReportsView(struct MonthReportList *monthReportList) {
+  if (monthReportList == NULL || monthReportList->amount == 0) {
     showInfoMessage("Tidak ada laporan bulanan.");
-    return;
+    return false;
   }
+  return true;
+}
 
+void printCurrentBudgetHeader() {
   clearScreen();
   printf("┌─────────────────────────────────────────────────────────┐\n");
   printf("│                📋 BUDGET SAAT INI                      │\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
+}
 
+struct MonthReport *selectReportForBudgetView(struct MonthReportList *monthReportList) {
   showMonthlyList(monthReportList);
 
   int reportChoice;
-  if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1,
-                              monthReportList->amount, &reportChoice)) {
+  if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1, monthReportList->amount, &reportChoice)) {
     showErrorMessage("Input tidak valid.");
-    return;
+    return NULL;
   }
 
-  struct MonthReport *report = monthReportList->reports[reportChoice - 1];
+  return monthReportList->reports[reportChoice - 1];
+}
 
+void printBudgetPerCategoryHeader() {
   printf("\n╔══════════════════════════════════════════════════════════════════"
          "════════════════╗\n");
   printf("║                              💰 DETAIL BUDGET PER KATEGORI         "
          "               ║\n");
   printf("╠════════════════════════════════════════════════════════════════════"
          "══════════════╣\n");
-  printf("║ %-20s │ %-15s │ %-15s │ %-15s │ %-10s ║\n", "KATEGORI",
-         "BUDGET (Rp)", "TERPAKAI (Rp)", "SISA (Rp)", "STATUS");
+  printf("║ %-20s │ %-15s │ %-15s │ %-15s │ %-10s ║\n",
+         "KATEGORI", "BUDGET (Rp)", "TERPAKAI (Rp)", "SISA (Rp)", "STATUS");
   printf("╠════════════════════════════════════════════════════════════════════"
          "══════════════╣\n");
+}
 
-  for (int i = 0; i < report->groupsAmount; i++) {
-    struct TransactionGroup *group = &report->groups[i];
-    printf("║ %-20s │ %-15lld │ %-15lld │ %-15lld │ %-10s ║\n",
-           transactionCategoryToString(group->category), group->maximumCost,
-           group->totalRealCost, group->remainingCost,
-           getGroupBudgetStatus(group));
-  }
+void printBudgetTableRow(const struct TransactionGroup *group) {
+  printf("║ %-20s │ %-15lld │ %-15lld │ %-15lld │ %-10s ║\n", transactionCategoryToString(group->category), group->maximumCost, group->totalRealCost, group->remainingCost, getGroupBudgetStatus(group));
+}
 
+void printBudgetTableFooter() {
   printf("╚════════════════════════════════════════════════════════════════════"
          "══════════════╝\n");
+}
+
+void printBudgetReport(const struct MonthReport *report) {
+  printBudgetPerCategoryHeader();
+
+  for (int i = 0; i < report->groupsAmount; i++) {
+    const struct TransactionGroup *group = &report->groups[i];
+    printBudgetTableRow(group);
+  }
+
+  printBudgetTableFooter();
+}
+
+void openViewBudgetMenu(struct MonthReportList *monthReportList) {
+  if (!hasMonthReportsView(monthReportList)) {
+    return;
+  }
+
+  printCurrentBudgetHeader();
+
+  struct MonthReport *report = selectReportForBudgetView(monthReportList);
+  if (report == NULL) {
+    return;
+  }
+
+  printBudgetReport(report);
+
   waitForEnter();
 }
+
 
 void openResetBudgetMenu(struct MonthReportList *monthReportList) {
   clearScreen();
