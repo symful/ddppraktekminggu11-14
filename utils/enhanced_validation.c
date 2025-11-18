@@ -142,7 +142,8 @@ int validateStringContent(const char *str) {
 
   for (int i = 0; str[i] != '\0'; i++) {
     unsigned char c = (unsigned char)str[i];
-    if (!isalnum(c) && !isspace(c) && c != '_' && c != '-' && c != '.') {
+    if (!isalnum(c) && !isspace(c) && c != '_' && c != '-' && c != '.' &&
+        c != '/') {
       return 0;
     }
   }

@@ -1,32 +1,13 @@
 #include "../utils/env_loader.c"
+#include "../utils/secure_input.c"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #ifndef ADMIN_AUTH_C
 #define ADMIN_AUTH_C
 
-// Simple admin session structure
-struct AdminSession {
-  int isLoggedIn;
-  char username[50];
-};
-
-static struct AdminSession adminSession = {0, ""};
-
 // Initialize admin system
 int initializeAdminAuth() { return loadEnvFile(); }
-
-// Check if admin is currently logged in
-int isAdminLoggedIn() { return adminSession.isLoggedIn; }
-
-// Get current admin username
-const char *getCurrentAdminUsername() {
-  if (adminSession.isLoggedIn) {
-    return adminSession.username;
-  }
-  return NULL;
-}
 
 // Validate admin credentials
 int validateAdminCredentials(const char *username, const char *password) {
@@ -41,24 +22,6 @@ int validateAdminCredentials(const char *username, const char *password) {
           strcmp(password, validPassword) == 0);
 }
 
-// Login admin
-int loginAdmin(const char *username, const char *password) {
-  if (!validateAdminCredentials(username, password)) {
-    return 0;
-  }
-
-  adminSession.isLoggedIn = 1;
-  strncpy(adminSession.username, username, sizeof(adminSession.username) - 1);
-  adminSession.username[sizeof(adminSession.username) - 1] = '\0';
-  return 1;
-}
-
-// Logout admin
-void logoutAdmin() {
-  adminSession.isLoggedIn = 0;
-  memset(adminSession.username, 0, sizeof(adminSession.username));
-}
-
 // Show admin login form
 int showAdminLoginForm() {
   char username[100];
@@ -68,37 +31,29 @@ int showAdminLoginForm() {
   printf("║                    👑 MASUK ADMIN                       ║\n");
   printf("╚══════════════════════════════════════════════════════════╝\n");
 
-  printf("Username Admin: ");
-  if (fgets(username, sizeof(username), stdin) == NULL) {
-    printf("Error membaca username.\n");
+  if (!readSecureUsername("Username Admin: ", username, sizeof(username))) {
+    printf("❌ Error membaca username.\n");
     return 0;
   }
 
-  // Remove newline
-  size_t len = strlen(username);
-  if (len > 0 && username[len - 1] == '\n') {
-    username[len - 1] = '\0';
-  }
-
-  printf("Password Admin: ");
-  if (fgets(password, sizeof(password), stdin) == NULL) {
-    printf("Error membaca password.\n");
+  if (!readSecurePassword("Password Admin: ", password, sizeof(password))) {
+    printf("❌ Error membaca password.\n");
+    clearPassword(password, sizeof(password));
     return 0;
   }
 
-  // Remove newline
-  len = strlen(password);
-  if (len > 0 && password[len - 1] == '\n') {
-    password[len - 1] = '\0';
-  }
-
-  if (loginAdmin(username, password)) {
-    printf("Akses admin diberikan!\n");
-    return 1;
+  int result = 0;
+  if (validateAdminCredentials(username, password)) {
+    printf("✅ Akses admin diberikan!\n");
+    result = 1;
   } else {
-    printf("Username atau password admin salah.\n");
-    return 0;
+    printf("❌ Username atau password admin salah.\n");
+    result = 0;
   }
+
+  // Clear password from memory after use
+  clearPassword(password, sizeof(password));
+  return result;
 }
 
 // Show admin menu

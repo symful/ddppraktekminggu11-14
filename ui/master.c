@@ -2,11 +2,18 @@
 #include "../types/include.c"
 #include "../utils/validation.c"
 #include "./month_report.c"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-void clearScreen() { system("clear"); }
+// Clear screen function
+void clearScreen() {
+#ifdef _WIN32
+  system("cls");
+#else
+  system("clear");
+#endif
+}
 
 void waitForEnter() {
   printf("\n📱 Tekan Enter untuk melanjutkan...");
@@ -19,10 +26,12 @@ void printMainMenuHeader() {
 }
 
 void printInfoUser() {
-  if (currentUser == NULL) return;
+  if (currentUser == NULL)
+    return;
 
   if (currentUser->isAdmin) {
-    printf("│              👤 Admin: %-30s │\n", currentUser->username);
+    printf("│              👑 Admin: %-30s │\n", currentUser->username);
+    printf("│              🚫 Tanpa Folder Pribadi                   │\n");
   } else {
     printf("│              👤 Pengguna: %-27s │\n", currentUser->username);
   }
@@ -30,10 +39,17 @@ void printInfoUser() {
 
 void printFiturMenu() {
   printf("├─────────────────────────────────────────────────────────┤\n");
-  printf("│  1. 📊 Kelola Laporan Bulanan                           │\n");
-  printf("│  2. 📈 Lihat Ringkasan Keuangan                         │\n");
-  printf("│  3. ⚙️  Pengaturan Budget                                │\n");
-  printf("│  4. 🔧 Pengaturan Sistem                                │\n");
+  if (currentUser != NULL && currentUser->isAdmin) {
+    printf("│  1. 🚫 Kelola Laporan Bulanan (Admin tidak memiliki)    │\n");
+    printf("│  2. 🚫 Lihat Ringkasan Keuangan (Admin tidak memiliki)  │\n");
+    printf("│  3. 🚫 Pengaturan Budget (Admin tidak memiliki)         │\n");
+    printf("│  4. ⚙️  Pengaturan Sistem                                │\n");
+  } else {
+    printf("│  1. 📊 Kelola Laporan Bulanan                           │\n");
+    printf("│  2. 📈 Lihat Ringkasan Keuangan                         │\n");
+    printf("│  3. ⚙️  Pengaturan Budget                                │\n");
+    printf("│  4. 🔧 Pengaturan Sistem                                │\n");
+  }
 }
 
 void printFiturMenuRole() {
@@ -58,7 +74,7 @@ void showMainMenu() {
   printInfoUser();
   printFiturMenu();
   printFiturMenuRole();
-  printMainMenuFooter();  
+  printMainMenuFooter();
 }
 
 void showSuccessMessage(const char *message) {
@@ -117,7 +133,6 @@ void openSummaryMenu(struct MonthReportList *monthReportList) {
   showAllMonthReportSummary(monthReportList);
 }
 
-
 void printBudgetHeader() {
   clearScreen();
   printf("┌─────────────────────────────────────────────────────────┐\n");
@@ -131,27 +146,26 @@ void printBudgetHeader() {
   printf("\n🎯 Pilihan Anda: ");
 }
 
-int validasiInputBudget() {
-  return getValidatedMenuChoice(1, 4);
-}
+int validasiInputBudget() { return getValidatedMenuChoice(1, 4); }
 
-void handleInputBudget(int choice,struct MonthReportList *monthReportList, bool *shouldExit) {
+void handleInputBudget(int choice, struct MonthReportList *monthReportList,
+                       bool *shouldExit) {
   switch (choice) {
-    case 1:
-      openSetCategoryBudgetMenu(monthReportList);
-      break;
-    case 2:
-      openViewBudgetMenu(monthReportList);
-      break;
-    case 3:
-      openResetBudgetMenu(monthReportList);
-      break;
-    case 4:
-      *shouldExit = true;
-      break;
-    default:
-      showErrorMessage("Pilihan tidak valid.");
-      break;
+  case 1:
+    openSetCategoryBudgetMenu(monthReportList);
+    break;
+  case 2:
+    openViewBudgetMenu(monthReportList);
+    break;
+  case 3:
+    openResetBudgetMenu(monthReportList);
+    break;
+  case 4:
+    *shouldExit = true;
+    break;
+  default:
+    showErrorMessage("Pilihan tidak valid.");
+    break;
   }
 }
 
@@ -511,14 +525,29 @@ void openMainMenu(struct MonthReportList *monthReportList) {
 
     switch (choice) {
     case 1:
-      showLoadingMessage("Membuka menu bulanan");
-      openMonthlyMenu(monthReportList);
+      if (currentUser && currentUser->isAdmin) {
+        showErrorMessage("Admin tidak memiliki laporan pribadi! Gunakan Admin "
+                         "Panel untuk melihat laporan semua pengguna.");
+      } else {
+        showLoadingMessage("Membuka menu bulanan");
+        openMonthlyMenu(monthReportList);
+      }
       break;
     case 2:
-      openSummaryMenu(monthReportList);
+      if (currentUser && currentUser->isAdmin) {
+        showErrorMessage("Admin tidak memiliki ringkasan pribadi! Gunakan "
+                         "Admin Panel untuk statistik sistem.");
+      } else {
+        openSummaryMenu(monthReportList);
+      }
       break;
     case 3:
-      openBudgetSettingsMenu(monthReportList);
+      if (currentUser && currentUser->isAdmin) {
+        showErrorMessage("Admin tidak memiliki budget pribadi! Gunakan Admin "
+                         "Panel untuk mengelola pengguna.");
+      } else {
+        openBudgetSettingsMenu(monthReportList);
+      }
       break;
     case 4:
       openConfigurationMenu(monthReportList);

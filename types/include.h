@@ -5,4 +5,5 @@
 #include "./transaction_status.h"
 #include "./transaction_group.h"
 #include "./month_report.h"
+#include "./user.h"
 #include "./month_report_list.h"

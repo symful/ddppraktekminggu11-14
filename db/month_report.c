@@ -360,8 +360,9 @@ void removeMonthReportTransaction(struct MonthReport *monthReport,
 }
 
 char *generateReportFilename(time_t date) {
-  char *filename = (char *)malloc(50);
+  char *filename = (char *)malloc(512);
   struct tm *timeinfo = localtime(&date);
+
   snprintf(filename, 50, "./reports/report_%04d_%02d.txt",
            timeinfo->tm_year + 1900, timeinfo->tm_mon + 1);
   return filename;

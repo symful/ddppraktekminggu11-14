@@ -10,29 +10,11 @@
 #include <time.h>
 #include "../types/include.h"
 
-#define MAX_USERNAME_LENGTH 50
-#define MAX_PASSWORD_LENGTH 100
-#define HASH_LENGTH 65 // SHA-256 produces 64 character hex string + null terminator
 #define USERS_DIR "./users"
 #define HASH_FILENAME "password.hash"
 
-// User structure
-struct User {
-    char username[MAX_USERNAME_LENGTH];
-    char userDir[256];
-    char hashFile[256];
-    int isAdmin;
-};
-
 // Global current user
 extern struct User *currentUser;
-
-// Admin user list structure
-struct AdminUserList {
-    char **usernames;
-    int *isAdminFlags;
-    int count;
-};
 
 // Authentication functions
 int initializeAuthSystem();
@@ -52,12 +34,9 @@ int createUserReportsDirectory(const char *username);
 
 // Admin functions
 int isUserAdmin(const char *username);
-int setUserAdminStatus(const char *username, int isAdmin);
-int saveUserAdminStatus(const char *username, int isAdmin);
-int loadUserAdminStatus(const char *username);
 int createAdminUser(const char *username, const char *password);
-struct AdminUserList *getAllUsersWithAdminStatus();
-void freeAdminUserList(struct AdminUserList *userList);
+struct UserList *getAllUsers();
+void freeUserList(struct UserList *userList);
 int deleteUser(const char *username);
 int changeUserPassword(const char *username, const char *newPassword);
 struct User *createAdminUserSession(const char *username);

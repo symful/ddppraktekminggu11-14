@@ -27,4 +27,4 @@ void printFiturMenuRole();
 void printMainMenuFooter();
 void printBudgetHeader();
 int validasiInputBudget();
-void handleInputBudget(int choice,struct MonthReportList *monthReportList, bool *shouldExit);
+void handleInputBudget(int choice, struct MonthReportList *monthReportList, bool *shouldExit);
