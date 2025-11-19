@@ -120,7 +120,7 @@ int validateTransactionForGroup(struct TransactionGroup *group,
   return 1;
 }
 
-long long getGroupBudgetUsagePercentage(struct TransactionGroup *group) {
+long long getGroupBudgetUsagePercentage(const struct TransactionGroup *group) {
   if (group == NULL || group->maximumCost == 0) {
     return 0;
   }
@@ -128,7 +128,7 @@ long long getGroupBudgetUsagePercentage(struct TransactionGroup *group) {
   return (group->totalRealCost * 100) / group->maximumCost;
 }
 
-const char *getGroupBudgetStatus(struct TransactionGroup *group) {
+const char *getGroupBudgetStatus(const struct TransactionGroup *group) {
   if (group == NULL) {
     return "Unknown";
   }

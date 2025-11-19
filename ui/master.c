@@ -243,7 +243,7 @@ void showSetBudgetSuccessMessage(enum TransactionCategory category, long long bu
   showSuccessMessage(successMsg);
 }
 
-bool hasMonthReports(struct MonthReportList *monthReportList) {
+bool ensureHasMonthReports(struct MonthReportList *monthReportList) {
   if (monthReportList == NULL || monthReportList->amount == 0) {
     showInfoMessage("Tidak ada laporan bulanan. Buat laporan terlebih dahulu.");
     return false;

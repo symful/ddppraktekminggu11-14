@@ -14,7 +14,7 @@ void removeTransactionFromGroup(struct TransactionGroup* group, int index);
 void updateGroupCalculations(struct TransactionGroup* group);
 void freeTransactionGroup(struct TransactionGroup* group);
 int validateTransactionForGroup(struct TransactionGroup* group, struct Transaction* transaction);
-long long getGroupBudgetUsagePercentage(struct TransactionGroup* group);
-const char* getGroupBudgetStatus(struct TransactionGroup* group);
+long long getGroupBudgetUsagePercentage(const struct TransactionGroup *group);
+const char *getGroupBudgetStatus(const struct TransactionGroup *group);
 
 #endif

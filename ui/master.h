@@ -43,3 +43,4 @@ void printBudgetTableRow(const struct TransactionGroup *group);
 void printBudgetTableFooter();
 void printBudgetReport(const struct MonthReport *report);
 void openViewBudgetMenu(struct MonthReportList *monthReportList);
+bool ensureHasMonthReports(struct MonthReportList *monthReportList);
