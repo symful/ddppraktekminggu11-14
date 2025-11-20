@@ -464,9 +464,6 @@ void logoutUser() {
   }
 }
 
-// Clear authentication screen
-void clearAuthScreen() { system("clear || cls"); }
-
 // Show authentication menu
 void showAuthMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
@@ -529,7 +526,7 @@ int handleLogin() {
   char username[MAX_USERNAME_LENGTH];
   char password[MAX_PASSWORD_LENGTH];
 
-  clearAuthScreen();
+  clearScreen();
   showLoginMenu();
 
   if (!readSecureUsername("Username: ", username, sizeof(username))) {
@@ -556,7 +553,7 @@ int handleRegister() {
   char username[MAX_USERNAME_LENGTH];
   char password[MAX_PASSWORD_LENGTH];
 
-  clearAuthScreen();
+  clearScreen();
   showRegisterMenu();
 
   if (!readSecureUsername("Pilih username: ", username, sizeof(username))) {
@@ -590,7 +587,7 @@ int handleAdminLogin() {
   char username[MAX_USERNAME_LENGTH];
   char password[MAX_PASSWORD_LENGTH];
 
-  clearAuthScreen();
+  clearScreen();
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                    👑 MASUK ADMIN                       ║\n");
   printf("╚══════════════════════════════════════════════════════════╝\n");
@@ -628,7 +625,7 @@ int handleAdminLogin() {
 // Handle admin user management
 int handleAdminUserManagement() {
   while (1) {
-    clearAuthScreen();
+    clearScreen();
     showUserManagementMenu();
 
     int choice;

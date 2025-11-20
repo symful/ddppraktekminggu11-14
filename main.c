@@ -10,7 +10,7 @@ int main() {
   }
 
   while (currentUser == NULL) {
-    clearAuthScreen();
+    clearScreen();
     showAuthMenu();
 
     int authResult = handleAuthMenuChoice();

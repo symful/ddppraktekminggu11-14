@@ -77,6 +77,6 @@ int handleAdminUserManagement();
 int handleUserDeletion();
 int handlePasswordReset();
 int handleAdminUserCreation();
-void clearAuthScreen();
+void clearScreen();
 
 #endif // AUTH_H

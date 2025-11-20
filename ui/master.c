@@ -1,30 +1,53 @@
-#include "../auth/auth.h"
+#include "../auth/auth.h" // Menggunakan header Dari File ../auth/auth.h
 #include "../types/include.c"
-#include "../utils/validation.c"
-#include "./month_report.c"
+#include "../utils/validation.c" // Menggunakan Modul Dari File ../utils/validation.c Untuk Fungsi Validasi
+#include "./month_report.c" // Menggunakan Modul dari file ./month_report.c
 #include <stdbool.h> // Untuk Menggunakan Tipe Data Boolean
-#include <stdio.h>
+#include <stdio.h> // Untuk Menggunakan Modul scanf() dan printf()
 #include <stdlib.h> // Untuk Menggunakan system("cls") dan system("clear")
 
-// Clear screen function
+/* =======================================================
+	MODUL : tampilkanMenu()
+	DESKRIPSI : Membersihkan Layar
+	INITIAL STATE : Terdapat teks pada layar
+	FINAL STATE : Layar dibersihkan menjadi kosong
+   =======================================================*/
 void clearScreen() {
-#ifdef _WIN32
-  system("cls");
+#ifdef _WIN32 //Jika Sistemnya Windows
+  system("cls"); // Mengosongkan Layar
 #else
-  system("clear");
+  system("clear"); // Mengosongkan Layar
 #endif
 }
 
+/* =======================================================
+	MODUL : waitForEnter()
+	DESKRIPSI : Meminta User Untuk Menekan Enter Untuk Lanjut
+	INITIAL STATE : 
+	FINAL STATE : 
+   =======================================================*/
 void waitForEnter() {
   printf("\n📱 Tekan Enter untuk melanjutkan...");
   clearInputBuffer();
 }
 
+/* =======================================================
+	MODUL : printMainMenuHeader()
+	DESKRIPSI : Mencetak Header Menu Utama
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Header Menu Utama Ditampilkan Ke Layar
+   =======================================================*/
 void printMainMenuHeader() {
   printf("┌─────────────────────────────────────────────────────────┐\n");
   printf("│                    🏠 MENU UTAMA                        │\n");
 }
 
+/* =======================================================
+	MODUL : printInfoUser()
+	DESKRIPSI : Mencetak Informasi User (Username dan Hak Akses)
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Informasi User Ditampilkan Ke Layar
+   =======================================================*/
 void printInfoUser() {
   if (currentUser == NULL)
     return;

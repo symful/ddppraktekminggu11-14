@@ -166,7 +166,7 @@ void showEnhancedAdminMenu() {
 // Handle enhanced admin menu choice
 int handleEnhancedAdminMenu() {
   while (1) {
-    clearAuthScreen();
+    clearScreen();
     showEnhancedAdminMenu();
 
     int choice;
