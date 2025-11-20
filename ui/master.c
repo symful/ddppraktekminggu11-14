@@ -2,9 +2,9 @@
 #include "../types/include.c"
 #include "../utils/validation.c"
 #include "./month_report.c"
-#include <stdbool.h>
+#include <stdbool.h> // Untuk Menggunakan Tipe Data Boolean
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> // Untuk Menggunakan system("cls") dan system("clear")
 
 // Clear screen function
 void clearScreen() {
