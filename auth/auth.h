@@ -13,10 +13,10 @@
 #define USERS_DIR "./users"
 #define HASH_FILENAME "password.hash"
 
-// Global current user
+
 extern struct User *currentUser;
 
-// Authentication functions
+
 int initializeAuthSystem();
 int registerUser(const char *username, const char *password);
 int loginUser(const char *username, const char *password);
@@ -32,7 +32,7 @@ void destroyUserSession();
 char *getUserReportsPath(const char *username);
 int createUserReportsDirectory(const char *username);
 
-// Admin functions
+
 int isUserAdmin(const char *username);
 int createAdminUser(const char *username, const char *password);
 struct UserList *getAllUsers();
@@ -41,7 +41,7 @@ int deleteUser(const char *username);
 int changeUserPassword(const char *username, const char *newPassword);
 struct User *createAdminUserSession(const char *username);
 
-// User-aware report functions (declared here, implemented in user_reports.c)
+
 void saveUserMonthReportToFile(struct MonthReport *report);
 void deleteUserMonthReportFile(struct MonthReport *report);
 struct MonthReport *loadUserMonthReport(time_t date);
@@ -52,18 +52,18 @@ void createDefaultUserConfig();
 int initializeUserWorkspace(const char *username);
 void cleanupUserSession();
 
-// User-aware wrapper functions
+
 void setUserCategoryBudget(struct MonthReport *report, enum TransactionCategory category, long long budget);
 void addUserMonthReportTransaction(struct MonthReport *monthReport, struct Transaction *transaction);
 void removeUserMonthReportTransaction(struct MonthReport *monthReport, int groupIndex, int transactionIndex);
 void updateUserReportDate(struct MonthReport *report, time_t newDate);
 void resetUserBudgets(struct MonthReportList *monthReportList);
 
-// Admin report viewing functions
+
 void viewAllUserReports();
 void showSystemStatistics();
 
-// Utility functions
+
 void showAuthMenu();
 void showLoginMenu();
 void showRegisterMenu();
@@ -79,4 +79,4 @@ int handlePasswordReset();
 int handleAdminUserCreation();
 void clearAuthScreen();
 
-#endif // AUTH_H
+#endif

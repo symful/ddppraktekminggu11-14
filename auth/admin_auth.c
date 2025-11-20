@@ -6,10 +6,8 @@
 #ifndef ADMIN_AUTH_C
 #define ADMIN_AUTH_C
 
-// Initialize admin system
 int initializeAdminAuth() { return loadEnvFile(); }
 
-// Validate admin credentials
 int validateAdminCredentials(const char *username, const char *password) {
   if (!username || !password) {
     return 0;
@@ -22,7 +20,6 @@ int validateAdminCredentials(const char *username, const char *password) {
           strcmp(password, validPassword) == 0);
 }
 
-// Show admin login form
 int showAdminLoginForm() {
   char username[100];
   char password[100];
@@ -51,12 +48,10 @@ int showAdminLoginForm() {
     result = 0;
   }
 
-  // Clear password from memory after use
   clearPassword(password, sizeof(password));
   return result;
 }
 
-// Show admin menu
 void showAdminMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                     👑 PANEL ADMIN                      ║\n");

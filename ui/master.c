@@ -2,11 +2,10 @@
 #include "../types/include.c"
 #include "../utils/validation.c"
 #include "./month_report.c"
-#include <stdbool.h> // Untuk Menggunakan Tipe Data Boolean
+#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h> // Untuk Menggunakan system("cls") dan system("clear")
+#include <stdlib.h>
 
-// Clear screen function
 void clearScreen() {
 #ifdef _WIN32
   system("cls");
@@ -146,9 +145,7 @@ void printBudgetHeader() {
   printf("\n🎯 Pilihan Anda: ");
 }
 
-int validasiInputBudget() { 
-  return getValidatedMenuChoice(1, 4); 
-}
+int validasiInputBudget() { return getValidatedMenuChoice(1, 4); }
 
 void handleInputBudget(int choice, struct MonthReportList *monthReportList,
                        bool *shouldExit) {
@@ -201,7 +198,8 @@ struct MonthReport *selectMonthReport(struct MonthReportList *monthReportList) {
   showMonthlyList(monthReportList);
 
   int reportChoice;
-  if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1, monthReportList->amount, &reportChoice)) {
+  if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1,
+                              monthReportList->amount, &reportChoice)) {
     showErrorMessage("Input tidak valid.");
     return NULL;
   }
@@ -213,11 +211,13 @@ bool selectCategory(enum TransactionCategory *outCategory) {
   printf("\n📂 Pilih Kategori untuk Mengatur Budget:\n");
   printf("─────────────────────────────────────────\n");
   for (int i = 0; i <= TC_OTHER; i++) {
-    printf("  %d. %s\n", i + 1, transactionCategoryToString((enum TransactionCategory)i));
+    printf("  %d. %s\n", i + 1,
+           transactionCategoryToString((enum TransactionCategory)i));
   }
 
   int categoryChoice;
-  if (!readAndValidateInteger("\n🎯 Pilihan kategori: ", 1, TC_OTHER + 1, &categoryChoice)) {
+  if (!readAndValidateInteger("\n🎯 Pilihan kategori: ", 1, TC_OTHER + 1,
+                              &categoryChoice)) {
     showErrorMessage("Input tidak valid.");
     return false;
   }
@@ -237,9 +237,12 @@ bool inputNewBudget(long long *outBudget) {
   return true;
 }
 
-void showSetBudgetSuccessMessage(enum TransactionCategory category, long long budget) {
+void showSetBudgetSuccessMessage(enum TransactionCategory category,
+                                 long long budget) {
   char successMsg[200];
-  snprintf(successMsg, sizeof(successMsg), "Budget untuk kategori '%s' berhasil diatur menjadi Rp %lld", transactionCategoryToString(category), budget);
+  snprintf(successMsg, sizeof(successMsg),
+           "Budget untuk kategori '%s' berhasil diatur menjadi Rp %lld",
+           transactionCategoryToString(category), budget);
   showSuccessMessage(successMsg);
 }
 
@@ -294,11 +297,13 @@ void printCurrentBudgetHeader() {
   printf("└─────────────────────────────────────────────────────────┘\n");
 }
 
-struct MonthReport *selectReportForBudgetView(struct MonthReportList *monthReportList) {
+struct MonthReport *
+selectReportForBudgetView(struct MonthReportList *monthReportList) {
   showMonthlyList(monthReportList);
 
   int reportChoice;
-  if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1, monthReportList->amount, &reportChoice)) {
+  if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1,
+                              monthReportList->amount, &reportChoice)) {
     showErrorMessage("Input tidak valid.");
     return NULL;
   }
@@ -313,14 +318,17 @@ void printBudgetPerCategoryHeader() {
          "               ║\n");
   printf("╠════════════════════════════════════════════════════════════════════"
          "══════════════╣\n");
-  printf("║ %-20s │ %-15s │ %-15s │ %-15s │ %-10s ║\n",
-         "KATEGORI", "BUDGET (Rp)", "TERPAKAI (Rp)", "SISA (Rp)", "STATUS");
+  printf("║ %-20s │ %-15s │ %-15s │ %-15s │ %-10s ║\n", "KATEGORI",
+         "BUDGET (Rp)", "TERPAKAI (Rp)", "SISA (Rp)", "STATUS");
   printf("╠════════════════════════════════════════════════════════════════════"
          "══════════════╣\n");
 }
 
 void printBudgetTableRow(const struct TransactionGroup *group) {
-  printf("║ %-20s │ %-15lld │ %-15lld │ %-15lld │ %-10s ║\n", transactionCategoryToString(group->category), group->maximumCost, group->totalRealCost, group->remainingCost, getGroupBudgetStatus(group));
+  printf("║ %-20s │ %-15lld │ %-15lld │ %-15lld │ %-10s ║\n",
+         transactionCategoryToString(group->category), group->maximumCost,
+         group->totalRealCost, group->remainingCost,
+         getGroupBudgetStatus(group));
 }
 
 void printBudgetTableFooter() {
@@ -355,7 +363,6 @@ void openViewBudgetMenu(struct MonthReportList *monthReportList) {
 
   waitForEnter();
 }
-
 
 void openResetBudgetMenu(struct MonthReportList *monthReportList) {
   clearScreen();
@@ -623,7 +630,7 @@ void openMainMenu(struct MonthReportList *monthReportList) {
       break;
     case 5:
       if (currentUser && currentUser->isAdmin) {
-        // Admin Panel
+
         clearScreen();
         showAdminMenu();
 
@@ -644,10 +651,10 @@ void openMainMenu(struct MonthReportList *monthReportList) {
             showSystemStatistics();
             break;
           case 4:
-            // Continue as regular user - do nothing, just continue
+
             break;
           case 5:
-            // Logout from admin panel
+
             clearScreen();
             printf("╔══════════════════════════════════════════════════════════"
                    "╗\n");
@@ -668,7 +675,7 @@ void openMainMenu(struct MonthReportList *monthReportList) {
           }
         }
       } else {
-        // Regular user logout
+
         clearScreen();
         printf(
             "╔══════════════════════════════════════════════════════════╗\n");
@@ -683,12 +690,12 @@ void openMainMenu(struct MonthReportList *monthReportList) {
         printf(
             "╚══════════════════════════════════════════════════════════╝\n");
         printf("\n");
-        return; // Return to main() which will handle re-authentication
+        return;
       }
       break;
     case 6:
       if (currentUser && currentUser->isAdmin) {
-        // Admin logout
+
         clearScreen();
         printf(
             "╔══════════════════════════════════════════════════════════╗\n");
@@ -705,7 +712,7 @@ void openMainMenu(struct MonthReportList *monthReportList) {
         printf("\n");
         return;
       } else {
-        // Regular user exit
+
         clearScreen();
         printf(
             "╔══════════════════════════════════════════════════════════╗\n");
@@ -724,7 +731,7 @@ void openMainMenu(struct MonthReportList *monthReportList) {
       break;
     case 7:
       if (currentUser && currentUser->isAdmin) {
-        // Admin exit
+
         clearScreen();
         printf(
             "╔══════════════════════════════════════════════════════════╗\n");

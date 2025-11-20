@@ -10,7 +10,6 @@
 #ifndef USER_MANAGER_C
 #define USER_MANAGER_C
 
-// Create users directory if it doesn't exist
 int createUsersDirectory() {
   struct stat st = {0};
   if (stat(USERS_DIR, &st) == -1) {
@@ -22,10 +21,6 @@ int createUsersDirectory() {
   return 1;
 }
 
-// Check if user exists
-// userExists function is in auth.c
-
-// Create user directory
 int createUserDirectory(const char *username) {
   if (!username)
     return 0;
@@ -40,7 +35,6 @@ int createUserDirectory(const char *username) {
   return 1;
 }
 
-// Create user reports directory
 int createUserReportsDirectory(const char *username) {
   if (!username)
     return 0;
@@ -56,7 +50,6 @@ int createUserReportsDirectory(const char *username) {
   return 1;
 }
 
-// Validate username
 int isValidUsername(const char *username) {
   if (!username || strlen(username) == 0) {
     printf("Username tidak boleh kosong.\n");
@@ -69,7 +62,6 @@ int isValidUsername(const char *username) {
     return 0;
   }
 
-  // Check for invalid characters
   for (int i = 0; username[i]; i++) {
     if (!isalnum(username[i]) && username[i] != '_' && username[i] != '-') {
       printf("Username hanya boleh mengandung huruf, angka, underscore, dan "
@@ -81,7 +73,6 @@ int isValidUsername(const char *username) {
   return 1;
 }
 
-// Validate password
 int isValidPassword(const char *password) {
   if (!password || strlen(password) == 0) {
     printf("Password tidak boleh kosong.\n");
@@ -102,7 +93,6 @@ int isValidPassword(const char *password) {
   return 1;
 }
 
-// Save password to file (plain text for simplicity)
 int saveUserPassword(const char *username, const char *password) {
   if (!username || !password)
     return 0;
@@ -122,7 +112,6 @@ int saveUserPassword(const char *username, const char *password) {
   return 1;
 }
 
-// Load password from file
 int loadUserPassword(const char *username, char *password, size_t maxLen) {
   if (!username || !password)
     return 0;
@@ -141,7 +130,6 @@ int loadUserPassword(const char *username, char *password, size_t maxLen) {
     return 0;
   }
 
-  // Remove newline if present
   size_t len = strlen(password);
   if (len > 0 && password[len - 1] == '\n') {
     password[len - 1] = '\0';
@@ -151,11 +139,6 @@ int loadUserPassword(const char *username, char *password, size_t maxLen) {
   return 1;
 }
 
-// Create new user and authenticate functions removed - use auth.c instead
-
-// User list functions are in auth.c
-
-// Get user's reports directory path
 char *getUserReportsPath(const char *username) {
   if (!username)
     return NULL;
@@ -166,7 +149,6 @@ char *getUserReportsPath(const char *username) {
   return reportsPath;
 }
 
-// Show user management menu
 void showUserManagementMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                  👥 KELOLA PENGGUNA                     ║\n");

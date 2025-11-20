@@ -10,10 +10,9 @@
 #ifndef USER_REPORTS_C
 #define USER_REPORTS_C
 
-// Generate user-specific report filename
 char *generateUserReportFilename(time_t date) {
   if (currentUser == NULL || currentUser->isAdmin) {
-    return NULL; // Admin users don't have personal reports
+    return NULL;
   }
 
   char *filename = (char *)malloc(512);
@@ -28,10 +27,9 @@ char *generateUserReportFilename(time_t date) {
   return filename;
 }
 
-// Save month report to user-specific file
 void saveUserMonthReportToFile(struct MonthReport *report) {
   if (report == NULL || currentUser == NULL || currentUser->isAdmin) {
-    return; // Admin users don't save personal reports
+    return;
   }
 
   char *filename = generateUserReportFilename(report->date);
@@ -41,10 +39,9 @@ void saveUserMonthReportToFile(struct MonthReport *report) {
   }
 }
 
-// Delete user-specific month report file
 void deleteUserMonthReportFile(struct MonthReport *report) {
   if (report == NULL || currentUser == NULL || currentUser->isAdmin) {
-    return; // Admin users don't have personal reports to delete
+    return;
   }
 
   char *filename = generateUserReportFilename(report->date);
@@ -54,10 +51,9 @@ void deleteUserMonthReportFile(struct MonthReport *report) {
   }
 }
 
-// Load user-specific month report
 struct MonthReport *loadUserMonthReport(time_t date) {
   if (currentUser == NULL || currentUser->isAdmin) {
-    return NULL; // Admin users don't have personal reports
+    return NULL;
   }
 
   char *filename = generateUserReportFilename(date);
@@ -70,10 +66,9 @@ struct MonthReport *loadUserMonthReport(time_t date) {
   return report;
 }
 
-// Check if user report exists for a specific date
 int userReportExists(time_t date) {
   if (currentUser == NULL || currentUser->isAdmin) {
-    return 0; // Admin users don't have personal reports
+    return 0;
   }
 
   char *filename = generateUserReportFilename(date);
@@ -92,10 +87,9 @@ int userReportExists(time_t date) {
   return 0;
 }
 
-// Get user's reports directory path
 char *getUserReportsDirectory() {
   if (currentUser == NULL || currentUser->isAdmin) {
-    return NULL; // Admin users don't have personal report directories
+    return NULL;
   }
 
   static char reportsDir[256];
@@ -104,10 +98,9 @@ char *getUserReportsDirectory() {
   return reportsDir;
 }
 
-// Get user's config file path
 char *getUserConfigPath() {
   if (currentUser == NULL || currentUser->isAdmin) {
-    return NULL; // Admin users use system config, not personal config
+    return NULL;
   }
 
   static char configPath[256];
@@ -116,10 +109,9 @@ char *getUserConfigPath() {
   return configPath;
 }
 
-// Create default config for new user
 void createDefaultUserConfig() {
   if (currentUser == NULL || currentUser->isAdmin) {
-    return; // Admin users don't need personal configs
+    return;
   }
 
   char *configPath = getUserConfigPath();
@@ -127,14 +119,12 @@ void createDefaultUserConfig() {
     return;
   }
 
-  // Check if config already exists
   FILE *file = fopen(configPath, "r");
   if (file != NULL) {
     fclose(file);
-    return; // Config already exists
+    return;
   }
 
-  // Create default config
   file = fopen(configPath, "w");
   if (file != NULL) {
     fprintf(file, "# User Configuration File\n");
@@ -147,19 +137,16 @@ void createDefaultUserConfig() {
   }
 }
 
-// Initialize user workspace (create directories and default files)
 int initializeUserWorkspace(const char *username) {
-  // Create user directory
+
   if (!createUserDirectory(username)) {
     return 0;
   }
 
-  // Create reports directory
   if (!createUserReportsDirectory(username)) {
     return 0;
   }
 
-  // Set current user temporarily to create config
   struct User *tempUser = createUserSession(username);
   if (tempUser == NULL) {
     return 0;
@@ -168,20 +155,17 @@ int initializeUserWorkspace(const char *username) {
   struct User *oldUser = currentUser;
   currentUser = tempUser;
 
-  // Create default config
   createDefaultUserConfig();
 
-  // Restore previous user
   currentUser = oldUser;
   free(tempUser);
 
   return 1;
 }
 
-// Clean up user session and save any pending data
 void cleanupUserSession() {
   if (currentUser != NULL) {
-    // Save any pending configuration (only for regular users)
+
     if (!currentUser->isAdmin) {
       char *configPath = getUserConfigPath();
       if (configPath != NULL) {
@@ -189,55 +173,45 @@ void cleanupUserSession() {
       }
     }
 
-    // Destroy session
     destroyUserSession();
   }
 }
 
-// Get list of all users (for admin purposes) - using function from auth.c
-
-// User-aware wrappers for existing report functions
-// These functions override the default behavior to use user-specific paths
-
-// Wrapper for setBudgetForCategory that saves to user directory
 void setUserCategoryBudget(struct MonthReport *report,
                            enum TransactionCategory category,
                            long long budget) {
   if (report == NULL || currentUser == NULL || currentUser->isAdmin) {
-    return; // Admin users can't set personal budgets
+    return;
   }
 
   setBudgetForCategory(report, category, budget);
   saveUserMonthReportToFile(report);
 }
 
-// Wrapper for addMonthReportTransaction that saves to user directory
 void addUserMonthReportTransaction(struct MonthReport *monthReport,
                                    struct Transaction *transaction) {
   if (monthReport == NULL || transaction == NULL || currentUser == NULL ||
       currentUser->isAdmin) {
-    return; // Admin users can't add personal transactions
+    return;
   }
 
   addMonthReportTransaction(monthReport, transaction);
   saveUserMonthReportToFile(monthReport);
 }
 
-// Wrapper for removeMonthReportTransaction that saves to user directory
 void removeUserMonthReportTransaction(struct MonthReport *monthReport,
                                       int groupIndex, int transactionIndex) {
   if (monthReport == NULL || currentUser == NULL || currentUser->isAdmin) {
-    return; // Admin users can't remove personal transactions
+    return;
   }
 
   removeMonthReportTransaction(monthReport, groupIndex, transactionIndex);
   saveUserMonthReportToFile(monthReport);
 }
 
-// Wrapper for updating report date that saves to user directory
 void updateUserReportDate(struct MonthReport *report, time_t newDate) {
   if (report == NULL || currentUser == NULL || currentUser->isAdmin) {
-    return; // Admin users can't update personal reports
+    return;
   }
 
   deleteUserMonthReportFile(report);
@@ -245,10 +219,9 @@ void updateUserReportDate(struct MonthReport *report, time_t newDate) {
   saveUserMonthReportToFile(report);
 }
 
-// Reset all budgets for user
 void resetUserBudgets(struct MonthReportList *monthReportList) {
   if (monthReportList == NULL || currentUser == NULL || currentUser->isAdmin) {
-    return; // Admin users can't reset personal budgets
+    return;
   }
 
   for (int i = 0; i < monthReportList->amount; i++) {
@@ -262,7 +235,6 @@ void resetUserBudgets(struct MonthReportList *monthReportList) {
   }
 }
 
-// Admin function to view all user reports
 void viewAllUserReports() {
   if (currentUser == NULL || !currentUser->isAdmin) {
     printf("Akses ditolak: Diperlukan hak istimewa admin.\n");
@@ -325,7 +297,6 @@ void viewAllUserReports() {
            "Bersih: %lld\n\n",
            totalIncome, totalExpense, totalIncome - totalExpense);
 
-    // Free the report list
     if (reportList->reports) {
       for (int j = 0; j < reportList->amount; j++) {
         freeMonthReport(reportList->reports[j]);
@@ -340,7 +311,6 @@ void viewAllUserReports() {
   getchar();
 }
 
-// Admin function to get system statistics
 void showSystemStatistics() {
   if (currentUser == NULL || !currentUser->isAdmin) {
     printf("Akses ditolak: Diperlukan hak istimewa admin.\n");
@@ -387,7 +357,6 @@ void showSystemStatistics() {
           systemTotalExpense += report->totalExpense;
         }
 
-        // Free the report list
         if (reportList->reports) {
           for (int j = 0; j < reportList->amount; j++) {
             freeMonthReport(reportList->reports[j]);
@@ -413,17 +382,14 @@ void showSystemStatistics() {
   getchar();
 }
 
-// Override existing functions to use user-specific paths when user is logged in
 #ifdef USER_AWARE_REPORTS
 
-// User-aware wrapper for saveMonthReportToFile
 void saveUserAwareMonthReportToFile(struct MonthReport *report) {
   char *filename = generateUserReportFilename(report->date);
   saveMonthReport(report, filename);
   free(filename);
 }
 
-// User-aware wrapper for deleteMonthReportFile
 void deleteUserAwareMonthReportFile(struct MonthReport *report) {
   char *filename = generateUserReportFilename(report->date);
   remove(filename);

@@ -6,7 +6,7 @@
 #define HASH_LENGTH 65
 #define USERS_DIR "./users"
 
-// User structure
+
 struct User {
     char username[MAX_USERNAME_LENGTH];
     char userDir[256];
@@ -14,13 +14,13 @@ struct User {
     int isAdmin;
 };
 
-// User list structure
+
 struct UserList {
     char **usernames;
     int count;
 };
 
-// User session structure
+
 struct UserSession {
     int isLoggedIn;
     char username[MAX_USERNAME_LENGTH];
@@ -28,4 +28,4 @@ struct UserSession {
     char reportsDir[256];
 };
 
-#endif // USER_H
+#endif
