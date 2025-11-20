@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include "../types/include.h"
 void showMainMenu();
 void clearScreen();
 void waitForEnter();
