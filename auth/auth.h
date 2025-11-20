@@ -41,27 +41,13 @@ int deleteUser(const char *username);
 int changeUserPassword(const char *username, const char *newPassword);
 struct User *createAdminUserSession(const char *username);
 
-
+// User report management functions
 void saveUserMonthReportToFile(struct MonthReport *report);
 void deleteUserMonthReportFile(struct MonthReport *report);
 struct MonthReport *loadUserMonthReport(time_t date);
 int userReportExists(time_t date);
 char *getUserReportsDirectory();
-char *getUserConfigPath();
-void createDefaultUserConfig();
-int initializeUserWorkspace(const char *username);
-void cleanupUserSession();
-
-
-void setUserCategoryBudget(struct MonthReport *report, enum TransactionCategory category, long long budget);
-void addUserMonthReportTransaction(struct MonthReport *monthReport, struct Transaction *transaction);
-void removeUserMonthReportTransaction(struct MonthReport *monthReport, int groupIndex, int transactionIndex);
-void updateUserReportDate(struct MonthReport *report, time_t newDate);
-void resetUserBudgets(struct MonthReportList *monthReportList);
-
-
-void viewAllUserReports();
-void showSystemStatistics();
+char *getUserReportsPath(const char *username);
 
 
 void showAuthMenu();

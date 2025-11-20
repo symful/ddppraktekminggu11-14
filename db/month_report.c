@@ -1,3 +1,4 @@
+#include "../auth/auth.h"
 #include "../types/include.h"
 #include "./transaction_group.c"
 #include <dirent.h>
@@ -61,15 +62,15 @@ void removeTransactionGroupFromReport(struct MonthReport *report, int index) {
 
   report->groupsAmount--;
 
-  if (report->groupsAmount > 0) {
+  if (report->groupsAmount == 0) {
+    free(report->groups);
+    report->groups = NULL;
+  } else {
     struct TransactionGroup *temp = (struct TransactionGroup *)realloc(
         report->groups, report->groupsAmount * sizeof(struct TransactionGroup));
     if (temp != NULL) {
       report->groups = temp;
     }
-  } else {
-    free(report->groups);
-    report->groups = NULL;
   }
 
   updateReportCalculations(report);
@@ -104,11 +105,10 @@ void updateReportCalculations(struct MonthReport *report) {
     updateGroupCalculations(group);
 
     for (int j = 0; j < group->transactionsAmount; j++) {
-      struct Transaction *transaction = &group->transactions[j];
-      if (transaction->type == TT_INCOME) {
-        report->totalIncome += transaction->realCost;
-      } else if (transaction->type == TT_EXPENSE) {
-        report->totalExpense += transaction->realCost;
+      if (group->transactions[j].type == TT_EXPENSE) {
+        report->totalExpense += group->transactions[j].realCost;
+      } else if (group->transactions[j].type == TT_INCOME) {
+        report->totalIncome += group->transactions[j].realCost;
       }
     }
   }
@@ -128,7 +128,6 @@ void freeMonthReport(struct MonthReport *report) {
       }
     }
     free(report->groups);
-    report->groups = NULL;
   }
 
   free(report);
@@ -145,15 +144,18 @@ void saveMonthReport(struct MonthReport *report, const char *filename) {
   if (last_slash != NULL) {
     *last_slash = '\0';
 
-    DIR *dir = opendir(dir_path);
-    if (dir == NULL) {
-      if (mkdir(dir_path, 0755) != 0) {
-        perror("Error creating directory");
-        free(dir_path);
-        return;
+    struct stat st = {0};
+    if (stat(dir_path, &st) == -1) {
+      char *current = dir_path;
+      char *slash = strchr(current + 1, '/');
+
+      while (slash != NULL) {
+        *slash = '\0';
+        mkdir(current, 0700);
+        *slash = '/';
+        slash = strchr(slash + 1, '/');
       }
-    } else {
-      closedir(dir);
+      mkdir(dir_path, 0700);
     }
   }
   free(dir_path);
@@ -164,38 +166,38 @@ void saveMonthReport(struct MonthReport *report, const char *filename) {
     return;
   }
 
-  fprintf(file, "DATE=%ld\n", report->date);
-  fprintf(file, "GROUPS_COUNT=%d\n", report->groupsAmount);
-  fprintf(file, "TOTAL_INCOME=%lld\n", report->totalIncome);
-  fprintf(file, "TOTAL_EXPENSE=%lld\n", report->totalExpense);
-  fprintf(file, "BALANCE=%lld\n", report->balance);
+  fprintf(file, "DATE:%ld\n", report->date);
+  fprintf(file, "TOTAL_INCOME:%lld\n", report->totalIncome);
+  fprintf(file, "TOTAL_EXPENSE:%lld\n", report->totalExpense);
+  fprintf(file, "BALANCE:%lld\n", report->balance);
+  fprintf(file, "GROUPS:%d\n", report->groupsAmount);
 
   for (int i = 0; i < report->groupsAmount; i++) {
     struct TransactionGroup *group = &report->groups[i];
-    fprintf(file, "GROUP_%d_CATEGORY=%d\n", i, (int)group->category);
-    fprintf(file, "GROUP_%d_MAX_COST=%lld\n", i, group->maximumCost);
-    fprintf(file, "GROUP_%d_TOTAL_REAL_COST=%lld\n", i, group->totalRealCost);
-    fprintf(file, "GROUP_%d_REMAINING_COST=%lld\n", i, group->remainingCost);
-    fprintf(file, "GROUP_%d_TRANSACTIONS_COUNT=%d\n", i,
-            group->transactionsAmount);
+    fprintf(file, "GROUP_START\n");
+    fprintf(file, "CATEGORY:%d\n", group->category);
+    fprintf(file, "MAX_COST:%lld\n", group->maximumCost);
+    fprintf(file, "REAL_COST:%lld\n", group->totalRealCost);
+    fprintf(file, "TRANSACTIONS:%d\n", group->transactionsAmount);
 
     for (int j = 0; j < group->transactionsAmount; j++) {
-      struct Transaction *t = &group->transactions[j];
-      fprintf(file, "GROUP_%d_TRANS_%d_ID=%d\n", i, j, t->id);
-      fprintf(file, "GROUP_%d_TRANS_%d_DESC=%s\n", i, j, t->description);
-      fprintf(file, "GROUP_%d_TRANS_%d_NAME=%s\n", i, j, t->name);
-      fprintf(file, "GROUP_%d_TRANS_%d_DATE=%ld\n", i, j, t->date);
-      fprintf(file, "GROUP_%d_TRANS_%d_TYPE=%d\n", i, j, (int)t->type);
-      fprintf(file, "GROUP_%d_TRANS_%d_CATEGORY=%d\n", i, j, (int)t->category);
-      fprintf(file, "GROUP_%d_TRANS_%d_REAL_COST=%lld\n", i, j, t->realCost);
-      fprintf(file, "GROUP_%d_TRANS_%d_MAX_COST=%lld\n", i, j, t->maximumCost);
-      fprintf(file, "GROUP_%d_TRANS_%d_REST_COST=%lld\n", i, j, t->restCost);
-      fprintf(file, "GROUP_%d_TRANS_%d_AMOUNT=%lld\n", i, j, t->amount);
+      struct Transaction *trans = &group->transactions[j];
+      fprintf(file, "TRANS_START\n");
+      fprintf(file, "TYPE:%d\n", trans->type);
+      fprintf(file, "CATEGORY:%d\n", trans->category);
+      fprintf(file, "REAL_COST:%lld\n", trans->realCost);
+      fprintf(file, "DATE:%ld\n", trans->date);
+      fprintf(file, "NAME:%s\n", trans->name);
+      fprintf(file, "DESCRIPTION:%s\n", trans->description);
+      fprintf(file, "TRANS_END\n");
     }
+
+    fprintf(file, "GROUP_END\n");
   }
 
   fclose(file);
 }
+
 struct MonthReport *loadMonthReport(const char *filename) {
   FILE *file = fopen(filename, "r");
   if (file == NULL) {
@@ -208,107 +210,84 @@ struct MonthReport *loadMonthReport(const char *filename) {
     return NULL;
   }
 
-  char line[512];
-  int groupsCount = 0;
+  char line[1024];
 
   while (fgets(line, sizeof(line), file)) {
-    if (sscanf(line, "DATE=%ld", &report->date) == 1)
-      continue;
-    if (sscanf(line, "TOTAL_INCOME=%lld", &report->totalIncome) == 1)
-      continue;
-    if (sscanf(line, "TOTAL_EXPENSE=%lld", &report->totalExpense) == 1)
-      continue;
-    if (sscanf(line, "BALANCE=%lld", &report->balance) == 1)
-      continue;
+    if (strncmp(line, "DATE:", 5) == 0) {
+      sscanf(line + 5, "%ld", &report->date);
+    } else if (strncmp(line, "TOTAL_INCOME:", 13) == 0) {
+      sscanf(line + 13, "%lld", &report->totalIncome);
+    } else if (strncmp(line, "TOTAL_EXPENSE:", 14) == 0) {
+      sscanf(line + 14, "%lld", &report->totalExpense);
+    } else if (strncmp(line, "BALANCE:", 8) == 0) {
+      sscanf(line + 8, "%lld", &report->balance);
+    } else if (strncmp(line, "GROUPS:", 7) == 0) {
+      int groupCount;
+      sscanf(line + 7, "%d", &groupCount);
 
-    if (sscanf(line, "GROUPS_COUNT=%d", &groupsCount) == 1) {
-      if (groupsCount > 0) {
+      if (groupCount > 0) {
         report->groups = (struct TransactionGroup *)malloc(
-            groupsCount * sizeof(struct TransactionGroup));
-        report->groupsAmount = groupsCount;
+            groupCount * sizeof(struct TransactionGroup));
+        report->groupsAmount = groupCount;
+      }
+      break;
+    }
+  }
 
-        for (int i = 0; i < groupsCount; i++) {
-          report->groups[i].transactions = NULL;
-          report->groups[i].transactionsAmount = 0;
+  int groupIndex = 0;
+  while (fgets(line, sizeof(line), file) && groupIndex < report->groupsAmount) {
+    if (strncmp(line, "GROUP_START", 11) == 0) {
+      struct TransactionGroup *group = &report->groups[groupIndex];
+      memset(group, 0, sizeof(struct TransactionGroup));
+
+      while (fgets(line, sizeof(line), file)) {
+        if (strncmp(line, "CATEGORY:", 9) == 0) {
+          sscanf(line + 9, "%d", (int *)&group->category);
+        } else if (strncmp(line, "MAX_COST:", 9) == 0) {
+          sscanf(line + 9, "%lld", &group->maximumCost);
+        } else if (strncmp(line, "REAL_COST:", 10) == 0) {
+          sscanf(line + 10, "%lld", &group->totalRealCost);
+        } else if (strncmp(line, "TRANSACTIONS:", 13) == 0) {
+          int transCount;
+          sscanf(line + 13, "%d", &transCount);
+
+          if (transCount > 0) {
+            group->transactions = (struct Transaction *)malloc(
+                transCount * sizeof(struct Transaction));
+            group->transactionsAmount = transCount;
+
+            int transIndex = 0;
+            while (fgets(line, sizeof(line), file) && transIndex < transCount) {
+              if (strncmp(line, "TRANS_START", 11) == 0) {
+                struct Transaction *trans = &group->transactions[transIndex];
+                memset(trans, 0, sizeof(struct Transaction));
+
+                while (fgets(line, sizeof(line), file)) {
+                  if (strncmp(line, "TYPE:", 5) == 0) {
+                    sscanf(line + 5, "%d", (int *)&trans->type);
+                  } else if (strncmp(line, "CATEGORY:", 9) == 0) {
+                    sscanf(line + 9, "%d", (int *)&trans->category);
+                  } else if (strncmp(line, "REAL_COST:", 10) == 0) {
+                    sscanf(line + 10, "%lld", &trans->realCost);
+                  } else if (strncmp(line, "DATE:", 5) == 0) {
+                    sscanf(line + 5, "%ld", &trans->date);
+                  } else if (strncmp(line, "NAME:", 5) == 0) {
+                    sscanf(line + 5, " %[^\n]", trans->name);
+                  } else if (strncmp(line, "DESCRIPTION:", 12) == 0) {
+                    sscanf(line + 12, " %[^\n]", trans->description);
+                  } else if (strncmp(line, "TRANS_END", 9) == 0) {
+                    transIndex++;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+          break;
         }
       }
-      continue;
+      groupIndex++;
     }
-
-    int groupIndex;
-    int tempCategory;
-    if (sscanf(line, "GROUP_%d_CATEGORY=%d", &groupIndex, &tempCategory) == 2) {
-      report->groups[groupIndex].category =
-          (enum TransactionCategory)tempCategory;
-      continue;
-    }
-    if (sscanf(line, "GROUP_%d_MAX_COST=%lld", &groupIndex,
-               &report->groups[groupIndex].maximumCost) == 2)
-      continue;
-    if (sscanf(line, "GROUP_%d_TOTAL_REAL_COST=%lld", &groupIndex,
-               &report->groups[groupIndex].totalRealCost) == 2)
-      continue;
-    if (sscanf(line, "GROUP_%d_REMAINING_COST=%lld", &groupIndex,
-               &report->groups[groupIndex].remainingCost) == 2)
-      continue;
-
-    int transactionsCount;
-    if (sscanf(line, "GROUP_%d_TRANSACTIONS_COUNT=%d", &groupIndex,
-               &transactionsCount) == 2) {
-      if (transactionsCount > 0) {
-        report->groups[groupIndex].transactions = (struct Transaction *)malloc(
-            transactionsCount * sizeof(struct Transaction));
-        report->groups[groupIndex].transactionsAmount = transactionsCount;
-      }
-      continue;
-    }
-
-    int transIndex;
-    if (sscanf(line, "GROUP_%d_TRANS_%d_ID=%d", &groupIndex, &transIndex,
-               &report->groups[groupIndex].transactions[transIndex].id) == 3)
-      continue;
-    if (sscanf(
-            line, "GROUP_%d_TRANS_%d_DESC=%s", &groupIndex, &transIndex,
-            report->groups[groupIndex].transactions[transIndex].description) ==
-        3)
-      continue;
-    if (sscanf(line, "GROUP_%d_TRANS_%d_NAME=%s", &groupIndex, &transIndex,
-               report->groups[groupIndex].transactions[transIndex].name) == 3)
-      continue;
-    if (sscanf(line, "GROUP_%d_TRANS_%d_DATE=%ld", &groupIndex, &transIndex,
-               &report->groups[groupIndex].transactions[transIndex].date) == 3)
-      continue;
-
-    int tempType;
-    if (sscanf(line, "GROUP_%d_TRANS_%d_TYPE=%d", &groupIndex, &transIndex,
-               &tempType) == 3) {
-      report->groups[groupIndex].transactions[transIndex].type =
-          (enum TransactionType)tempType;
-      continue;
-    }
-    if (sscanf(line, "GROUP_%d_TRANS_%d_CATEGORY=%d", &groupIndex, &transIndex,
-               &tempCategory) == 3) {
-      report->groups[groupIndex].transactions[transIndex].category =
-          (enum TransactionCategory)tempCategory;
-      continue;
-    }
-    if (sscanf(
-            line, "GROUP_%d_TRANS_%d_REAL_COST=%lld", &groupIndex, &transIndex,
-            &report->groups[groupIndex].transactions[transIndex].realCost) == 3)
-      continue;
-    if (sscanf(
-            line, "GROUP_%d_TRANS_%d_MAX_COST=%lld", &groupIndex, &transIndex,
-            &report->groups[groupIndex].transactions[transIndex].maximumCost) ==
-        3)
-      continue;
-    if (sscanf(
-            line, "GROUP_%d_TRANS_%d_REST_COST=%lld", &groupIndex, &transIndex,
-            &report->groups[groupIndex].transactions[transIndex].restCost) == 3)
-      continue;
-    if (sscanf(line, "GROUP_%d_TRANS_%d_AMOUNT=%lld", &groupIndex, &transIndex,
-               &report->groups[groupIndex].transactions[transIndex].amount) ==
-        3)
-      continue;
   }
 
   fclose(file);
@@ -325,20 +304,19 @@ void addMonthReportTransaction(struct MonthReport *monthReport,
       findGroupByCategory(monthReport, transaction->category);
 
   if (group == NULL) {
-
-    struct TransactionGroup newGroup;
+    struct TransactionGroup newGroup = {};
     newGroup.category = transaction->category;
     newGroup.maximumCost = 1000000;
-    newGroup.transactionsAmount = 0;
-    newGroup.transactions = NULL;
     newGroup.totalRealCost = 0;
-    newGroup.remainingCost = newGroup.maximumCost;
+    newGroup.transactions = NULL;
+    newGroup.transactionsAmount = 0;
 
+    addTransactionToGroup(&newGroup, transaction);
     addTransactionGroupToReport(monthReport, &newGroup);
-    group = &monthReport->groups[monthReport->groupsAmount - 1];
+  } else {
+    addTransactionToGroup(group, transaction);
   }
 
-  addTransactionToGroup(group, transaction);
   updateReportCalculations(monthReport);
 }
 
@@ -360,24 +338,48 @@ void removeMonthReportTransaction(struct MonthReport *monthReport,
 }
 
 char *generateReportFilename(time_t date) {
-  char *filename = (char *)malloc(512);
+  char *filename = (char *)malloc(256);
+  if (filename == NULL) {
+    return NULL;
+  }
+
   struct tm *timeinfo = localtime(&date);
 
-  snprintf(filename, 50, "./reports/report_%04d_%02d.txt",
-           timeinfo->tm_year + 1900, timeinfo->tm_mon + 1);
+  // User-aware filename generation
+  if (currentUser != NULL && !currentUser->isAdmin) {
+    snprintf(filename, 256, "%s/%s/reports/report_%04d_%02d.txt", USERS_DIR,
+             currentUser->username, timeinfo->tm_year + 1900,
+             timeinfo->tm_mon + 1);
+  } else {
+    snprintf(filename, 256, "./reports/report_%04d_%02d.txt",
+             timeinfo->tm_year + 1900, timeinfo->tm_mon + 1);
+  }
+
   return filename;
 }
 
 void saveMonthReportToFile(struct MonthReport *report) {
+  if (report == NULL) {
+    return;
+  }
+
   char *filename = generateReportFilename(report->date);
-  saveMonthReport(report, filename);
-  free(filename);
+  if (filename != NULL) {
+    saveMonthReport(report, filename);
+    free(filename);
+  }
 }
 
 void deleteMonthReportFile(struct MonthReport *report) {
+  if (report == NULL) {
+    return;
+  }
+
   char *filename = generateReportFilename(report->date);
-  remove(filename);
-  free(filename);
+  if (filename != NULL) {
+    remove(filename);
+    free(filename);
+  }
 }
 
 void setBudgetForCategory(struct MonthReport *report,
@@ -392,14 +394,12 @@ void setBudgetForCategory(struct MonthReport *report,
     group->maximumCost = budget;
     updateGroupCalculations(group);
   } else {
-
-    struct TransactionGroup newGroup;
+    struct TransactionGroup newGroup = {};
     newGroup.category = category;
     newGroup.maximumCost = budget;
-    newGroup.transactionsAmount = 0;
-    newGroup.transactions = NULL;
     newGroup.totalRealCost = 0;
-    newGroup.remainingCost = budget;
+    newGroup.transactions = NULL;
+    newGroup.transactionsAmount = 0;
 
     addTransactionGroupToReport(report, &newGroup);
   }
@@ -418,6 +418,96 @@ int getTotalTransactions(struct MonthReport *report) {
   }
 
   return total;
+}
+
+// User-aware utility functions from auth system
+struct MonthReport *loadUserMonthReport(time_t date) {
+  if (currentUser == NULL || currentUser->isAdmin) {
+    return NULL;
+  }
+
+  char *filename = generateReportFilename(date);
+  if (filename == NULL) {
+    return NULL;
+  }
+
+  struct MonthReport *report = loadMonthReport(filename);
+  free(filename);
+  return report;
+}
+
+int userReportExists(time_t date) {
+  if (currentUser == NULL || currentUser->isAdmin) {
+    return 0;
+  }
+
+  char *filename = generateReportFilename(date);
+  if (filename == NULL) {
+    return 0;
+  }
+
+  FILE *file = fopen(filename, "r");
+  free(filename);
+
+  if (file != NULL) {
+    fclose(file);
+    return 1;
+  }
+
+  return 0;
+}
+
+char *getUserReportsDirectory() {
+  if (currentUser == NULL || currentUser->isAdmin) {
+    return NULL;
+  }
+
+  static char reportsDir[256];
+  snprintf(reportsDir, sizeof(reportsDir), "%s/%s/reports", USERS_DIR,
+           currentUser->username);
+  return reportsDir;
+}
+
+void setUserCategoryBudget(struct MonthReport *report,
+                           enum TransactionCategory category,
+                           long long budget) {
+  if (report == NULL || currentUser == NULL || currentUser->isAdmin) {
+    return;
+  }
+
+  setBudgetForCategory(report, category, budget);
+  saveMonthReportToFile(report);
+}
+
+void addUserMonthReportTransaction(struct MonthReport *monthReport,
+                                   struct Transaction *transaction) {
+  if (monthReport == NULL || transaction == NULL || currentUser == NULL ||
+      currentUser->isAdmin) {
+    return;
+  }
+
+  addMonthReportTransaction(monthReport, transaction);
+  saveMonthReportToFile(monthReport);
+}
+
+void removeUserMonthReportTransaction(struct MonthReport *monthReport,
+                                      int groupIndex, int transactionIndex) {
+  if (monthReport == NULL || currentUser == NULL || currentUser->isAdmin) {
+    return;
+  }
+
+  removeMonthReportTransaction(monthReport, groupIndex, transactionIndex);
+  saveMonthReportToFile(monthReport);
+}
+
+void updateUserReportDate(struct MonthReport *report, time_t newDate) {
+  if (report == NULL || currentUser == NULL || currentUser->isAdmin) {
+    return;
+  }
+
+  deleteMonthReportFile(report);
+  report->date = newDate;
+  saveMonthReportToFile(report);
 }
 
 #endif

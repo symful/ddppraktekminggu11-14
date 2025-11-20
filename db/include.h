@@ -7,3 +7,21 @@
 #include "../types/month_report_list.h"
 #include "./month_report.h"
 #include "./month_report_list.h"
+
+// User management functions
+char *getUserConfigPath();
+void createDefaultUserConfig();
+int initializeUserWorkspace(const char *username);
+void cleanupUserSession();
+void resetUserBudgets(struct MonthReportList *monthReportList);
+void viewAllUserReports();
+void showSystemStatistics();
+void runAdminDiagnostics();
+void fixAdminSystem();
+
+// Enhanced admin functions (merged from admin_diagnostics)
+void showEnhancedAdminMenu();
+int handleEnhancedAdminMenu();
+int validateAdminPrivileges(const char *operation);
+int forcePasswordReset(const char *targetUsername);
+void showAdminAccessSummary();

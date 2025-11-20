@@ -5,6 +5,7 @@
 #ifndef DB_MONTH_REPORT_H
 #define DB_MONTH_REPORT_H
 
+// Core database functions
 void saveMonthReport(struct MonthReport* report, const char *filename);
 struct MonthReport *loadMonthReport(const char *filename);
 struct MonthReport *newMonthReport();
@@ -21,5 +22,17 @@ void updateReportCalculations(struct MonthReport *report);
 void freeMonthReport(struct MonthReport *report);
 void setBudgetForCategory(struct MonthReport *report, enum TransactionCategory category, long long budget);
 int getTotalTransactions(struct MonthReport *report);
+
+// User-aware functions (moved from auth system)
+struct MonthReport *loadUserMonthReport(time_t date);
+int userReportExists(time_t date);
+char *getUserReportsDirectory();
+void setUserCategoryBudget(struct MonthReport *report, enum TransactionCategory category, long long budget);
+void addUserMonthReportTransaction(struct MonthReport *monthReport, struct Transaction *transaction);
+void removeUserMonthReportTransaction(struct MonthReport *monthReport, int groupIndex, int transactionIndex);
+void updateUserReportDate(struct MonthReport *report, time_t newDate);
+
+// List management functions
+struct MonthReportList *listUserMonthReports(DIR *dir, const char *dirPath);
 
 #endif
