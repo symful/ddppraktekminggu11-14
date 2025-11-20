@@ -9,7 +9,6 @@
 #ifndef SECURE_INPUT_C
 #define SECURE_INPUT_C
 
-// Hide terminal input (disable echo)
 void disableEcho() {
   struct termios term;
   tcgetattr(STDIN_FILENO, &term);
@@ -17,7 +16,6 @@ void disableEcho() {
   tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
-// Show terminal input (enable echo)
 void enableEcho() {
   struct termios term;
   tcgetattr(STDIN_FILENO, &term);
@@ -25,7 +23,6 @@ void enableEcho() {
   tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
-// Secure password input with masking
 int readSecurePassword(const char *prompt, char *password, size_t maxLength) {
   if (!prompt || !password || maxLength == 0) {
     return 0;
@@ -34,39 +31,35 @@ int readSecurePassword(const char *prompt, char *password, size_t maxLength) {
   printf("%s", prompt);
   fflush(stdout);
 
-  // Disable echo
   disableEcho();
 
   size_t index = 0;
   int ch;
 
   while ((ch = getchar()) != '\n' && ch != EOF) {
-    if (ch == 127 || ch == 8) { // Backspace or DEL
+    if (ch == 127 || ch == 8) {
       if (index > 0) {
         index--;
-        printf("\b \b"); // Move back, print space, move back again
+        printf("\b \b");
         fflush(stdout);
       }
-    } else if (ch >= 32 && ch <= 126) { // Printable characters
+    } else if (ch >= 32 && ch <= 126) {
       if (index < maxLength - 1) {
         password[index++] = ch;
-        printf("*"); // Show asterisk
+        printf("*");
         fflush(stdout);
       }
     }
-    // Ignore other control characters
   }
 
   password[index] = '\0';
 
-  // Re-enable echo
   enableEcho();
   printf("\n");
 
   return (index > 0) ? 1 : 0;
 }
 
-// Secure password input with custom mask character
 int readSecurePasswordWithMask(const char *prompt, char *password,
                                size_t maxLength, char maskChar) {
   if (!prompt || !password || maxLength == 0) {
@@ -76,39 +69,35 @@ int readSecurePasswordWithMask(const char *prompt, char *password,
   printf("%s", prompt);
   fflush(stdout);
 
-  // Disable echo
   disableEcho();
 
   size_t index = 0;
   int ch;
 
   while ((ch = getchar()) != '\n' && ch != EOF) {
-    if (ch == 127 || ch == 8) { // Backspace or DEL
+    if (ch == 127 || ch == 8) {
       if (index > 0) {
         index--;
-        printf("\b \b"); // Move back, print space, move back again
+        printf("\b \b");
         fflush(stdout);
       }
-    } else if (ch >= 32 && ch <= 126) { // Printable characters
+    } else if (ch >= 32 && ch <= 126) {
       if (index < maxLength - 1) {
         password[index++] = ch;
-        printf("%c", maskChar); // Show custom mask character
+        printf("%c", maskChar);
         fflush(stdout);
       }
     }
-    // Ignore other control characters
   }
 
   password[index] = '\0';
 
-  // Re-enable echo
   enableEcho();
   printf("\n");
 
   return (index > 0) ? 1 : 0;
 }
 
-// Silent password input (no visual feedback)
 int readSilentPassword(const char *prompt, char *password, size_t maxLength) {
   if (!prompt || !password || maxLength == 0) {
     return 0;
@@ -117,35 +106,31 @@ int readSilentPassword(const char *prompt, char *password, size_t maxLength) {
   printf("%s", prompt);
   fflush(stdout);
 
-  // Disable echo
   disableEcho();
 
   size_t index = 0;
   int ch;
 
   while ((ch = getchar()) != '\n' && ch != EOF) {
-    if (ch == 127 || ch == 8) { // Backspace or DEL
+    if (ch == 127 || ch == 8) {
       if (index > 0) {
         index--;
       }
-    } else if (ch >= 32 && ch <= 126) { // Printable characters
+    } else if (ch >= 32 && ch <= 126) {
       if (index < maxLength - 1) {
         password[index++] = ch;
       }
     }
-    // Ignore other control characters
   }
 
   password[index] = '\0';
 
-  // Re-enable echo
   enableEcho();
   printf("\n");
 
   return (index > 0) ? 1 : 0;
 }
 
-// Secure input with confirmation
 int readSecurePasswordWithConfirmation(const char *prompt,
                                        const char *confirmPrompt,
                                        char *password, size_t maxLength) {
@@ -162,7 +147,7 @@ int readSecurePasswordWithConfirmation(const char *prompt,
 
   if (strcmp(password1, password2) != 0) {
     printf("❌ Password tidak cocok!\n");
-    // Clear both passwords from memory
+
     memset(password1, 0, maxLength);
     memset(password2, 0, maxLength);
     return 0;
@@ -170,14 +155,12 @@ int readSecurePasswordWithConfirmation(const char *prompt,
 
   strcpy(password, password1);
 
-  // Clear temporary passwords from memory
   memset(password1, 0, maxLength);
   memset(password2, 0, maxLength);
 
   return 1;
 }
 
-// Validate password strength
 int validatePasswordStrength(const char *password) {
   if (!password) {
     return WEAK_PASSWORD;
@@ -215,7 +198,6 @@ int validatePasswordStrength(const char *password) {
   return VERY_WEAK_PASSWORD;
 }
 
-// Get password strength description
 const char *getPasswordStrengthDescription(int strength) {
   switch (strength) {
   case VERY_WEAK_PASSWORD:
@@ -231,14 +213,12 @@ const char *getPasswordStrengthDescription(int strength) {
   }
 }
 
-// Clear password from memory securely
 void clearPassword(char *password, size_t length) {
   if (password) {
     memset(password, 0, length);
   }
 }
 
-// Secure username input (with validation)
 int readSecureUsername(const char *prompt, char *username, size_t maxLength) {
   if (!prompt || !username || maxLength == 0) {
     return 0;
@@ -251,19 +231,16 @@ int readSecureUsername(const char *prompt, char *username, size_t maxLength) {
     return 0;
   }
 
-  // Remove newline
   size_t len = strlen(username);
   if (len > 0 && username[len - 1] == '\n') {
     username[len - 1] = '\0';
     len--;
   }
 
-  // Validate username
   if (len == 0) {
     return 0;
   }
 
-  // Check for valid characters (alphanumeric and underscore only)
   for (size_t i = 0; i < len; i++) {
     if (!isalnum(username[i]) && username[i] != '_') {
       printf(
@@ -275,7 +252,6 @@ int readSecureUsername(const char *prompt, char *username, size_t maxLength) {
   return 1;
 }
 
-// Enhanced secure password input with strength checking
 int readSecurePasswordWithStrengthCheck(const char *prompt, char *password,
                                         size_t maxLength) {
   int attempts = 0;
@@ -300,7 +276,6 @@ int readSecurePasswordWithStrengthCheck(const char *prompt, char *password,
         printf("Tetap gunakan password ini? (y/N): ");
         scanf(" %c", &choice);
 
-        // Clear input buffer
         int c;
         while ((c = getchar()) != '\n' && c != EOF)
           ;

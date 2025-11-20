@@ -133,10 +133,9 @@ int validateDateFormat(const char *input, time_t *result) {
     return 0;
   }
 
-  // Check day validity based on month and year
   int daysInMonth;
   if (month == 2) {
-    // Check for leap year
+
     int isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
     daysInMonth = isLeap ? 29 : 28;
   } else if (month == 4 || month == 6 || month == 9 || month == 11) {

@@ -9,13 +9,11 @@
 #ifndef ADMIN_DIAGNOSTICS_C
 #define ADMIN_DIAGNOSTICS_C
 
-// Diagnostic function to check admin system integrity
 void runAdminDiagnostics() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║               🔍 ADMIN SYSTEM DIAGNOSTICS               ║\n");
   printf("╚══════════════════════════════════════════════════════════╝\n\n");
 
-  // Check 1: Users directory exists
   printf("1. Memeriksa direktori users...\n");
   struct stat st = {0};
   if (stat(USERS_DIR, &st) == 0 && S_ISDIR(st.st_mode)) {
@@ -25,7 +23,6 @@ void runAdminDiagnostics() {
     return;
   }
 
-  // Check 2: List all users and their admin status
   printf("\n2. Memeriksa status admin pengguna...\n");
   struct UserList *userList = getAllUsers();
   if (userList == NULL) {
@@ -57,7 +54,6 @@ void runAdminDiagnostics() {
     }
   }
 
-  // Check 3: Current user status
   printf("\n3. Memeriksa pengguna saat ini...\n");
   if (currentUser == NULL) {
     printf("   ❌ Tidak ada pengguna yang sedang login\n");
@@ -67,7 +63,6 @@ void runAdminDiagnostics() {
            currentUser->isAdmin ? "YA ✅" : "TIDAK");
     printf("   📁 Direktori user: %s\n", currentUser->userDir);
 
-    // Check if user directory exists
     if (stat(currentUser->userDir, &st) == 0 && S_ISDIR(st.st_mode)) {
       printf("   📂 Direktori user valid: ✅\n");
     } else {
@@ -75,7 +70,6 @@ void runAdminDiagnostics() {
     }
   }
 
-  // Check 4: Admin file integrity
   printf("\n4. Memeriksa integritas file admin...\n");
   if (userList->count > 0) {
     char *adminUsername = envConfig.adminUsername;
@@ -104,13 +98,11 @@ void runAdminDiagnostics() {
   printf("╚══════════════════════════════════════════════════════════╝\n");
 }
 
-// Fix admin system issues
 void fixAdminSystem() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                 🔧 PERBAIKAN ADMIN SYSTEM               ║\n");
   printf("╚══════════════════════════════════════════════════════════╝\n\n");
 
-  // Ensure users directory exists
   struct stat st = {0};
   if (stat(USERS_DIR, &st) == -1) {
     printf("📁 Membuat direktori users...\n");
@@ -122,7 +114,6 @@ void fixAdminSystem() {
     }
   }
 
-  // Check for admin users
   printf("🔍 Memeriksa konfigurasi admin di .env...\n");
   char *adminUsername = envConfig.adminUsername;
   char *adminPassword = envConfig.adminPassword;
@@ -135,7 +126,6 @@ void fixAdminSystem() {
 
   printf("✅ Admin dikonfigurasi: %s\n", adminUsername);
 
-  // Check if admin user exists as regular user
   if (userExists(adminUsername)) {
     printf("✅ Admin '%s' sudah terdaftar sebagai user\n", adminUsername);
   } else {
@@ -147,7 +137,6 @@ void fixAdminSystem() {
   printf("\n✅ Perbaikan admin system selesai!\n");
 }
 
-// Enhanced admin menu with diagnostics
 void showEnhancedAdminMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                   👑 PANEL ADMIN ENHANCED               ║\n");
@@ -163,7 +152,6 @@ void showEnhancedAdminMenu() {
   printf("Masukkan pilihan Anda (1-7): ");
 }
 
-// Handle enhanced admin menu choice
 int handleEnhancedAdminMenu() {
   while (1) {
     clearScreen();
@@ -208,9 +196,9 @@ int handleEnhancedAdminMenu() {
       getchar();
       break;
     case 6:
-      return 1; // Continue as regular user
+      return 1;
     case 7:
-      return 0; // Logout
+      return 0;
     default:
       printf("❌ Pilihan tidak valid!\n");
       printf("Tekan Enter untuk melanjutkan...");
@@ -220,7 +208,6 @@ int handleEnhancedAdminMenu() {
   }
 }
 
-// Validate admin privileges before sensitive operations
 int validateAdminPrivileges(const char *operation) {
   if (currentUser == NULL) {
     printf("❌ Tidak ada pengguna yang login!\n");
@@ -236,7 +223,6 @@ int validateAdminPrivileges(const char *operation) {
   return 1;
 }
 
-// Admin-only function to force password reset for any user
 int forcePasswordReset(const char *targetUsername) {
   if (!validateAdminPrivileges("force password reset")) {
     return 0;
@@ -265,7 +251,6 @@ int forcePasswordReset(const char *targetUsername) {
   return 0;
 }
 
-// Show admin access summary
 void showAdminAccessSummary() {
   if (!currentUser || !currentUser->isAdmin) {
     return;
@@ -284,4 +269,4 @@ void showAdminAccessSummary() {
   printf("╚══════════════════════════════════════════════════════════╝\n\n");
 }
 
-#endif // ADMIN_DIAGNOSTICS_C
+#endif

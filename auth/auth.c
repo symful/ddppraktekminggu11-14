@@ -12,10 +12,8 @@
 #include <time.h>
 #include <unistd.h>
 
-// Global current user
 struct User *currentUser = NULL;
 
-// Simple hash function
 char *hashPassword(const char *password) {
   static char hash[HASH_LENGTH];
   const char *salt = "$6$rounds=5000$mysalt123456$";
@@ -30,11 +28,9 @@ char *hashPassword(const char *password) {
   return hash;
 }
 
-// Initialize authentication system
 int initializeAuthSystem() {
   struct stat st = {0};
 
-  // Create users directory if it doesn't exist
   if (stat(USERS_DIR, &st) == -1) {
     if (mkdir(USERS_DIR, 0700) != 0) {
       perror("Error creating users directory");
@@ -42,13 +38,11 @@ int initializeAuthSystem() {
     }
   }
 
-  // Admin is defined in .env file, no need to create or check
   printf("✅ Sistem autentikasi diinisialisasi.\n");
 
   return 1;
 }
 
-// Check if user exists
 int userExists(const char *username) {
   char userDir[256];
   snprintf(userDir, sizeof(userDir), "%s/%s", USERS_DIR, username);
@@ -57,7 +51,6 @@ int userExists(const char *username) {
   return (stat(userDir, &st) == 0);
 }
 
-// Create user directory
 int createUserDirectory(const char *username) {
   char userDir[256];
   snprintf(userDir, sizeof(userDir), "%s/%s", USERS_DIR, username);
@@ -73,7 +66,6 @@ int createUserDirectory(const char *username) {
   return 1;
 }
 
-// Create user reports directory
 int createUserReportsDirectory(const char *username) {
   char reportsDir[256];
   snprintf(reportsDir, sizeof(reportsDir), "%s/%s/reports", USERS_DIR,
@@ -90,7 +82,6 @@ int createUserReportsDirectory(const char *username) {
   return 1;
 }
 
-// Save password hash to file
 int savePasswordHash(const char *username, const char *hash) {
   char hashPath[256];
   snprintf(hashPath, sizeof(hashPath), "%s/%s/%s", USERS_DIR, username,
@@ -107,7 +98,6 @@ int savePasswordHash(const char *username, const char *hash) {
   return 1;
 }
 
-// Load password hash from file
 char *loadPasswordHash(const char *username) {
   char hashPath[256];
   static char hash[HASH_LENGTH];
@@ -121,7 +111,7 @@ char *loadPasswordHash(const char *username) {
   }
 
   if (fgets(hash, HASH_LENGTH, file) != NULL) {
-    // Remove newline if present
+
     size_t len = strlen(hash);
     if (len > 0 && hash[len - 1] == '\n') {
       hash[len - 1] = '\0';
@@ -134,7 +124,6 @@ char *loadPasswordHash(const char *username) {
   return NULL;
 }
 
-// Verify password against stored hash
 int verifyPassword(const char *password, const char *storedHash) {
   char *hashedInput = hashPassword(password);
   if (hashedInput == NULL) {
@@ -144,7 +133,6 @@ int verifyPassword(const char *password, const char *storedHash) {
   return (strcmp(hashedInput, storedHash) == 0);
 }
 
-// Get user reports path
 char *getUserReportsPath(const char *username) {
   static char reportsPath[256];
   snprintf(reportsPath, sizeof(reportsPath), "%s/%s/reports", USERS_DIR,
@@ -152,7 +140,6 @@ char *getUserReportsPath(const char *username) {
   return reportsPath;
 }
 
-// Create user session
 struct User *createUserSession(const char *username) {
   struct User *user = (struct User *)malloc(sizeof(struct User));
   if (user == NULL) {
@@ -162,11 +149,10 @@ struct User *createUserSession(const char *username) {
   strncpy(user->username, username, MAX_USERNAME_LENGTH - 1);
   user->username[MAX_USERNAME_LENGTH - 1] = '\0';
 
-  // Check if this is the admin user from .env
   char *adminUsername = envConfig.adminUsername;
   if (adminUsername && strcmp(username, adminUsername) == 0) {
     user->isAdmin = 1;
-    // Admin doesn't get folders
+
     strcpy(user->userDir, "");
     strcpy(user->hashFile, "");
     printf("🔑 Login sebagai Admin: %s (Tanpa folder pribadi)\n", username);
@@ -182,7 +168,6 @@ struct User *createUserSession(const char *username) {
   return user;
 }
 
-// Destroy user session
 void destroyUserSession() {
   if (currentUser != NULL) {
     free(currentUser);
@@ -190,9 +175,8 @@ void destroyUserSession() {
   }
 }
 
-// Register a new regular user (with personal folders)
 int registerUser(const char *username, const char *password) {
-  // Validate input
+
   if (username == NULL || password == NULL || strlen(username) == 0 ||
       strlen(password) == 0) {
     printf("Username dan password tidak boleh kosong.\n");
@@ -211,25 +195,21 @@ int registerUser(const char *username, const char *password) {
     return 0;
   }
 
-  // Check if user already exists
   if (userExists(username)) {
     printf("Pengguna '%s' sudah ada.\n", username);
     return 0;
   }
 
-  // Create user directory
   if (!createUserDirectory(username)) {
     printf("Gagal membuat direktori pengguna.\n");
     return 0;
   }
 
-  // Create user reports directory for regular users only
   if (!createUserReportsDirectory(username)) {
     printf("Gagal membuat direktori laporan pengguna.\n");
     return 0;
   }
 
-  // Hash password and save
   char *hash = hashPassword(password);
   if (hash == NULL) {
     printf("Gagal mengenkripsi password.\n");
@@ -245,22 +225,20 @@ int registerUser(const char *username, const char *password) {
   return 1;
 }
 
-// Login user
 int loginUser(const char *username, const char *password) {
-  // Validate input
+
   if (username == NULL || password == NULL || strlen(username) == 0 ||
       strlen(password) == 0) {
     printf("Username dan password tidak boleh kosong.\n");
     return 0;
   }
 
-  // Check if this is admin login
   char *adminUsername = envConfig.adminUsername;
   char *adminPassword = envConfig.adminPassword;
 
   if (adminUsername && adminPassword && strcmp(username, adminUsername) == 0 &&
       strcmp(password, adminPassword) == 0) {
-    // Admin login successful
+
     currentUser = createUserSession(username);
     if (currentUser == NULL) {
       printf("Gagal membuat sesi admin.\n");
@@ -270,26 +248,22 @@ int loginUser(const char *username, const char *password) {
     return 1;
   }
 
-  // Regular user login
   if (!userExists(username)) {
     printf("Pengguna '%s' tidak ditemukan.\n", username);
     return 0;
   }
 
-  // Load stored hash
   char *storedHash = loadPasswordHash(username);
   if (storedHash == NULL) {
     printf("Gagal memuat kredensial pengguna.\n");
     return 0;
   }
 
-  // Verify password
   if (!verifyPassword(password, storedHash)) {
     printf("Password salah.\n");
     return 0;
   }
 
-  // Create user session
   currentUser = createUserSession(username);
   if (currentUser == NULL) {
     printf("Gagal membuat sesi pengguna.\n");
@@ -300,21 +274,18 @@ int loginUser(const char *username, const char *password) {
   return 1;
 }
 
-// Check if user is admin
 int isUserAdmin(const char *username) {
   char *adminUsername = envConfig.adminUsername;
   return (adminUsername && strcmp(username, adminUsername) == 0) ? 1 : 0;
 }
 
-// Admin is only in .env, no creation needed
 int createAdminUser(const char *username, const char *password) {
   printf("❌ Admin hanya di file .env!\n");
   return 0;
 }
 
-// Delete user and all their data
 int deleteUser(const char *username) {
-  // Can't delete admin
+
   char *adminUsername = envConfig.adminUsername;
   if (adminUsername && strcmp(username, adminUsername) == 0) {
     printf("❌ Tidak dapat menghapus admin!\n");
@@ -352,7 +323,6 @@ int deleteUser(const char *username) {
   }
 }
 
-// Change user password (admin function)
 int changeUserPassword(const char *username, const char *newPassword) {
   char *adminUsername = envConfig.adminUsername;
   if (adminUsername && strcmp(username, adminUsername) == 0) {
@@ -401,13 +371,12 @@ struct UserList *getAllUsers() {
       continue;
     }
 
-    // Check if it's a directory
     char fullPath[256];
     snprintf(fullPath, sizeof(fullPath), "%s/%s", USERS_DIR, entry->d_name);
 
     struct stat st;
     if (stat(fullPath, &st) == 0 && S_ISDIR(st.st_mode)) {
-      // Reallocate array
+
       char **temp = (char **)realloc(userList->usernames,
                                      (userList->count + 1) * sizeof(char *));
       if (temp == NULL) {
@@ -443,7 +412,6 @@ void freeUserList(struct UserList *userList) {
   free(userList);
 }
 
-// Create admin user session
 struct User *createAdminUserSession(const char *username) {
   struct User *user = createUserSession(username);
   if (user != NULL && user->isAdmin) {
@@ -456,7 +424,6 @@ struct User *createAdminUserSession(const char *username) {
   return user;
 }
 
-// Logout user
 void logoutUser() {
   if (currentUser != NULL) {
     printf("Sampai jumpa, %s!\n", currentUser->username);
@@ -464,7 +431,6 @@ void logoutUser() {
   }
 }
 
-// Show authentication menu
 void showAuthMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                 💰 FOXIAN WALLET 💰                  ║\n");
@@ -478,7 +444,6 @@ void showAuthMenu() {
   printf("Masukkan pilihan Anda (1-4): ");
 }
 
-// Show admin menu
 void showAdminMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                     👑 PANEL ADMIN                      ║\n");
@@ -492,7 +457,6 @@ void showAdminMenu() {
   printf("Masukkan pilihan Anda (1-5): ");
 }
 
-// Show user management menu
 void showUserManagementMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                  👥 KELOLA PENGGUNA                     ║\n");
@@ -507,21 +471,18 @@ void showUserManagementMenu() {
   printf("Masukkan pilihan Anda (1-5): ");
 }
 
-// Show login menu
 void showLoginMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                       🔐 MASUK                          ║\n");
   printf("╚══════════════════════════════════════════════════════════╝\n");
 }
 
-// Show register menu
 void showRegisterMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                      📝 DAFTAR                          ║\n");
   printf("╚══════════════════════════════════════════════════════════╝\n");
 }
 
-// Handle login
 int handleLogin() {
   char username[MAX_USERNAME_LENGTH];
   char password[MAX_PASSWORD_LENGTH];
@@ -542,13 +503,11 @@ int handleLogin() {
 
   int result = loginUser(username, password);
 
-  // Clear password from memory after use
   clearPassword(password, sizeof(password));
 
   return result;
 }
 
-// Handle register
 int handleRegister() {
   char username[MAX_USERNAME_LENGTH];
   char password[MAX_PASSWORD_LENGTH];
@@ -569,20 +528,17 @@ int handleRegister() {
     return 0;
   }
 
-  // Show password strength
   int strength = validatePasswordStrength(password);
   printf("💪 Kekuatan Password: %s\n",
          getPasswordStrengthDescription(strength));
 
   int result = registerUser(username, password);
 
-  // Clear password from memory after use
   clearPassword(password, sizeof(password));
 
   return result;
 }
 
-// Handle admin login
 int handleAdminLogin() {
   char username[MAX_USERNAME_LENGTH];
   char password[MAX_PASSWORD_LENGTH];
@@ -607,7 +563,7 @@ int handleAdminLogin() {
   if (loginUser(username, password)) {
     if (currentUser && currentUser->isAdmin) {
       printf("✅ Akses admin diberikan!\n");
-      result = 2; // Special return code for admin login
+      result = 2;
     } else {
       printf("❌ Akses ditolak: Pengguna '%s' bukan administrator.\n",
              username);
@@ -616,13 +572,11 @@ int handleAdminLogin() {
     }
   }
 
-  // Clear password from memory after use
   clearPassword(password, sizeof(password));
 
   return result;
 }
 
-// Handle admin user management
 int handleAdminUserManagement() {
   while (1) {
     clearScreen();
@@ -642,7 +596,7 @@ int handleAdminUserManagement() {
 
     switch (choice) {
     case 1: {
-      // List all users
+
       struct UserList *userList = getAllUsers();
       printf(
           "\n╔══════════════════════════════════════════════════════════╗\n");
@@ -683,7 +637,6 @@ int handleAdminUserManagement() {
   }
 }
 
-// Handle user deletion
 int handleUserDeletion() {
   char username[MAX_USERNAME_LENGTH];
   char confirmation[10];
@@ -722,7 +675,6 @@ int handleUserDeletion() {
   return 1;
 }
 
-// Handle password reset
 int handlePasswordReset() {
   char username[MAX_USERNAME_LENGTH];
   char newPassword[MAX_PASSWORD_LENGTH];
@@ -741,20 +693,17 @@ int handlePasswordReset() {
     return 0;
   }
 
-  // Show password strength
   int strength = validatePasswordStrength(newPassword);
   printf("💪 Kekuatan Password: %s\n",
          getPasswordStrengthDescription(strength));
 
   int result = changeUserPassword(username, newPassword);
 
-  // Clear password from memory after use
   clearPassword(newPassword, sizeof(newPassword));
 
   return result;
 }
 
-// Handle admin user creation
 int handleAdminUserCreation() {
   char username[MAX_USERNAME_LENGTH];
   char password[MAX_PASSWORD_LENGTH];
@@ -773,32 +722,28 @@ int handleAdminUserCreation() {
     return 0;
   }
 
-  // Show password strength
   int strength = validatePasswordStrength(password);
   printf("💪 Kekuatan Password: %s\n",
          getPasswordStrengthDescription(strength));
 
   int result = createAdminUser(username, password);
 
-  // Clear password from memory after use
   clearPassword(password, sizeof(password));
 
   return result;
 }
 
-// Handle authentication menu choice
 int handleAuthMenuChoice() {
   int choice;
 
   if (scanf("%d", &choice) != 1) {
-    // Clear input buffer
+
     int c;
     while ((c = getchar()) != '\n' && c != EOF)
       ;
     return -1;
   }
 
-  // Clear input buffer
   int c;
   while ((c = getchar()) != '\n' && c != EOF)
     ;

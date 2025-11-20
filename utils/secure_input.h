@@ -3,13 +3,13 @@
 
 #include <stddef.h>
 
-// Password strength levels
+
 #define VERY_WEAK_PASSWORD 0
 #define WEAK_PASSWORD 1
 #define MEDIUM_PASSWORD 2
 #define STRONG_PASSWORD 3
 
-// Function prototypes for secure input
+
 
 /**
  * Disable terminal echo for secure input
@@ -38,7 +38,7 @@ int readSecurePassword(const char *prompt, char *password, size_t maxLength);
  * @param maskChar Character to display instead of actual input
  * @return 1 if successful, 0 if failed
  */
-int readSecurePasswordWithMask(const char *prompt, char *password, 
+int readSecurePasswordWithMask(const char *prompt, char *password,
                                size_t maxLength, char maskChar);
 
 /**
@@ -58,7 +58,7 @@ int readSilentPassword(const char *prompt, char *password, size_t maxLength);
  * @param maxLength Maximum length of the password buffer
  * @return 1 if successful and passwords match, 0 if failed
  */
-int readSecurePasswordWithConfirmation(const char *prompt, 
+int readSecurePasswordWithConfirmation(const char *prompt,
                                        const char *confirmPrompt,
                                        char *password, size_t maxLength);
 
@@ -102,4 +102,4 @@ void clearPassword(char *password, size_t length);
  */
 int readSecureUsername(const char *prompt, char *username, size_t maxLength);
 
-#endif // SECURE_INPUT_H
+#endif

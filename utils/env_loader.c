@@ -25,7 +25,6 @@ struct EnvConfig {
   int maxYear;
 } envConfig;
 
-// Initialize default values
 void initializeEnvDefaults() {
   strcpy(envConfig.adminUsername, "admin");
   strcpy(envConfig.adminPassword, "admin123");
@@ -42,39 +41,33 @@ void initializeEnvDefaults() {
   envConfig.maxYear = 2030;
 }
 
-// Parse a single environment line
 void parseEnvLine(const char *line) {
   if (line[0] == '#' || line[0] == '\n' || line[0] == '\0') {
-    return; // Skip comments and empty lines
+    return;
   }
 
   char key[MAX_ENV_KEY];
   char value[MAX_ENV_VALUE];
 
-  // Find the '=' separator
   const char *equals = strchr(line, '=');
   if (!equals) {
-    return; // Invalid format
+    return;
   }
 
-  // Extract key
   size_t keyLen = equals - line;
   if (keyLen >= MAX_ENV_KEY) {
-    return; // Key too long
+    return;
   }
   strncpy(key, line, keyLen);
   key[keyLen] = '\0';
 
-  // Extract value
   strcpy(value, equals + 1);
 
-  // Remove trailing newline
   size_t valueLen = strlen(value);
   if (valueLen > 0 && value[valueLen - 1] == '\n') {
     value[valueLen - 1] = '\0';
   }
 
-  // Set the appropriate config value
   if (strcmp(key, "ADMIN_USERNAME") == 0) {
     strncpy(envConfig.adminUsername, value, MAX_ENV_VALUE - 1);
     envConfig.adminUsername[MAX_ENV_VALUE - 1] = '\0';
@@ -106,14 +99,13 @@ void parseEnvLine(const char *line) {
   }
 }
 
-// Load environment from .env file
 int loadEnvFile() {
   initializeEnvDefaults();
 
   FILE *file = fopen(".env", "r");
   if (!file) {
     printf("File .env tidak ditemukan. Menggunakan konfigurasi default.\n");
-    return 0; // Use defaults
+    return 0;
   }
 
   char line[MAX_ENV_LINE];
@@ -125,12 +117,10 @@ int loadEnvFile() {
   return 1;
 }
 
-// Getter functions for admin credentials
 const char *getAdminUsername() { return envConfig.adminUsername; }
 
 const char *getAdminPassword() { return envConfig.adminPassword; }
 
-// Getter functions for financial limits
 long long getEnvMinAmount() { return envConfig.minAmount; }
 
 long long getEnvMaxAmount() { return envConfig.maxAmount; }
@@ -143,7 +133,6 @@ long long getEnvMinTransaction() { return envConfig.minTransaction; }
 
 long long getEnvMaxTransaction() { return envConfig.maxTransaction; }
 
-// Getter functions for validation settings
 int getEnvMaxNameLength() { return envConfig.maxNameLength; }
 
 int getEnvMaxDescLength() { return envConfig.maxDescLength; }
