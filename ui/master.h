@@ -8,7 +8,7 @@ void showErrorMessage(const char *message);
 void showWarningMessage(const char *message);
 void showInfoMessage(const char *message);
 int getValidatedMenuChoice(int minChoice, int maxChoice);
-void showLoadingMessage(const char *action);
+void 
 void openSummaryMenu(struct MonthReportList *monthReportList);
 void openBudgetSettingsMenu(struct MonthReportList *monthReportList);
 void openSetCategoryBudgetMenu(struct MonthReportList *monthReportList);

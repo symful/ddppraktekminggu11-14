@@ -60,6 +60,12 @@ void printInfoUser() {
   }
 }
 
+/* =======================================================
+	MODUL : printFiturMenu()
+	DESKRIPSI : Mencetak Fitur-Fitur Pada Menu Sesuai Role
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Fitur-Fitur Pada Menu Dicetak Sesuai Dengan Role
+   =======================================================*/
 void printFiturMenu() {
   printf("├─────────────────────────────────────────────────────────┤\n");
   if (currentUser != NULL && currentUser->isAdmin) {
@@ -75,7 +81,13 @@ void printFiturMenu() {
   }
 }
 
-void printFiturMenuRole() {
+/* =======================================================
+	MODUL : printFiturMenuAuth()
+	DESKRIPSI : Mencetak Fitur-Fitur Pada Menu Yang Berkaitan Autentikasi
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Fitur-Fitur Pada Menu Yang Berkaitan Autentikasi Dicetak Sesuai Dengan Role
+   =======================================================*/
+void printFiturMenuAuth() {
   if (currentUser != NULL && currentUser->isAdmin) {
     printf("│  5. 👑 Admin Panel                                      │\n");
     printf("│  6. 🔓 Logout                                           │\n");
@@ -86,40 +98,86 @@ void printFiturMenuRole() {
   }
 }
 
+/* =======================================================
+	MODUL : printMainMenuFooter()
+	DESKRIPSI : Mencetak Footer Main Menu
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Footer Main Menu Dicetak Pada Layar
+   =======================================================*/
 void printMainMenuFooter() {
   printf("└─────────────────────────────────────────────────────────┘\n");
   printf("\n💡 Tip: Pilih nomor menu yang diinginkan\n");
   printf("🎯 Pilihan Anda: ");
 }
 
+/* =======================================================
+	MODUL : showMainMenu()
+	DESKRIPSI : Menampung Seluruh Modul Yang Menampilkan Main Menu
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Melakukan Pemanggilan Modul)
+	FINAL STATE : Modul yang Terkait Dengan Mencetak Main Menu Dipanggil
+   =======================================================*/
 void showMainMenu() {
   printMainMenuHeader();
   printInfoUser();
   printFiturMenu();
-  printFiturMenuRole();
+  printFiturMenuAuth();
   printMainMenuFooter();
 }
 
+/* =======================================================
+	MODUL : showSuccessMessage()
+	DESKRIPSI : Menampilkan Pesan Sukses
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Pesan Sukses Dicetak Ke Layar, Sesuai Dengan Message Yang Dikirimkan Lewat Parameter
+   =======================================================*/
 void showSuccessMessage(const char *message) {
   printf("\n✅ %s", message);
   waitForEnter();
 }
 
+/* =======================================================
+	MODUL : showErrorMessage()
+	DESKRIPSI : Menampilkan Pesan Error
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Pesan Error Dicetak Ke Layar, Sesuai Dengan Message Yang Dikirimkan Lewat Parameter
+   =======================================================*/
 void showErrorMessage(const char *message) {
   printf("\n❌ %s", message);
   waitForEnter();
 }
 
+/* =======================================================
+	MODUL : showWarningMessage()
+	DESKRIPSI : Menampilkan Pesan Warning
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Pesan Warning Dicetak Ke Layar, Sesuai Dengan Message Yang Dikirimkan Lewat Parameter
+   =======================================================*/
 void showWarningMessage(const char *message) {
   printf("\n⚠️  %s", message);
   waitForEnter();
 }
 
+/* =======================================================
+	MODUL : showInfoMessage()
+	DESKRIPSI : Menampilkan Pesan Informasi
+	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+	FINAL STATE : Pesan Informasi Dicetak Ke Layar, Sesuai Dengan Message Yang Dikirimkan Lewat Parameter
+   =======================================================*/
 void showInfoMessage(const char *message) {
   printf("\nℹ️  %s", message);
   waitForEnter();
 }
 
+/* =======================================================
+    INI BELUUUUUUUUUUUUUUUUUUUUUMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+	 MODUL : getValidatedMenuChoice()
+	 DESKRIPSI : Melakukan Validasi Terhadap Input Yang Diberikan Oleh User
+	 INPUT :
+	   mhs[] ? array berisi data mahasiswa
+	   n ? jumlah mahasiswa
+	 OUTPUT :
+	   Mengembalikan nilai rata-rata (float).
+   =======================================================*/
 int getValidatedMenuChoice(int minChoice, int maxChoice) {
   int choice;
 
@@ -131,20 +189,6 @@ int getValidatedMenuChoice(int minChoice, int maxChoice) {
   return choice;
 }
 
-void showLoadingMessage(const char *action) {
-  printf("\n⏳ %s", action);
-  fflush(stdout);
-
-  for (int i = 0; i < 3; i++) {
-    printf(".");
-    fflush(stdout);
-
-    for (int j = 0; j < 300000; j++) {
-    }
-  }
-  printf(" Selesai!\n");
-}
-
 void openSummaryMenu(struct MonthReportList *monthReportList) {
   if (monthReportList->amount == 0) {
     showInfoMessage("Tidak ada laporan bulanan untuk ditampilkan. Buat laporan "
@@ -152,7 +196,7 @@ void openSummaryMenu(struct MonthReportList *monthReportList) {
     return;
   }
 
-  showLoadingMessage("Menghitung ringkasan keuangan");
+  
   showAllMonthReportSummary(monthReportList);
 }
 
@@ -407,7 +451,7 @@ void openResetBudgetMenu(struct MonthReportList *monthReportList) {
     return;
   }
 
-  showLoadingMessage("Mereset semua budget");
+  
 
   for (int i = 0; i < monthReportList->amount; i++) {
     struct MonthReport *report = monthReportList->reports[i];
@@ -606,7 +650,7 @@ void openResetConfigurationMenu() {
     return;
   }
 
-  showLoadingMessage("Mereset pengaturan");
+  
 
   initializeDefaultConfig();
   saveConfigToFile("./config.txt");
@@ -629,7 +673,7 @@ void openMainMenu(struct MonthReportList *monthReportList) {
         showErrorMessage("Admin tidak memiliki laporan pribadi! Gunakan Admin "
                          "Panel untuk melihat laporan semua pengguna.");
       } else {
-        showLoadingMessage("Membuka menu bulanan");
+        
         openMonthlyMenu(monthReportList);
       }
       break;
