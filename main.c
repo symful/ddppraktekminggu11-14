@@ -1,5 +1,5 @@
-#include "auth/auth.c"
 #include "auth/user_reports.c"
+#include "db/month_report_list.c"
 #include "ui/include.c"
 #include <dirent.h>
 
@@ -31,11 +31,16 @@ int main() {
 
   struct MonthReportList *monthReportList;
   if (currentUser != NULL && !currentUser->isAdmin) {
-    char *userReportsPath = getUserReportsPath(currentUser->username);
-    DIR *userReportsDir = opendir(userReportsPath);
-    monthReportList = listAllMonthReports(userReportsDir);
+    // For regular users, load their own reports
+    monthReportList = listUserMonthReports();
   } else {
-    monthReportList = listAllMonthReports(opendir("./reports"));
+    // For admin, load all users' reports
+    monthReportList = listAllUsersReports();
+  }
+
+  // Ensure we have a valid list
+  if (monthReportList == NULL) {
+    monthReportList = createMonthReportList();
   }
 
   openMainMenu(monthReportList);

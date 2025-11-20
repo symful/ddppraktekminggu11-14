@@ -5,11 +5,14 @@
 
 const char *transactionStatusToString(enum TransactionStatus status) {
   switch (status) {
-  case TS_SAFE:
+  case TRANSACTION_BUDGET_SAFE:
     return "Aman";
     break;
-  case TS_OVER:
+  case TRANSACTION_BUDGET_EXCEEDED:
     return "Melebihi";
+    break;
+  case TRANSACTION_BUDGET_WARNING:
+    return "Peringatan";
     break;
   default:
     return "Tidak diketahui";

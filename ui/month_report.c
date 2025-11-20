@@ -1,5 +1,7 @@
 #include "./month_report.h"
+#include "../auth/auth.c"
 #include "../db/include.c"
+#include "../db/transaction_group.c"
 #include "../types/include.c"
 #include "../utils/date.c"
 #include "../utils/date.h"
@@ -19,7 +21,7 @@ void showMonthlyMenu(struct MonthReportList *monthReportList) {
   printf("│  2. ➕ Buat Laporan Bulanan Baru                        │\n");
   printf("│  3. ⬅️  Kembali ke Menu Utama                            │\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
-  printf("\n📈 Total laporan tersimpan: %d\n", monthReportList->amount);
+  printf("\n📈 Total laporan tersimpan: %d\n", monthReportList->count);
   printf("🎯 Pilihan Anda: ");
 }
 
@@ -27,13 +29,13 @@ void showMonthlyList(struct MonthReportList *monthReportList) {
   printf("\n📅 DAFTAR LAPORAN BULANAN:\n");
   printf("──────────────────────────────────────────────────────────\n");
 
-  if (monthReportList->amount == 0) {
+  if (monthReportList->count == 0) {
     printf("  📭 Belum ada laporan bulanan.\n");
     printf("  💡 Tip: Buat laporan baru untuk memulai!\n");
     return;
   }
 
-  for (int i = 0; i < monthReportList->amount; i++) {
+  for (int i = 0; i < monthReportList->count; i++) {
     struct MonthReport *report = monthReportList->reports[i];
     int totalTransactions = getTotalTransactions(report);
     printf("  %d. 📊 %s", i + 1, dateToMonthYearString(report->date));
@@ -60,20 +62,20 @@ void showTransactionGroupsList(struct MonthReport *monthReport) {
   printf("═════════════════════════════════════════════════════════════════════"
          "════════════════════════════\n");
 
-  if (monthReport->groupsAmount == 0) {
+  if (monthReport->groupCount == 0) {
     printf("║                                   📭 Belum ada transaksi        "
            "    "
            "            "
            "              ║\n");
   } else {
-    for (int i = 0; i < monthReport->groupsAmount; i++) {
-      struct TransactionGroup *group = &monthReport->groups[i];
+    for (int i = 0; i < monthReport->groupCount; i++) {
+      struct TransactionGroup *group = monthReport->groups[i];
       const char *status = getGroupBudgetStatus(group);
 
       printf("║ %-3d │ %-15s │ %-12lld │ %-12lld │ %-12lld │ %-9d │ %-12s ║\n",
-             i + 1, transactionCategoryToString(group->category),
-             group->maximumCost, group->totalRealCost, group->remainingCost,
-             group->transactionsAmount, status);
+             i + 1, transactionCategoryToString(group->category), group->budget,
+             group->totalAmount, group->budget - group->totalAmount,
+             group->transactionCount, status);
     }
   }
   printf("═════════════════════════════════════════════════════════════════════"
@@ -174,8 +176,8 @@ void openTransactionAddMenu(struct MonthReportList *monthReportList) {
   }
 
   newReport->date = newDate;
-  addMonthReport(monthReportList, newReport);
-  saveMonthReportToFile(newReport);
+  addMonthReportToList(monthReportList, newReport);
+  saveUserMonthReport(newReport);
 
   showSuccessMessage("Laporan bulanan berhasil dibuat! 🎉");
 }
@@ -223,7 +225,7 @@ void openMonthlyListMenu(struct MonthReportList *monthReportList) {
 }
 
 void openSelectReportMenu(struct MonthReportList *monthReportList) {
-  if (monthReportList->amount == 0) {
+  if (monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan. Buat laporan terlebih dahulu.");
     return;
   }
@@ -232,7 +234,7 @@ void openSelectReportMenu(struct MonthReportList *monthReportList) {
 
   int reportIndex;
   if (!readAndValidateInteger("\n📊 Pilih nomor laporan: ", 1,
-                              monthReportList->amount, &reportIndex)) {
+                              monthReportList->count, &reportIndex)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
@@ -248,7 +250,7 @@ void openTransactionViewMenu(struct MonthReport *monthReport) {
 
   showTransactionGroupsList(monthReport);
 
-  if (monthReport->groupsAmount == 0) {
+  if (monthReport->groupCount == 0) {
     showInfoMessage("Belum ada transaksi di laporan ini.");
     return;
   }
@@ -256,12 +258,12 @@ void openTransactionViewMenu(struct MonthReport *monthReport) {
   int groupIndex;
   if (!readAndValidateInteger(
           "\n📂 Pilih nomor kategori untuk melihat detail: ", 1,
-          monthReport->groupsAmount, &groupIndex)) {
+          monthReport->groupCount, &groupIndex)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
 
-  struct TransactionGroup *group = &monthReport->groups[groupIndex - 1];
+  struct TransactionGroup *group = monthReport->groups[groupIndex - 1];
   showTransactionDetails(group);
 }
 
@@ -282,12 +284,12 @@ void showTransactionDetails(struct TransactionGroup *group) {
   printf("│\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
 
-  printf("\n💰 Budget: Rp %lld\n", group->maximumCost);
-  printf("💸 Terpakai: Rp %lld\n", group->totalRealCost);
-  printf("💵 Sisa: Rp %lld\n", group->remainingCost);
+  printf("\n💰 Budget: Rp %lld\n", group->budget);
+  printf("💸 Terpakai: Rp %lld\n", group->totalAmount);
+  printf("💵 Sisa: Rp %lld\n", group->budget - group->totalAmount);
   printf("📊 Status: %s\n", getGroupBudgetStatus(group));
 
-  if (group->transactionsAmount == 0) {
+  if (group->transactionCount == 0) {
     printf("\n📭 Belum ada transaksi di kategori ini.\n");
     waitForEnter();
     return;
@@ -302,13 +304,14 @@ void showTransactionDetails(struct TransactionGroup *group) {
          "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
          "━━━━━━━\n");
 
-  for (int i = 0; i < group->transactionsAmount; i++) {
-    struct Transaction *t = &group->transactions[i];
-    const char *typeIcon = (t->type == TT_INCOME) ? "💚 Masuk" : "❤️  Keluar";
+  for (int i = 0; i < group->transactionCount; i++) {
+    struct Transaction *t = group->transactions[i];
+    const char *typeIcon =
+        (t->type == TRANSACTION_INCOME) ? "💚 Masuk" : "❤️  Keluar";
     char *dateStr = dateToString(t->date);
 
     printf("║ %-3d │ %-12s │ %-15s │ %-15s │ Rp %-12lld │ %-30s ║\n", i + 1,
-           dateStr, t->name, typeIcon, t->realCost, t->description);
+           dateStr, t->name, typeIcon, t->amount, t->description);
 
     free(dateStr);
   }
@@ -327,21 +330,21 @@ void openTransactionEditMenu(struct MonthReport *monthReport) {
 
   showTransactionGroupsList(monthReport);
 
-  if (monthReport->groupsAmount == 0) {
+  if (monthReport->groupCount == 0) {
     showInfoMessage("Belum ada transaksi untuk diedit.");
     return;
   }
 
   int groupIndex;
   if (!readAndValidateInteger("\n📂 Pilih nomor kategori: ", 1,
-                              monthReport->groupsAmount, &groupIndex)) {
+                              monthReport->groupCount, &groupIndex)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
 
-  struct TransactionGroup *group = &monthReport->groups[groupIndex - 1];
+  struct TransactionGroup *group = monthReport->groups[groupIndex - 1];
 
-  if (group->transactionsAmount == 0) {
+  if (group->transactionCount == 0) {
     showInfoMessage("Tidak ada transaksi di kategori ini.");
     return;
   }
@@ -349,14 +352,13 @@ void openTransactionEditMenu(struct MonthReport *monthReport) {
   showTransactionDetails(group);
 
   int transactionIndex;
-  if (!readAndValidateInteger(
-          "\n💳 Pilih nomor transaksi yang ingin diedit: ", 1,
-          group->transactionsAmount, &transactionIndex)) {
+  if (!readAndValidateInteger("\n💳 Pilih nomor transaksi yang ingin diedit: ",
+                              1, group->totalAmount, &transactionIndex)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
 
-  struct Transaction *transaction = &group->transactions[transactionIndex - 1];
+  struct Transaction *transaction = group->transactions[transactionIndex - 1];
 
   printf("\n✏️  Edit Transaksi ID %d:\n", transaction->id);
   printf("─────────────────────────\n");
@@ -396,14 +398,13 @@ void openTransactionEditMenu(struct MonthReport *monthReport) {
     InputResult result =
         promptForTransaction("💰 Nominal baru (Rp): ", &newAmount);
     if (result == INPUT_SUCCESS) {
-      transaction->realCost = newAmount;
-      transaction->maximumCost = newAmount;
+      transaction->amount = newAmount;
     }
   }
 
   updateGroupCalculations(group);
   updateReportCalculations(monthReport);
-  saveMonthReportToFile(monthReport);
+  saveUserMonthReport(monthReport);
 
   showSuccessMessage("Transaksi berhasil diubah! 📝");
 }
@@ -416,21 +417,21 @@ void openTransactionDeleteMenu(struct MonthReport *monthReport) {
 
   showTransactionGroupsList(monthReport);
 
-  if (monthReport->groupsAmount == 0) {
+  if (monthReport->groupCount == 0) {
     showInfoMessage("Belum ada transaksi untuk dihapus.");
     return;
   }
 
   int groupIndex;
   if (!readAndValidateInteger("\n📂 Pilih nomor kategori: ", 1,
-                              monthReport->groupsAmount, &groupIndex)) {
+                              monthReport->groupCount, &groupIndex)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
 
-  struct TransactionGroup *group = &monthReport->groups[groupIndex - 1];
+  struct TransactionGroup *group = monthReport->groups[groupIndex - 1];
 
-  if (group->transactionsAmount == 0) {
+  if (group->transactionCount == 0) {
     showInfoMessage("Tidak ada transaksi di kategori ini.");
     return;
   }
@@ -440,18 +441,18 @@ void openTransactionDeleteMenu(struct MonthReport *monthReport) {
   int transactionIndex;
   if (!readAndValidateInteger(
           "\n🗑️  Pilih nomor transaksi yang ingin dihapus: ", 1,
-          group->transactionsAmount, &transactionIndex)) {
+          group->transactionCount, &transactionIndex)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
 
   printf("\n⚠️  KONFIRMASI HAPUS\n");
   printf("───────────────────\n");
-  char *dateStr = dateToString(group->transactions[transactionIndex - 1].date);
+  char *dateStr = dateToString(group->transactions[transactionIndex - 1]->date);
   printf("Tanggal: %s\n", dateStr);
   printf("Transaksi: %s - Rp %lld\n",
-         group->transactions[transactionIndex - 1].name,
-         group->transactions[transactionIndex - 1].realCost);
+         group->transactions[transactionIndex - 1]->name,
+         group->transactions[transactionIndex - 1]->amount);
   free(dateStr);
 
   char confirmation;
@@ -464,9 +465,9 @@ void openTransactionDeleteMenu(struct MonthReport *monthReport) {
     return;
   }
 
-  removeMonthReportTransaction(monthReport, groupIndex - 1,
-                               transactionIndex - 1);
-  saveMonthReportToFile(monthReport);
+  removeUserMonthReportTransaction(monthReport, groupIndex - 1,
+                                   transactionIndex - 1);
+  saveUserMonthReport(monthReport);
 
   showSuccessMessage("Transaksi berhasil dihapus! 🗑️");
 }
@@ -498,7 +499,7 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
   }
 
   InputResult result =
-      promptForTransaction("💰 Nominal (Rp): ", &newTransaction.realCost);
+      promptForTransaction("💰 Nominal (Rp): ", &newTransaction.amount);
   if (result != INPUT_SUCCESS) {
     showErrorMessage(
         "Nominal transaksi tidak valid atau di bawah minimum yang diizinkan.");
@@ -515,7 +516,8 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
     showErrorMessage("Jenis transaksi tidak valid.");
     return;
   }
-  newTransaction.type = (typeChoice == 1) ? TT_INCOME : TT_EXPENSE;
+  newTransaction.type =
+      (typeChoice == 1) ? TRANSACTION_INCOME : TRANSACTION_EXPENSE;
 
   printf("\n📂 KATEGORI TRANSAKSI:\n");
   printf("─────────────────────\n");
@@ -533,15 +535,11 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
   newTransaction.category = (enum TransactionCategory)(categoryChoice - 1);
 
   newTransaction.id = getTotalTransactions(monthReport) + 1;
-  newTransaction.maximumCost = newTransaction.realCost;
-  newTransaction.restCost = 0;
-  newTransaction.amount = 1;
 
-  if (newTransaction.type == TT_EXPENSE) {
+  if (newTransaction.type == TRANSACTION_EXPENSE) {
     struct TransactionGroup *group =
         findGroupByCategory(monthReport, newTransaction.category);
-    if (group != NULL &&
-        validateBudgetExceeded(group, newTransaction.realCost)) {
+    if (group != NULL && validateBudgetExceeded(group, newTransaction.amount)) {
       showWarningMessage("⚠️  Transaksi ini akan melebihi budget kategori!");
 
       char proceed;
@@ -556,8 +554,8 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
     }
   }
 
-  addMonthReportTransaction(monthReport, &newTransaction);
-  saveMonthReportToFile(monthReport);
+  addUserMonthReportTransaction(monthReport, &newTransaction);
+  saveUserMonthReport(monthReport);
 
   showSuccessMessage("Transaksi berhasil ditambahkan! 🎉");
 }
@@ -594,7 +592,7 @@ void openCategoryBudgetMenu(struct MonthReport *monthReport) {
   }
 
   setBudgetForCategory(monthReport, category, newBudget);
-  saveMonthReportToFile(monthReport);
+  saveUserMonthReport(monthReport);
 
   char successMsg[200];
   snprintf(successMsg, sizeof(successMsg),
@@ -611,14 +609,14 @@ void openMonthReportEditMenu(struct MonthReportList *monthReportList) {
   printf("│              ✏️  EDIT TANGGAL LAPORAN                   │\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
 
-  if (monthReportList->amount == 0) {
+  if (monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan.");
     return;
   }
 
   int reportIndex;
   if (!readAndValidateInteger("📅 Pilih nomor laporan: ", 1,
-                              monthReportList->amount, &reportIndex)) {
+                              monthReportList->count, &reportIndex)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
@@ -638,9 +636,9 @@ void openMonthReportEditMenu(struct MonthReportList *monthReportList) {
     return;
   }
 
-  deleteMonthReportFile(report);
+  deleteUserMonthReport(report);
   report->date = newDate;
-  saveMonthReportToFile(report);
+  saveUserMonthReport(report);
 
   showSuccessMessage("Tanggal laporan berhasil diubah! 📅");
 }
@@ -651,7 +649,7 @@ void openMonthReportDeleteMenu(struct MonthReportList *monthReportList) {
   printf("│               🗑️  HAPUS LAPORAN                         │\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
 
-  if (monthReportList->amount == 0) {
+  if (monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan.");
     return;
   }
@@ -660,7 +658,7 @@ void openMonthReportDeleteMenu(struct MonthReportList *monthReportList) {
 
   int reportIndex;
   if (!readAndValidateInteger("\n🗑️  Pilih nomor laporan yang ingin dihapus: ",
-                              1, monthReportList->amount, &reportIndex)) {
+                              1, monthReportList->count, &reportIndex)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
@@ -683,20 +681,20 @@ void openMonthReportDeleteMenu(struct MonthReportList *monthReportList) {
     return;
   }
 
-  deleteMonthReportFile(reportToDelete);
+  deleteUserMonthReport(reportToDelete);
   freeMonthReport(reportToDelete);
 
-  for (int i = reportIndex - 1; i < monthReportList->amount - 1; i++) {
+  for (int i = reportIndex - 1; i < monthReportList->count - 1; i++) {
     monthReportList->reports[i] = monthReportList->reports[i + 1];
   }
-  monthReportList->amount--;
+  monthReportList->count--;
 
   showSuccessMessage("Laporan berhasil dihapus! 🗑️");
 }
 
 void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
   clearScreen();
-  if (monthReportList->amount == 0) {
+  if (monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan.");
     return;
   }
@@ -714,17 +712,17 @@ void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
   long long categoryMaximums[TC_OTHER + 1] = {0};
   int categoryTransactions[TC_OTHER + 1] = {0};
 
-  for (int i = 0; i < monthReportList->amount; i++) {
+  for (int i = 0; i < monthReportList->count; i++) {
     struct MonthReport *report = monthReportList->reports[i];
     totalIncome += report->totalIncome;
-    totalExpense += report->totalExpense;
+    totalExpense += report->totalExpenses;
     totalTransactions += getTotalTransactions(report);
 
-    for (int j = 0; j < report->groupsAmount; j++) {
-      struct TransactionGroup *group = &report->groups[j];
-      categoryTotals[group->category] += group->totalRealCost;
-      categoryMaximums[group->category] += group->maximumCost;
-      categoryTransactions[group->category] += group->transactionsAmount;
+    for (int j = 0; j < report->groupCount; j++) {
+      struct TransactionGroup *group = report->groups[j];
+      categoryTotals[group->category] += group->totalAmount;
+      categoryMaximums[group->category] += group->budget;
+      categoryTransactions[group->category] += group->transactionCount;
     }
   }
 
@@ -796,7 +794,7 @@ void showMonthReportSummary2(struct MonthReport *monthReport) {
   printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
          "━━━━━━━━━━━━━━━━━━\n");
   printf("💚 Total Pemasukan: Rp %lld\n", monthReport->totalIncome);
-  printf("❤️  Total Pengeluaran: Rp %lld\n", monthReport->totalExpense);
+  printf("❤️  Total Pengeluaran: Rp %lld\n", monthReport->totalExpenses);
   printf("💵 Saldo: Rp %lld\n", monthReport->balance);
   printf("📊 Total Transaksi: %d\n", getTotalTransactions(monthReport));
 
@@ -873,7 +871,7 @@ void showMonthReport(struct MonthReport *monthReport) {
   printf("💰 Saldo: Rp %lld | 📊 Transaksi: %d | 💚 Masuk: Rp %lld | ❤️  "
          "Keluar: Rp %lld\n",
          monthReport->balance, getTotalTransactions(monthReport),
-         monthReport->totalIncome, monthReport->totalExpense);
+         monthReport->totalIncome, monthReport->totalExpenses);
 
   showTransactionGroupsList(monthReport);
 

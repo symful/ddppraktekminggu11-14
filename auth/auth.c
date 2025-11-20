@@ -12,6 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifndef CURRENT_USER
 struct User *currentUser = NULL;
 
 char *hashPassword(const char *password) {
@@ -763,3 +764,6 @@ int handleAuthMenuChoice() {
     return 0;
   }
 }
+
+#define CURRENT_USER currentUser
+#endif

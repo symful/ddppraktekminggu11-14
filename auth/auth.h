@@ -42,7 +42,6 @@ int changeUserPassword(const char *username, const char *newPassword);
 struct User *createAdminUserSession(const char *username);
 
 // User report management functions
-void saveUserMonthReportToFile(struct MonthReport *report);
 void deleteUserMonthReportFile(struct MonthReport *report);
 struct MonthReport *loadUserMonthReport(time_t date);
 int userReportExists(time_t date);

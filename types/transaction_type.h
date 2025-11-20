@@ -2,8 +2,8 @@
 #define TRANSACTION_TYPE_ENUM
 
 enum TransactionType {
-    TT_INCOME,
-    TT_EXPENSE,
+    TRANSACTION_INCOME,
+    TRANSACTION_EXPENSE,
 };
 
 const char *transactionTypeToString(enum TransactionType type);

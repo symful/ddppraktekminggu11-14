@@ -5,10 +5,10 @@
 
 const char *transactionTypeToString(enum TransactionType type) {
   switch (type) {
-  case TT_EXPENSE:
+  case TRANSACTION_EXPENSE:
     return "Pengeluaran";
     break;
-  case TT_INCOME:
+  case TRANSACTION_INCOME:
     return "Pendapatan";
     break;
   default:

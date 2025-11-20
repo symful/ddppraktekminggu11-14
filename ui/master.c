@@ -1,19 +1,20 @@
 #include "../auth/auth.h" // Menggunakan header Dari File ../auth/auth.h
+#include "../db/transaction_group.c"
 #include "../types/include.c"
 #include "../utils/validation.c" // Menggunakan Modul Dari File ../utils/validation.c Untuk Fungsi Validasi
 #include "./month_report.c" // Menggunakan Modul dari file ./month_report.c
-#include <stdbool.h> // Untuk Menggunakan Tipe Data Boolean
-#include <stdio.h> // Untuk Menggunakan Modul scanf() dan printf()
+#include <stdbool.h>        // Untuk Menggunakan Tipe Data Boolean
+#include <stdio.h>          // Untuk Menggunakan Modul scanf() dan printf()
 #include <stdlib.h> // Untuk Menggunakan system("cls") dan system("clear")
 
 /* =======================================================
-	MODUL : tampilkanMenu()
-	DESKRIPSI : Membersihkan Layar
-	INITIAL STATE : Terdapat teks pada layar
-	FINAL STATE : Layar dibersihkan menjadi kosong
+        MODUL : tampilkanMenu()
+        DESKRIPSI : Membersihkan Layar
+        INITIAL STATE : Terdapat teks pada layar
+        FINAL STATE : Layar dibersihkan menjadi kosong
    =======================================================*/
 void clearScreen() {
-#ifdef _WIN32 //Jika Sistemnya Windows
+#ifdef _WIN32    // Jika Sistemnya Windows
   system("cls"); // Mengosongkan Layar
 #else
   system("clear"); // Mengosongkan Layar
@@ -21,10 +22,10 @@ void clearScreen() {
 }
 
 /* =======================================================
-	MODUL : waitForEnter()
-	DESKRIPSI : Meminta User Untuk Menekan Enter Untuk Lanjut
-	INITIAL STATE : 
-	FINAL STATE : 
+        MODUL : waitForEnter()
+        DESKRIPSI : Meminta User Untuk Menekan Enter Untuk Lanjut
+        INITIAL STATE :
+        FINAL STATE :
    =======================================================*/
 void waitForEnter() {
   printf("\n📱 Tekan Enter untuk melanjutkan...");
@@ -32,10 +33,10 @@ void waitForEnter() {
 }
 
 /* =======================================================
-	MODUL : printMainMenuHeader()
-	DESKRIPSI : Mencetak Header Menu Utama
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Header Menu Utama Ditampilkan Ke Layar
+        MODUL : printMainMenuHeader()
+        DESKRIPSI : Mencetak Header Menu Utama
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Header Menu Utama Ditampilkan Ke Layar
    =======================================================*/
 void printMainMenuHeader() {
   printf("┌─────────────────────────────────────────────────────────┐\n");
@@ -43,10 +44,10 @@ void printMainMenuHeader() {
 }
 
 /* =======================================================
-	MODUL : printInfoUser()
-	DESKRIPSI : Mencetak Informasi User (Username dan Hak Akses)
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Informasi User Ditampilkan Ke Layar
+        MODUL : printInfoUser()
+        DESKRIPSI : Mencetak Informasi User (Username dan Hak Akses)
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Informasi User Ditampilkan Ke Layar
    =======================================================*/
 void printInfoUser() {
   if (currentUser == NULL)
@@ -61,10 +62,10 @@ void printInfoUser() {
 }
 
 /* =======================================================
-	MODUL : printFiturMenu()
-	DESKRIPSI : Mencetak Fitur-Fitur Pada Menu Sesuai Role
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Fitur-Fitur Pada Menu Dicetak Sesuai Dengan Role
+        MODUL : printFiturMenu()
+        DESKRIPSI : Mencetak Fitur-Fitur Pada Menu Sesuai Role
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Fitur-Fitur Pada Menu Dicetak Sesuai Dengan Role
    =======================================================*/
 void printFiturMenu() {
   printf("├─────────────────────────────────────────────────────────┤\n");
@@ -82,10 +83,11 @@ void printFiturMenu() {
 }
 
 /* =======================================================
-	MODUL : printFiturMenuAuth()
-	DESKRIPSI : Mencetak Fitur-Fitur Pada Menu Yang Berkaitan Autentikasi
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Fitur-Fitur Pada Menu Yang Berkaitan Autentikasi Dicetak Sesuai Dengan Role
+        MODUL : printFiturMenuAuth()
+        DESKRIPSI : Mencetak Fitur-Fitur Pada Menu Yang Berkaitan Autentikasi
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Fitur-Fitur Pada Menu Yang Berkaitan Autentikasi Dicetak
+   Sesuai Dengan Role
    =======================================================*/
 void printFiturMenuAuth() {
   if (currentUser != NULL && currentUser->isAdmin) {
@@ -99,10 +101,10 @@ void printFiturMenuAuth() {
 }
 
 /* =======================================================
-	MODUL : printMainMenuFooter()
-	DESKRIPSI : Mencetak Footer Main Menu
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Footer Main Menu Dicetak Pada Layar
+        MODUL : printMainMenuFooter()
+        DESKRIPSI : Mencetak Footer Main Menu
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Footer Main Menu Dicetak Pada Layar
    =======================================================*/
 void printMainMenuFooter() {
   printf("└─────────────────────────────────────────────────────────┘\n");
@@ -111,10 +113,10 @@ void printMainMenuFooter() {
 }
 
 /* =======================================================
-	MODUL : showMainMenu()
-	DESKRIPSI : Menampung Seluruh Modul Yang Menampilkan Main Menu
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Melakukan Pemanggilan Modul)
-	FINAL STATE : Modul yang Terkait Dengan Mencetak Main Menu Dipanggil
+        MODUL : showMainMenu()
+        DESKRIPSI : Menampung Seluruh Modul Yang Menampilkan Main Menu
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Melakukan Pemanggilan
+   Modul) FINAL STATE : Modul yang Terkait Dengan Mencetak Main Menu Dipanggil
    =======================================================*/
 void showMainMenu() {
   printMainMenuHeader();
@@ -125,10 +127,11 @@ void showMainMenu() {
 }
 
 /* =======================================================
-	MODUL : showSuccessMessage()
-	DESKRIPSI : Menampilkan Pesan Sukses
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Pesan Sukses Dicetak Ke Layar, Sesuai Dengan Message Yang Dikirimkan Lewat Parameter
+        MODUL : showSuccessMessage()
+        DESKRIPSI : Menampilkan Pesan Sukses
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Pesan Sukses Dicetak Ke Layar, Sesuai Dengan Message Yang
+   Dikirimkan Lewat Parameter
    =======================================================*/
 void showSuccessMessage(const char *message) {
   printf("\n✅ %s", message);
@@ -136,10 +139,11 @@ void showSuccessMessage(const char *message) {
 }
 
 /* =======================================================
-	MODUL : showErrorMessage()
-	DESKRIPSI : Menampilkan Pesan Error
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Pesan Error Dicetak Ke Layar, Sesuai Dengan Message Yang Dikirimkan Lewat Parameter
+        MODUL : showErrorMessage()
+        DESKRIPSI : Menampilkan Pesan Error
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Pesan Error Dicetak Ke Layar, Sesuai Dengan Message Yang
+   Dikirimkan Lewat Parameter
    =======================================================*/
 void showErrorMessage(const char *message) {
   printf("\n❌ %s", message);
@@ -147,10 +151,11 @@ void showErrorMessage(const char *message) {
 }
 
 /* =======================================================
-	MODUL : showWarningMessage()
-	DESKRIPSI : Menampilkan Pesan Warning
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Pesan Warning Dicetak Ke Layar, Sesuai Dengan Message Yang Dikirimkan Lewat Parameter
+        MODUL : showWarningMessage()
+        DESKRIPSI : Menampilkan Pesan Warning
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Pesan Warning Dicetak Ke Layar, Sesuai Dengan Message Yang
+   Dikirimkan Lewat Parameter
    =======================================================*/
 void showWarningMessage(const char *message) {
   printf("\n⚠️  %s", message);
@@ -158,10 +163,11 @@ void showWarningMessage(const char *message) {
 }
 
 /* =======================================================
-	MODUL : showInfoMessage()
-	DESKRIPSI : Menampilkan Pesan Informasi
-	INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-	FINAL STATE : Pesan Informasi Dicetak Ke Layar, Sesuai Dengan Message Yang Dikirimkan Lewat Parameter
+        MODUL : showInfoMessage()
+        DESKRIPSI : Menampilkan Pesan Informasi
+        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
+        FINAL STATE : Pesan Informasi Dicetak Ke Layar, Sesuai Dengan Message
+   Yang Dikirimkan Lewat Parameter
    =======================================================*/
 void showInfoMessage(const char *message) {
   printf("\nℹ️  %s", message);
@@ -169,14 +175,15 @@ void showInfoMessage(const char *message) {
 }
 
 /* =======================================================
-    INI BELUUUUUUUUUUUUUUUUUUUUUMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
-	 MODUL : getValidatedMenuChoice()
-	 DESKRIPSI : Melakukan Validasi Terhadap Input Yang Diberikan Oleh User
-	 INPUT :
-	   mhs[] ? array berisi data mahasiswa
-	   n ? jumlah mahasiswa
-	 OUTPUT :
-	   Mengembalikan nilai rata-rata (float).
+    INI
+   BELUUUUUUUUUUUUUUUUUUUUUMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+         MODUL : getValidatedMenuChoice()
+         DESKRIPSI : Melakukan Validasi Terhadap Input Yang Diberikan Oleh User
+         INPUT :
+           mhs[] ? array berisi data mahasiswa
+           n ? jumlah mahasiswa
+         OUTPUT :
+           Mengembalikan nilai rata-rata (float).
    =======================================================*/
 int getValidatedMenuChoice(int minChoice, int maxChoice) {
   int choice;
@@ -190,13 +197,12 @@ int getValidatedMenuChoice(int minChoice, int maxChoice) {
 }
 
 void openSummaryMenu(struct MonthReportList *monthReportList) {
-  if (monthReportList->amount == 0) {
+  if (monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan untuk ditampilkan. Buat laporan "
                     "terlebih dahulu.");
     return;
   }
 
-  
   showAllMonthReportSummary(monthReportList);
 }
 
@@ -252,7 +258,7 @@ void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
 }
 
 bool hasMonthReports(struct MonthReportList *monthReportList) {
-  return monthReportList != NULL && monthReportList->amount > 0;
+  return monthReportList != NULL && monthReportList->count > 0;
 }
 
 void printBudgetCategoryHeader() {
@@ -267,7 +273,7 @@ struct MonthReport *selectMonthReport(struct MonthReportList *monthReportList) {
 
   int reportChoice;
   if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1,
-                              monthReportList->amount, &reportChoice)) {
+                              monthReportList->count, &reportChoice)) {
     showErrorMessage("Input tidak valid.");
     return NULL;
   }
@@ -315,7 +321,7 @@ void showSetBudgetSuccessMessage(enum TransactionCategory category,
 }
 
 bool ensureHasMonthReports(struct MonthReportList *monthReportList) {
-  if (monthReportList == NULL || monthReportList->amount == 0) {
+  if (monthReportList == NULL || monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan. Buat laporan terlebih dahulu.");
     return false;
   }
@@ -345,13 +351,13 @@ void openSetCategoryBudgetMenu(struct MonthReportList *monthReportList) {
   }
 
   setBudgetForCategory(report, category, budget);
-  saveMonthReportToFile(report);
+  saveUserMonthReport(report);
 
   showSetBudgetSuccessMessage(category, budget);
 }
 
 bool hasMonthReportsView(struct MonthReportList *monthReportList) {
-  if (monthReportList == NULL || monthReportList->amount == 0) {
+  if (monthReportList == NULL || monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan.");
     return false;
   }
@@ -371,7 +377,7 @@ selectReportForBudgetView(struct MonthReportList *monthReportList) {
 
   int reportChoice;
   if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1,
-                              monthReportList->amount, &reportChoice)) {
+                              monthReportList->count, &reportChoice)) {
     showErrorMessage("Input tidak valid.");
     return NULL;
   }
@@ -394,8 +400,8 @@ void printBudgetPerCategoryHeader() {
 
 void printBudgetTableRow(const struct TransactionGroup *group) {
   printf("║ %-20s │ %-15lld │ %-15lld │ %-15lld │ %-10s ║\n",
-         transactionCategoryToString(group->category), group->maximumCost,
-         group->totalRealCost, group->remainingCost,
+         transactionCategoryToString(group->category), group->budget,
+         group->totalAmount, group->budget - group->totalAmount,
          getGroupBudgetStatus(group));
 }
 
@@ -407,8 +413,8 @@ void printBudgetTableFooter() {
 void printBudgetReport(const struct MonthReport *report) {
   printBudgetPerCategoryHeader();
 
-  for (int i = 0; i < report->groupsAmount; i++) {
-    const struct TransactionGroup *group = &report->groups[i];
+  for (int i = 0; i < report->groupCount; i++) {
+    const struct TransactionGroup *group = report->groups[i];
     printBudgetTableRow(group);
   }
 
@@ -451,16 +457,14 @@ void openResetBudgetMenu(struct MonthReportList *monthReportList) {
     return;
   }
 
-  
-
-  for (int i = 0; i < monthReportList->amount; i++) {
+  for (int i = 0; i < monthReportList->count; i++) {
     struct MonthReport *report = monthReportList->reports[i];
 
     for (int j = 0; j <= TC_OTHER; j++) {
       setBudgetForCategory(report, (enum TransactionCategory)j, 1000000);
     }
 
-    saveMonthReportToFile(report);
+    saveUserMonthReport(report);
   }
 
   showSuccessMessage("Semua budget berhasil direset ke Rp 1,000,000!");
@@ -564,18 +568,16 @@ void openSetMinimumTransactionMenu() {
   printf("│              💳 ATUR MINIMUM TRANSAKSI                  │\n");
   printf("└─────────────────────────────────────────────────────────┘\n");
 
-  printf("💳 Minimum saat ini: Rp %lld\n",
-         globalConfig.money.minimumTransactionAmount);
+  printf("💳 Minimum saat ini: Rp %lld\n", globalConfig.money.minimumBudget);
 
   long long newMinimum;
   if (!readAndValidateLongLong("💳 Masukkan minimum baru (minimal 1): ", 1,
-                               globalConfig.money.maximumTransactionAmount,
-                               &newMinimum)) {
+                               globalConfig.money.minimumBudget, &newMinimum)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
 
-  globalConfig.money.minimumTransactionAmount = newMinimum;
+  globalConfig.money.minimumBudget = newMinimum;
   saveConfigToFile("./config.txt");
 
   char successMsg[200];
@@ -650,8 +652,6 @@ void openResetConfigurationMenu() {
     return;
   }
 
-  
-
   initializeDefaultConfig();
   saveConfigToFile("./config.txt");
 
@@ -673,7 +673,7 @@ void openMainMenu(struct MonthReportList *monthReportList) {
         showErrorMessage("Admin tidak memiliki laporan pribadi! Gunakan Admin "
                          "Panel untuk melihat laporan semua pengguna.");
       } else {
-        
+
         openMonthlyMenu(monthReportList);
       }
       break;

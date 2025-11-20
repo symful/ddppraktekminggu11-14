@@ -94,14 +94,14 @@ void resetUserBudgets(struct MonthReportList *monthReportList) {
     return;
   }
 
-  for (int i = 0; i < monthReportList->amount; i++) {
+  for (int i = 0; i < monthReportList->count; i++) {
     struct MonthReport *report = monthReportList->reports[i];
 
     for (int j = 0; j <= TC_OTHER; j++) {
       setBudgetForCategory(report, (enum TransactionCategory)j, 1000000);
     }
 
-    saveMonthReportToFile(report);
+    saveUserMonthReport(report);
   }
 }
 
@@ -139,36 +139,35 @@ void viewAllUserReports() {
       continue;
     }
 
-    struct MonthReportList *reportList =
-        listUserMonthReports(userReportsDir, userReportsPath);
-    if (reportList == NULL || reportList->amount == 0) {
+    struct MonthReportList *reportList = listUserMonthReports();
+    if (reportList == NULL || reportList->count == 0) {
       printf("   📋 Tidak ada laporan ditemukan.\n\n");
       if (reportList)
         free(reportList);
       continue;
     }
 
-    printf("   📋 Total Laporan: %d\n", reportList->amount);
+    printf("   📋 Total Laporan: %d\n", reportList->count);
 
-    long long totalIncome = 0, totalExpense = 0;
-    for (int j = 0; j < reportList->amount; j++) {
+    long long totalIncome = 0, totalExpenses = 0;
+    for (int j = 0; j < reportList->count; j++) {
       struct MonthReport *report = reportList->reports[j];
       totalIncome += report->totalIncome;
-      totalExpense += report->totalExpense;
+      totalExpenses += report->totalExpenses;
 
       struct tm *timeinfo = localtime(&report->date);
       printf(
           "   📅 %04d-%02d: Pemasukan: %lld, Pengeluaran: %lld, Saldo: %lld\n",
           timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, report->totalIncome,
-          report->totalExpense, report->balance);
+          report->totalExpenses, report->balance);
     }
 
     printf("   💰 Ringkasan Total - Pemasukan: %lld, Pengeluaran: %lld, "
            "Bersih: %lld\n\n",
-           totalIncome, totalExpense, totalIncome - totalExpense);
+           totalIncome, totalExpenses, totalIncome - totalExpenses);
 
     if (reportList->reports) {
-      for (int j = 0; j < reportList->amount; j++) {
+      for (int j = 0; j < reportList->count; j++) {
         freeMonthReport(reportList->reports[j]);
       }
       free(reportList->reports);
@@ -216,19 +215,18 @@ void showSystemStatistics() {
 
     DIR *userReportsDir = opendir(userReportsPath);
     if (userReportsDir != NULL) {
-      struct MonthReportList *reportList =
-          listUserMonthReports(userReportsDir, userReportsPath);
-      if (reportList != NULL && reportList->amount > 0) {
-        totalReports += reportList->amount;
+      struct MonthReportList *reportList = listUserMonthReports();
+      if (reportList != NULL && reportList->count > 0) {
+        totalReports += reportList->count;
 
-        for (int j = 0; j < reportList->amount; j++) {
+        for (int j = 0; j < reportList->count; j++) {
           struct MonthReport *report = reportList->reports[j];
           systemTotalIncome += report->totalIncome;
-          systemTotalExpense += report->totalExpense;
+          systemTotalExpense += report->totalExpenses;
         }
 
         if (reportList->reports) {
-          for (int j = 0; j < reportList->amount; j++) {
+          for (int j = 0; j < reportList->count; j++) {
             freeMonthReport(reportList->reports[j]);
           }
           free(reportList->reports);

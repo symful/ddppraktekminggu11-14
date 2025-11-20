@@ -81,7 +81,7 @@ int validateMenuChoice(int choice, int minChoice, int maxChoice) {
 }
 
 int validateTransactionType(int type) {
-  return (type == TT_EXPENSE || type == TT_INCOME);
+  return (type == TRANSACTION_EXPENSE || type == TRANSACTION_INCOME);
 }
 
 int validateTransactionCategory(int category) {
@@ -180,7 +180,7 @@ int validateBudgetExceeded(struct TransactionGroup *group,
     return 0;
   }
 
-  return (group->totalRealCost + newAmount > group->maximumCost);
+  return (group->totalAmount + newAmount > group->budget);
 }
 
 int validateDuplicateMonthReport(struct MonthReportList *list, time_t date) {
@@ -193,7 +193,7 @@ int validateDuplicateMonthReport(struct MonthReportList *list, time_t date) {
     return 0;
   }
 
-  for (int i = 0; i < list->amount; i++) {
+  for (int i = 0; i < list->count; i++) {
     struct tm *existingDate = localtime(&list->reports[i]->date);
     if (existingDate != NULL && existingDate->tm_year == newDate->tm_year &&
         existingDate->tm_mon == newDate->tm_mon) {
@@ -209,7 +209,7 @@ int validateReportIndex(struct MonthReportList *list, int index) {
     return 0;
   }
 
-  return (index >= 0 && index < list->amount);
+  return (index >= 0 && index < list->count);
 }
 
 int validateGroupIndex(struct MonthReport *report, int index) {
@@ -217,7 +217,7 @@ int validateGroupIndex(struct MonthReport *report, int index) {
     return 0;
   }
 
-  return (index >= 0 && index < report->groupsAmount);
+  return (index >= 0 && index < report->groupCount);
 }
 
 int validateTransactionIndex(struct TransactionGroup *group, int index) {
@@ -225,7 +225,7 @@ int validateTransactionIndex(struct TransactionGroup *group, int index) {
     return 0;
   }
 
-  return (index >= 0 && index < group->transactionsAmount);
+  return (index >= 0 && index < group->transactionCount);
 }
 
 int readAndValidateInteger(const char *prompt, int minValue, int maxValue,

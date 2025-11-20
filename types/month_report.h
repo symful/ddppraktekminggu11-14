@@ -6,25 +6,11 @@
 
 struct MonthReport {
     time_t date;
-    int groupsAmount;
-    struct TransactionGroup* groups;
+    int groupCount;                    // Changed from groupsAmount for consistency
+    struct TransactionGroup** groups; // Changed to array of pointers for better memory management
     long long totalIncome;
-    long long totalExpense;
+    long long totalExpenses;           // Changed from totalExpense for consistency
     long long balance;
 };
-
-
-struct MonthReport* newMonthReport();
-void addTransactionGroupToReport(struct MonthReport* report, struct TransactionGroup* group);
-void removeTransactionGroupFromReport(struct MonthReport* report, int index);
-struct TransactionGroup* findGroupByCategory(struct MonthReport* report, enum TransactionCategory category);
-void updateReportCalculations(struct MonthReport* report);
-void freeMonthReport(struct MonthReport* report);
-void addMonthReportTransaction(struct MonthReport* monthReport, struct Transaction* transaction);
-void removeMonthReportTransaction(struct MonthReport* monthReport, int groupIndex, int transactionIndex);
-void setBudgetForCategory(struct MonthReport* report, enum TransactionCategory category, long long budget);
-int getTotalTransactions(struct MonthReport* report);
-void saveMonthReportToFile(struct MonthReport* report);
-void deleteMonthReportFile(struct MonthReport* report);
 
 #endif

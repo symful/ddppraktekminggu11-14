@@ -2,8 +2,9 @@
 #define TRANSACTION_STATUS_ENUM
 
 enum TransactionStatus {
-    TS_SAFE,
-    TS_OVER,
+    TRANSACTION_BUDGET_SAFE,
+    TRANSACTION_BUDGET_WARNING,
+    TRANSACTION_BUDGET_EXCEEDED,
 };
 
 const char *transactionStatusToString(enum TransactionStatus status);
