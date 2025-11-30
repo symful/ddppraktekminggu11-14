@@ -84,10 +84,6 @@ int validateTransactionType(int type) {
   return (type == TRANSACTION_EXPENSE || type == TRANSACTION_INCOME);
 }
 
-int validateTransactionCategory(int category) {
-  return (category >= TC_TRANSPORTATION && category <= TC_OTHER);
-}
-
 int validateMonthYearFormat(const char *input, time_t *result) {
   if (input == NULL || result == NULL) {
     return 0;
@@ -193,7 +189,6 @@ int validateDuplicateMonthReport(struct MonthReportList *list, time_t date) {
     return 0;
   }
 
-  // Copy the structure to avoid static buffer overwrite
   struct tm newDate = *newDatePtr;
 
   for (int i = 0; i < list->count; i++) {

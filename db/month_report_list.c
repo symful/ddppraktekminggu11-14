@@ -11,10 +11,6 @@
 #ifndef MONTH_REPORT_LIST_C
 #define MONTH_REPORT_LIST_C
 
-// ================================
-// Core List Management Functions
-// ================================
-
 struct MonthReportList *createMonthReportList() {
   struct MonthReportList *list =
       (struct MonthReportList *)malloc(sizeof(struct MonthReportList));
@@ -64,10 +60,6 @@ void freeMonthReportList(struct MonthReportList *list) {
   free(list);
 }
 
-// ================================
-// User-aware List Functions
-// ================================
-
 struct MonthReportList *listUserMonthReports() {
   if (currentUser == NULL || currentUser->isAdmin) {
     printf(
@@ -83,7 +75,7 @@ struct MonthReportList *listUserMonthReports() {
 
   DIR *dir = opendir(userReportsDir);
   if (dir == NULL) {
-    // Directory doesn't exist yet - return empty list
+
     return createMonthReportList();
   }
 
@@ -97,25 +89,22 @@ struct MonthReportList *listUserMonthReports() {
   char filepath[1024];
 
   while ((entry = readdir(dir)) != NULL) {
-    // Skip . and .. directories
+
     if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
       continue;
     }
 
-    // Only process .txt files that start with "report_"
     if (strstr(entry->d_name, "report_") != entry->d_name ||
         strstr(entry->d_name, ".txt") == NULL) {
       continue;
     }
 
-    // Construct full file path
     if (snprintf(filepath, sizeof(filepath), "%s/%s", userReportsDir,
                  entry->d_name) >= (int)sizeof(filepath)) {
       printf("Warning: Path too long for file %s, skipping.\n", entry->d_name);
       continue;
     }
 
-    // Load the report
     struct MonthReport *report = loadMonthReportFromPath(filepath);
     if (report != NULL) {
       addMonthReportToList(list, report);
@@ -159,10 +148,6 @@ int getUserReportCount() {
   return count;
 }
 
-// ================================
-// Admin-only List Functions
-// ================================
-
 struct MonthReportList *listAllUsersReports() {
   if (currentUser == NULL || !currentUser->isAdmin) {
     printf("Error: Admin access required\n");
@@ -184,14 +169,12 @@ struct MonthReportList *listAllUsersReports() {
   struct dirent *userEntry;
   char userReportsPath[1024];
 
-  // Iterate through each user directory
   while ((userEntry = readdir(usersDir)) != NULL) {
     if (strcmp(userEntry->d_name, ".") == 0 ||
         strcmp(userEntry->d_name, "..") == 0) {
       continue;
     }
 
-    // Check if this is a directory
     snprintf(userReportsPath, sizeof(userReportsPath), "%s/%s", USERS_DIR,
              userEntry->d_name);
     struct stat statbuf;
@@ -199,18 +182,16 @@ struct MonthReportList *listAllUsersReports() {
       continue;
     }
 
-    // Look for reports directory within user directory
     snprintf(userReportsPath, sizeof(userReportsPath), "%s/%s/reports",
              USERS_DIR, userEntry->d_name);
     DIR *reportsDir = opendir(userReportsPath);
     if (reportsDir == NULL) {
-      continue; // User doesn't have reports directory
+      continue;
     }
 
     struct dirent *reportEntry;
     char reportFilePath[1024];
 
-    // Load all reports from this user's reports directory
     while ((reportEntry = readdir(reportsDir)) != NULL) {
       if (strcmp(reportEntry->d_name, ".") == 0 ||
           strcmp(reportEntry->d_name, "..") == 0) {
@@ -250,7 +231,7 @@ struct MonthReportList *listUserReportsAsAdmin(const char *username) {
 
   DIR *dir = opendir(userReportsDir);
   if (dir == NULL) {
-    // User doesn't have reports directory or doesn't exist
+
     return createMonthReportList();
   }
 
@@ -340,10 +321,6 @@ int getAllUsersReportCount() {
   return totalCount;
 }
 
-// ================================
-// Utility Functions
-// ================================
-
 struct MonthReport *findReportInListByDate(struct MonthReportList *list,
                                            time_t date) {
   if (list == NULL || list->reports == NULL) {
@@ -374,7 +351,6 @@ void sortReportListByDate(struct MonthReportList *list, int ascending) {
     return;
   }
 
-  // Simple bubble sort by date
   for (int i = 0; i < list->count - 1; i++) {
     for (int j = 0; j < list->count - i - 1; j++) {
       if (list->reports[j] != NULL && list->reports[j + 1] != NULL) {
@@ -408,8 +384,7 @@ struct MonthReportList *filterReportsByDateRange(struct MonthReportList *list,
     if (list->reports[i] != NULL) {
       time_t reportDate = list->reports[i]->date;
       if (reportDate >= startDate && reportDate <= endDate) {
-        // Note: This creates a shallow copy - don't free the original reports
-        // if you plan to use both lists simultaneously
+
         addMonthReportToList(filteredList, list->reports[i]);
       }
     }

@@ -12,7 +12,7 @@ struct Transaction {
     char name[50];
     char description[256];
     enum TransactionType type;
-    enum TransactionCategory category;
+    char category[50];
     enum TransactionStatus status;
     long long amount;
 };

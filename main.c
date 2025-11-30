@@ -31,14 +31,13 @@ int main() {
 
   struct MonthReportList *monthReportList;
   if (currentUser != NULL && !currentUser->isAdmin) {
-    // For regular users, load their own reports
+
     monthReportList = listUserMonthReports();
   } else {
-    // For admin, load all users' reports
+
     monthReportList = listAllUsersReports();
   }
 
-  // Ensure we have a valid list
   if (monthReportList == NULL) {
     monthReportList = createMonthReportList();
   }

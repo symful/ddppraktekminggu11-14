@@ -6,11 +6,11 @@
 #define TRANSACTION_GROUP_STRUCT_DEFINED
 
 struct TransactionGroup {
-    enum TransactionCategory category;
-    long long budget;                    // Changed from maximumCost for clarity
-    long long totalAmount;              // Changed from totalRealCost for consistency
-    int transactionCount;               // Changed from transactionsAmount for consistency
-    struct Transaction** transactions;   // Changed to array of pointers for better memory management
+    char category[50];
+    long long budget;
+    long long totalAmount;
+    int transactionCount;
+    struct Transaction** transactions;
 };
 
 #endif

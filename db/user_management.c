@@ -70,6 +70,12 @@ int initializeUserWorkspace(const char *username) {
 
   createDefaultUserConfig();
 
+  struct CategoryList *categories = initializeDefaultCategories();
+  if (categories != NULL) {
+    saveUserCategories(categories);
+    freeCategoryList(categories);
+  }
+
   currentUser = oldUser;
   free(tempUser);
 
@@ -94,11 +100,19 @@ void resetUserBudgets(struct MonthReportList *monthReportList) {
     return;
   }
 
+  struct CategoryList *categories = getUserCategoriesCache();
+  if (categories == NULL) {
+    return;
+  }
+
   for (int i = 0; i < monthReportList->count; i++) {
     struct MonthReport *report = monthReportList->reports[i];
 
-    for (int j = 0; j <= TC_OTHER; j++) {
-      setBudgetForCategory(report, (enum TransactionCategory)j, 1000000);
+    for (int j = 0; j < categories->count; j++) {
+      if (categories->items[j] != NULL) {
+        setBudgetForCategory(report, categories->items[j]->internalName,
+                             1000000);
+      }
     }
 
     saveUserMonthReport(report);
@@ -450,7 +464,6 @@ void fixAdminSystem() {
   getchar();
 }
 
-// Enhanced admin menu functions
 void showEnhancedAdminMenu() {
   printf("╔══════════════════════════════════════════════════════════╗\n");
   printf("║                   👑 PANEL ADMIN ENHANCED               ║\n");

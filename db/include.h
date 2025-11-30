@@ -8,7 +8,7 @@
 #include "./month_report.h"
 #include "./month_report_list.h"
 
-// User management functions
+
 char *getUserConfigPath();
 void createDefaultUserConfig();
 int initializeUserWorkspace(const char *username);
@@ -19,7 +19,7 @@ void showSystemStatistics();
 void runAdminDiagnostics();
 void fixAdminSystem();
 
-// Enhanced admin functions (merged from admin_diagnostics)
+
 void showEnhancedAdminMenu();
 int handleEnhancedAdminMenu();
 int validateAdminPrivileges(const char *operation);

@@ -31,9 +31,9 @@ void handleInputBudget(int choice, struct MonthReportList *monthReportList, bool
 bool hasMonthReports(struct MonthReportList *monthReportList);
 void printBudgetCategoryHeader();
 struct MonthReport *selectMonthReport(struct MonthReportList *monthReportList);
-bool selectCategory(enum TransactionCategory *outCategory);
+bool selectCategory(char *outCategory, size_t bufferSize);
 bool inputNewBudget(long long *outBudget);
-void showSetBudgetSuccessMessage(enum TransactionCategory category, long long budget);
+void showSetBudgetSuccessMessage(const char *category, long long budget);
 bool hasMonthReports(struct MonthReportList *monthReportList);
 bool hasMonthReportsView(struct MonthReportList *monthReportList);
 void printCurrentBudgetHeader();

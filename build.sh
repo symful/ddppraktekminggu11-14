@@ -1,4 +1,3 @@
 #!/usr/bin/bash
 
-
-g++ -lcrypt -o FoxianWallet main.c
+gcc -o FoxianWallet main.c -I. -lm -lcrypt

@@ -11,14 +11,7 @@
 #ifndef MONTH_REPORT_C
 #define MONTH_REPORT_C
 
-// ================================
-// Function Declarations
-// ================================
 void updateReportCalculations(struct MonthReport *report);
-
-// ================================
-// Core MonthReport Functions
-// ================================
 
 struct MonthReport *newMonthReport() {
   struct MonthReport *report =
@@ -65,14 +58,11 @@ void removeTransactionGroupFromReport(struct MonthReport *report, int index) {
     return;
   }
 
-  // Free the group at the specified index
   if (report->groups[index] != NULL) {
-    // Assume there's a function to free TransactionGroup
-    // freeTransactionGroup(report->groups[index]);
+
     free(report->groups[index]);
   }
 
-  // Shift remaining groups
   for (int i = index; i < report->groupCount - 1; i++) {
     report->groups[i] = report->groups[i + 1];
   }
@@ -93,15 +83,15 @@ void removeTransactionGroupFromReport(struct MonthReport *report, int index) {
   updateReportCalculations(report);
 }
 
-struct TransactionGroup *
-findGroupByCategory(struct MonthReport *report,
-                    enum TransactionCategory category) {
-  if (report == NULL) {
+struct TransactionGroup *findGroupByCategory(struct MonthReport *report,
+                                             const char *category) {
+  if (report == NULL || category == NULL) {
     return NULL;
   }
 
   for (int i = 0; i < report->groupCount; i++) {
-    if (report->groups[i] != NULL && report->groups[i]->category == category) {
+    if (report->groups[i] != NULL &&
+        strcmp(report->groups[i]->category, category) == 0) {
       return report->groups[i];
     }
   }
@@ -142,8 +132,7 @@ void freeMonthReport(struct MonthReport *report) {
   if (report->groups != NULL) {
     for (int i = 0; i < report->groupCount; i++) {
       if (report->groups[i] != NULL) {
-        // Free individual TransactionGroup
-        // This assumes you have a freeTransactionGroup function
+
         free(report->groups[i]);
       }
     }
@@ -153,9 +142,9 @@ void freeMonthReport(struct MonthReport *report) {
   free(report);
 }
 
-void setBudgetForCategory(struct MonthReport *report,
-                          enum TransactionCategory category, long long budget) {
-  if (report == NULL) {
+void setBudgetForCategory(struct MonthReport *report, const char *category,
+                          long long budget) {
+  if (report == NULL || category == NULL) {
     return;
   }
 
@@ -163,11 +152,12 @@ void setBudgetForCategory(struct MonthReport *report,
   if (group != NULL) {
     group->budget = budget;
   } else {
-    // Create a new group for this category if it doesn't exist
+
     struct TransactionGroup *newGroup =
         (struct TransactionGroup *)malloc(sizeof(struct TransactionGroup));
     if (newGroup != NULL) {
-      newGroup->category = category;
+      strncpy(newGroup->category, category, sizeof(newGroup->category) - 1);
+      newGroup->category[sizeof(newGroup->category) - 1] = '\0';
       newGroup->budget = budget;
       newGroup->totalAmount = 0;
       newGroup->transactions = NULL;
@@ -192,10 +182,6 @@ int getTotalTransactions(struct MonthReport *report) {
   return totalTransactions;
 }
 
-// ================================
-// Low-level File Operations
-// ================================
-
 void saveMonthReportToPath(struct MonthReport *report, const char *filepath) {
   if (report == NULL || filepath == NULL) {
     return;
@@ -207,7 +193,6 @@ void saveMonthReportToPath(struct MonthReport *report, const char *filepath) {
     return;
   }
 
-  // Write header information
   fprintf(file, "MONTH_REPORT\n");
   fprintf(file, "DATE=%ld\n", report->date);
   fprintf(file, "TOTAL_INCOME=%lld\n", report->totalIncome);
@@ -215,17 +200,15 @@ void saveMonthReportToPath(struct MonthReport *report, const char *filepath) {
   fprintf(file, "BALANCE=%lld\n", report->balance);
   fprintf(file, "GROUP_COUNT=%d\n", report->groupCount);
 
-  // Write transaction groups
   for (int i = 0; i < report->groupCount; i++) {
     if (report->groups[i] != NULL) {
       fprintf(file, "GROUP_START\n");
-      fprintf(file, "CATEGORY=%d\n", report->groups[i]->category);
+      fprintf(file, "CATEGORY=%s\n", report->groups[i]->category);
       fprintf(file, "BUDGET=%lld\n", report->groups[i]->budget);
       fprintf(file, "TOTAL_AMOUNT=%lld\n", report->groups[i]->totalAmount);
       fprintf(file, "TRANSACTION_COUNT=%d\n",
               report->groups[i]->transactionCount);
 
-      // Write transactions in this group
       for (int j = 0; j < report->groups[i]->transactionCount; j++) {
         if (report->groups[i]->transactions[j] != NULL) {
           struct Transaction *trans = report->groups[i]->transactions[j];
@@ -233,7 +216,7 @@ void saveMonthReportToPath(struct MonthReport *report, const char *filepath) {
           fprintf(file, "ID=%d\n", trans->id);
           fprintf(file, "AMOUNT=%lld\n", trans->amount);
           fprintf(file, "TYPE=%d\n", trans->type);
-          fprintf(file, "CATEGORY=%d\n", trans->category);
+          fprintf(file, "CATEGORY=%s\n", trans->category);
           fprintf(file, "STATUS=%d\n", trans->status);
           fprintf(file, "DATE=%ld\n", trans->date);
           fprintf(file, "NAME=%s\n", trans->name);
@@ -255,14 +238,14 @@ struct MonthReport *loadMonthReportFromPath(const char *filepath) {
 
   FILE *file = fopen(filepath, "r");
   if (file == NULL) {
-    return NULL; // File doesn't exist or can't be opened
+    return NULL;
   }
 
   char line[512];
   if (fgets(line, sizeof(line), file) == NULL ||
       strncmp(line, "MONTH_REPORT", 12) != 0) {
     fclose(file);
-    return NULL; // Invalid file format
+    return NULL;
   }
 
   struct MonthReport *report = newMonthReport();
@@ -271,7 +254,6 @@ struct MonthReport *loadMonthReportFromPath(const char *filepath) {
     return NULL;
   }
 
-  // Read header information
   while (fgets(line, sizeof(line), file) != NULL) {
     if (strncmp(line, "DATE=", 5) == 0) {
       report->date = strtol(line + 5, NULL, 10);
@@ -282,9 +264,9 @@ struct MonthReport *loadMonthReportFromPath(const char *filepath) {
     } else if (strncmp(line, "BALANCE=", 8) == 0) {
       report->balance = strtoll(line + 8, NULL, 10);
     } else if (strncmp(line, "GROUP_COUNT=", 12) == 0) {
-      // We'll read groups dynamically, so this is just for validation
+
     } else if (strncmp(line, "GROUP_START", 11) == 0) {
-      // Read a transaction group
+
       struct TransactionGroup *group =
           (struct TransactionGroup *)malloc(sizeof(struct TransactionGroup));
       if (group == NULL) {
@@ -298,19 +280,22 @@ struct MonthReport *loadMonthReportFromPath(const char *filepath) {
       group->budget = 0;
       group->totalAmount = 0;
 
-      // Read group properties
       while (fgets(line, sizeof(line), file) != NULL &&
              strncmp(line, "GROUP_END", 9) != 0) {
         if (strncmp(line, "CATEGORY=", 9) == 0) {
-          group->category = (enum TransactionCategory)atoi(line + 9);
+          strncpy(group->category, line + 9, sizeof(group->category) - 1);
+          group->category[sizeof(group->category) - 1] = '\0';
+          char *newline = strchr(group->category, '\n');
+          if (newline)
+            *newline = '\0';
         } else if (strncmp(line, "BUDGET=", 7) == 0) {
           group->budget = strtoll(line + 7, NULL, 10);
         } else if (strncmp(line, "TOTAL_AMOUNT=", 13) == 0) {
           group->totalAmount = strtoll(line + 13, NULL, 10);
         } else if (strncmp(line, "TRANSACTION_COUNT=", 18) == 0) {
-          // We'll read transactions dynamically
+
         } else if (strncmp(line, "TRANSACTION_START", 17) == 0) {
-          // Read a transaction
+
           struct Transaction *trans =
               (struct Transaction *)malloc(sizeof(struct Transaction));
           if (trans == NULL) {
@@ -323,7 +308,6 @@ struct MonthReport *loadMonthReportFromPath(const char *filepath) {
           memset(trans->name, 0, sizeof(trans->name));
           memset(trans->description, 0, sizeof(trans->description));
 
-          // Read transaction properties
           while (fgets(line, sizeof(line), file) != NULL &&
                  strncmp(line, "TRANSACTION_END", 15) != 0) {
             if (strncmp(line, "ID=", 3) == 0) {
@@ -333,7 +317,11 @@ struct MonthReport *loadMonthReportFromPath(const char *filepath) {
             } else if (strncmp(line, "TYPE=", 5) == 0) {
               trans->type = (enum TransactionType)atoi(line + 5);
             } else if (strncmp(line, "CATEGORY=", 9) == 0) {
-              trans->category = (enum TransactionCategory)atoi(line + 9);
+              strncpy(trans->category, line + 9, sizeof(trans->category) - 1);
+              trans->category[sizeof(trans->category) - 1] = '\0';
+              char *newline = strchr(trans->category, '\n');
+              if (newline)
+                *newline = '\0';
             } else if (strncmp(line, "STATUS=", 7) == 0) {
               trans->status = (enum TransactionStatus)atoi(line + 7);
             } else if (strncmp(line, "DATE=", 5) == 0) {
@@ -352,7 +340,6 @@ struct MonthReport *loadMonthReportFromPath(const char *filepath) {
             }
           }
 
-          // Add transaction to group
           struct Transaction **newTransactions = (struct Transaction **)realloc(
               group->transactions,
               (group->transactionCount + 1) * sizeof(struct Transaction *));
@@ -384,10 +371,6 @@ void deleteMonthReportAtPath(const char *filepath) {
   }
 }
 
-// ================================
-// User-aware Path Management
-// ================================
-
 char *getUserReportsDirectory() {
   if (currentUser == NULL) {
     return NULL;
@@ -395,7 +378,7 @@ char *getUserReportsDirectory() {
 
   static char reportsDir[512];
   if (currentUser->isAdmin) {
-    // Admin can access a global reports directory or specific user directories
+
     snprintf(reportsDir, sizeof(reportsDir), "%s", USERS_DIR);
   } else {
     snprintf(reportsDir, sizeof(reportsDir), "%s/%s/reports", USERS_DIR,
@@ -430,10 +413,6 @@ int ensureUserReportsDirectoryExists() {
 
   return ensureUserReportsDirectory(currentUser->username);
 }
-
-// ================================
-// User-aware Database Operations
-// ================================
 
 struct MonthReport *loadUserMonthReport(time_t date) {
   if (currentUser == NULL || currentUser->isAdmin) {
@@ -505,10 +484,6 @@ int userReportExists(time_t date) {
   return 0;
 }
 
-// ================================
-// User-aware Report Management
-// ================================
-
 void addUserMonthReportTransaction(struct MonthReport *monthReport,
                                    struct Transaction *transaction) {
   if (monthReport == NULL || transaction == NULL || currentUser == NULL ||
@@ -516,16 +491,17 @@ void addUserMonthReportTransaction(struct MonthReport *monthReport,
     return;
   }
 
-  // Find or create the appropriate group for this transaction's category
   struct TransactionGroup *group =
       findGroupByCategory(monthReport, transaction->category);
   if (group == NULL) {
-    // Create a new group for this category
+
     group = (struct TransactionGroup *)malloc(sizeof(struct TransactionGroup));
     if (group == NULL) {
       return;
     }
-    group->category = transaction->category;
+    strncpy(group->category, transaction->category,
+            sizeof(group->category) - 1);
+    group->category[sizeof(group->category) - 1] = '\0';
     group->budget = 0;
     group->totalAmount = 0;
     group->transactions = NULL;
@@ -533,7 +509,6 @@ void addUserMonthReportTransaction(struct MonthReport *monthReport,
     addTransactionGroupToReport(monthReport, group);
   }
 
-  // Add transaction to the group
   struct Transaction **newTransactions = (struct Transaction **)realloc(
       group->transactions,
       (group->transactionCount + 1) * sizeof(struct Transaction *));
@@ -564,14 +539,12 @@ void removeUserMonthReportTransaction(struct MonthReport *monthReport,
     return;
   }
 
-  // Remove the transaction from the group
   struct Transaction *removedTransaction =
       group->transactions[transactionIndex];
   group->totalAmount -= removedTransaction->amount;
 
   free(removedTransaction);
 
-  // Shift remaining transactions
   for (int i = transactionIndex; i < group->transactionCount - 1; i++) {
     group->transactions[i] = group->transactions[i + 1];
   }
@@ -594,8 +567,7 @@ void removeUserMonthReportTransaction(struct MonthReport *monthReport,
   saveUserMonthReport(monthReport);
 }
 
-void setUserCategoryBudget(struct MonthReport *report,
-                           enum TransactionCategory category,
+void setUserCategoryBudget(struct MonthReport *report, const char *category,
                            long long budget) {
   if (report == NULL || currentUser == NULL || currentUser->isAdmin) {
     return;
@@ -614,10 +586,6 @@ void updateUserReportDate(struct MonthReport *report, time_t newDate) {
   report->date = newDate;
   saveUserMonthReport(report);
 }
-
-// ================================
-// Admin Functions
-// ================================
 
 char *generateAdminReportFilepath(const char *username, time_t date) {
   if (currentUser == NULL || !currentUser->isAdmin || username == NULL) {

@@ -171,6 +171,7 @@ struct User *createUserSession(const char *username) {
 
 void destroyUserSession() {
   if (currentUser != NULL) {
+    refreshCategoryCache();
     free(currentUser);
     currentUser = NULL;
   }

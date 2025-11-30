@@ -12,10 +12,6 @@
 #ifndef DIRECTORY_UTILS_C
 #define DIRECTORY_UTILS_C
 
-// ================================
-// Basic Directory Operations
-// ================================
-
 int createDirectory(const char *path, mode_t mode) {
   if (path == NULL) {
     return -1;
@@ -23,17 +19,15 @@ int createDirectory(const char *path, mode_t mode) {
 
   struct stat st = {0};
 
-  // Check if directory already exists
   if (stat(path, &st) == 0) {
     if (S_ISDIR(st.st_mode)) {
-      return 0; // Directory already exists
+      return 0;
     } else {
       errno = ENOTDIR;
-      return -1; // Path exists but is not a directory
+      return -1;
     }
   }
 
-  // Create the directory
   if (mkdir(path, mode) == 0) {
     return 0;
   }
@@ -55,13 +49,11 @@ int createDirectoryRecursive(const char *path, mode_t mode) {
   char *current = pathCopy;
   char *slash = current;
 
-  // Skip leading slash for absolute paths
   if (*current == '/') {
     current++;
     slash = current;
   }
 
-  // Create directories one by one
   while ((slash = strchr(current, '/')) != NULL) {
     *slash = '\0';
 
@@ -75,7 +67,6 @@ int createDirectoryRecursive(const char *path, mode_t mode) {
     current = slash + 1;
   }
 
-  // Create the final directory
   int result = createDirectory(pathCopy, mode);
   free(pathCopy);
 
@@ -90,10 +81,6 @@ int directoryExists(const char *path) {
   struct stat st;
   return (stat(path, &st) == 0 && S_ISDIR(st.st_mode));
 }
-
-// ================================
-// User-specific Directory Management
-// ================================
 
 int ensureUserDirectoryExists(const char *username) {
   if (username == NULL || strlen(username) == 0) {
@@ -121,7 +108,6 @@ int ensureUserReportsDirectory(const char *username) {
     return 0;
   }
 
-  // First ensure user directory exists
   if (!ensureUserDirectoryExists(username)) {
     return 0;
   }
@@ -166,32 +152,24 @@ char *getUserReportsDirectoryPath(const char *username) {
   return path;
 }
 
-// ================================
-// Directory Cleanup and Validation
-// ================================
-
 int isValidDirectoryName(const char *name) {
   if (name == NULL || strlen(name) == 0) {
     return 0;
   }
 
-  // Check length
   if (strlen(name) > MAX_USERNAME_LENGTH - 1) {
     return 0;
   }
 
-  // Check for invalid characters
   for (int i = 0; name[i] != '\0'; i++) {
     char c = name[i];
 
-    // Allow alphanumeric characters, underscore, and hyphen
     if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
           (c >= '0' && c <= '9') || c == '_' || c == '-')) {
       return 0;
     }
   }
 
-  // Check for reserved names
   if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0 ||
       strcmp(name, "admin") == 0 || strcmp(name, "root") == 0) {
     return 0;
@@ -213,7 +191,6 @@ int removeDirectoryIfEmpty(const char *path) {
   struct dirent *entry;
   int isEmpty = 1;
 
-  // Check if directory is empty (only contains . and ..)
   while ((entry = readdir(dir)) != NULL) {
     if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
       isEmpty = 0;
@@ -227,7 +204,7 @@ int removeDirectoryIfEmpty(const char *path) {
     return (rmdir(path) == 0);
   }
 
-  return 0; // Directory not empty
+  return 0;
 }
 
 long long getDirectorySize(const char *path) {
@@ -299,10 +276,6 @@ int countFilesInDirectory(const char *path) {
   return fileCount;
 }
 
-// ================================
-// Path Utilities
-// ================================
-
 char *joinPath(const char *base, const char *relative) {
   if (base == NULL || relative == NULL) {
     return NULL;
@@ -310,7 +283,7 @@ char *joinPath(const char *base, const char *relative) {
 
   size_t baseLen = strlen(base);
   size_t relativeLen = strlen(relative);
-  size_t totalLen = baseLen + relativeLen + 2; // +2 for '/' and '\0'
+  size_t totalLen = baseLen + relativeLen + 2;
 
   char *result = (char *)malloc(totalLen);
   if (result == NULL) {
@@ -319,12 +292,11 @@ char *joinPath(const char *base, const char *relative) {
 
   strcpy(result, base);
 
-  // Add separator if needed
   if (baseLen > 0 && base[baseLen - 1] != '/' && relative[0] != '/') {
     strcat(result, "/");
   } else if (baseLen > 0 && base[baseLen - 1] == '/' && relative[0] == '/') {
-    // Remove duplicate slash
-    relative++; // Skip the leading slash in relative
+
+    relative++;
   }
 
   strcat(result, relative);
@@ -344,14 +316,12 @@ char *normalizePath(const char *path) {
 
   strcpy(normalized, path);
 
-  // Remove trailing slashes (except for root)
   size_t len = strlen(normalized);
   while (len > 1 && normalized[len - 1] == '/') {
     normalized[len - 1] = '\0';
     len--;
   }
 
-  // Replace multiple consecutive slashes with single slash
   char *read = normalized;
   char *write = normalized;
   int prevWasSlash = 0;

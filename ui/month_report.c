@@ -72,10 +72,14 @@ void showTransactionGroupsList(struct MonthReport *monthReport) {
       struct TransactionGroup *group = monthReport->groups[i];
       const char *status = getGroupBudgetStatus(group);
 
+      struct CategoryList *categories = getUserCategoriesCache();
+      const char *displayName =
+          getCategoryDisplayName(categories, group->category);
+
       printf("║ %-3d │ %-15s │ %-12lld │ %-12lld │ %-12lld │ %-9d │ %-12s ║\n",
-             i + 1, transactionCategoryToString(group->category), group->budget,
-             group->totalAmount, group->budget - group->totalAmount,
-             group->transactionCount, status);
+             i + 1, displayName, group->budget, group->totalAmount,
+             group->budget - group->totalAmount, group->transactionCount,
+             status);
     }
   }
   printf("═════════════════════════════════════════════════════════════════════"
@@ -271,7 +275,8 @@ void showTransactionDetails(struct TransactionGroup *group) {
   clearScreen();
   printf("┌─────────────────────────────────────────────────────────┐\n");
 
-  const char *categoryStr = transactionCategoryToString(group->category);
+  struct CategoryList *categories = getUserCategoriesCache();
+  const char *categoryStr = getCategoryDisplayName(categories, group->category);
   int categoryLen = strlen(categoryStr);
   int totalWidth = 59;
   int prefixLen = 21;
@@ -519,20 +524,38 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
   newTransaction.type =
       (typeChoice == 1) ? TRANSACTION_INCOME : TRANSACTION_EXPENSE;
 
+  struct CategoryList *allCategories = getUserCategoriesCache();
+  struct CategoryList *filteredCategories =
+      getCategoriesByType(allCategories, newTransaction.type);
+
+  if (filteredCategories == NULL || filteredCategories->count == 0) {
+    showErrorMessage("Tidak ada kategori tersedia untuk tipe transaksi ini.");
+    if (filteredCategories != NULL) {
+      freeCategoryList(filteredCategories);
+    }
+    return;
+  }
+
   printf("\n📂 KATEGORI TRANSAKSI:\n");
   printf("─────────────────────\n");
-  for (int i = 0; i <= TC_OTHER; i++) {
-    printf("  %d. %s\n", i + 1,
-           transactionCategoryToString((enum TransactionCategory)i));
+  for (int i = 0; i < filteredCategories->count; i++) {
+    printf("  %d. %s\n", i + 1, filteredCategories->items[i]->displayName);
   }
 
   int categoryChoice;
-  if (!readAndValidateInteger("🎯 Pilihan: ", 1, TC_OTHER + 1,
+  if (!readAndValidateInteger("🎯 Pilihan: ", 1, filteredCategories->count,
                               &categoryChoice)) {
     showErrorMessage("Kategori tidak valid.");
+    freeCategoryList(filteredCategories);
     return;
   }
-  newTransaction.category = (enum TransactionCategory)(categoryChoice - 1);
+
+  strncpy(newTransaction.category,
+          filteredCategories->items[categoryChoice - 1]->internalName,
+          sizeof(newTransaction.category) - 1);
+  newTransaction.category[sizeof(newTransaction.category) - 1] = '\0';
+
+  freeCategoryList(filteredCategories);
 
   newTransaction.id = getTotalTransactions(monthReport) + 1;
 
@@ -568,21 +591,29 @@ void openCategoryBudgetMenu(struct MonthReport *monthReport) {
 
   showTransactionGroupsList(monthReport);
 
+  struct CategoryList *categories = getUserCategoriesCache();
+
+  if (categories == NULL || categories->count == 0) {
+    showErrorMessage("Tidak ada kategori tersedia.");
+    return;
+  }
+
   printf("\n📂 Pilih kategori untuk mengatur budget:\n");
-  for (int i = 0; i <= TC_OTHER; i++) {
-    printf("  %d. %s\n", i + 1,
-           transactionCategoryToString((enum TransactionCategory)i));
+  for (int i = 0; i < categories->count; i++) {
+    printf("  %d. %s\n", i + 1, categories->items[i]->displayName);
   }
 
   int categoryChoice;
-  if (!readAndValidateInteger("🎯 Pilihan: ", 1, TC_OTHER + 1,
+  if (!readAndValidateInteger("🎯 Pilihan: ", 1, categories->count,
                               &categoryChoice)) {
     showErrorMessage("Kategori tidak valid.");
     return;
   }
 
-  enum TransactionCategory category =
-      (enum TransactionCategory)(categoryChoice - 1);
+  char category[50];
+  strncpy(category, categories->items[categoryChoice - 1]->internalName,
+          sizeof(category) - 1);
+  category[sizeof(category) - 1] = '\0';
 
   long long newBudget;
   if (!readAndValidateLongLong("💰 Budget baru (Rp): ", 1, 1000000000000LL,
@@ -595,9 +626,10 @@ void openCategoryBudgetMenu(struct MonthReport *monthReport) {
   saveUserMonthReport(monthReport);
 
   char successMsg[200];
+  const char *displayName = getCategoryDisplayName(categories, category);
   snprintf(successMsg, sizeof(successMsg),
-           "Budget kategori '%s' berhasil diatur menjadi Rp %lld",
-           transactionCategoryToString(category), newBudget);
+           "Budget kategori '%s' berhasil diatur menjadi Rp %lld", displayName,
+           newBudget);
   showSuccessMessage(successMsg);
 }
 
@@ -708,9 +740,24 @@ void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
 
   long long totalIncome = 0, totalExpense = 0;
   int totalTransactions = 0;
-  long long categoryTotals[TC_OTHER + 1] = {0};
-  long long categoryMaximums[TC_OTHER + 1] = {0};
-  int categoryTransactions[TC_OTHER + 1] = {0};
+
+  struct CategoryList *categories = getUserCategoriesCache();
+  if (categories == NULL) {
+    return;
+  }
+
+  long long *categoryTotals =
+      (long long *)calloc(categories->count, sizeof(long long));
+  long long *categoryMaximums =
+      (long long *)calloc(categories->count, sizeof(long long));
+  int *categoryTransactions = (int *)calloc(categories->count, sizeof(int));
+
+  if (!categoryTotals || !categoryMaximums || !categoryTransactions) {
+    free(categoryTotals);
+    free(categoryMaximums);
+    free(categoryTransactions);
+    return;
+  }
 
   for (int i = 0; i < monthReportList->count; i++) {
     struct MonthReport *report = monthReportList->reports[i];
@@ -720,9 +767,15 @@ void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
 
     for (int j = 0; j < report->groupCount; j++) {
       struct TransactionGroup *group = report->groups[j];
-      categoryTotals[group->category] += group->totalAmount;
-      categoryMaximums[group->category] += group->budget;
-      categoryTransactions[group->category] += group->transactionCount;
+
+      for (int k = 0; k < categories->count; k++) {
+        if (strcmp(categories->items[k]->internalName, group->category) == 0) {
+          categoryTotals[k] += group->totalAmount;
+          categoryMaximums[k] += group->budget;
+          categoryTransactions[k] += group->transactionCount;
+          break;
+        }
+      }
     }
   }
 
@@ -752,20 +805,25 @@ void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
   printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
          "━━━━━━━━━━━━━━━━━━\n");
 
-  for (int category = 0; category <= TC_OTHER; category++) {
+  for (int category = 0; category < categories->count; category++) {
     if (categoryTransactions[category] > 0 || categoryMaximums[category] > 0) {
       long long remaining =
           categoryMaximums[category] - categoryTotals[category];
       const char *status = remaining >= 0 ? "✅ Aman" : "⚠️ Melebihi";
 
+      const char *displayName = getCategoryDisplayName(
+          categories, categories->items[category]->internalName);
       printf("║ %-20s │ %-15lld │ %-15lld │ %-15lld │ %-10d │ %-10s ║\n",
-             transactionCategoryToString((enum TransactionCategory)category),
-             categoryMaximums[category], categoryTotals[category], remaining,
-             categoryTransactions[category], status);
+             displayName, categoryMaximums[category], categoryTotals[category],
+             remaining, categoryTransactions[category], status);
     }
   }
   printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-         "━━━━━━━━━━━━━━━━━━\n");
+         "━━━━━━━━━━━━━━━━━━\n\n");
+
+  free(categoryTotals);
+  free(categoryMaximums);
+  free(categoryTransactions);
 
   waitForEnter();
 }

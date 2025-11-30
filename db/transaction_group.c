@@ -7,7 +7,7 @@
 #ifndef TRANSACTION_GROUP_C
 #define TRANSACTION_GROUP_C
 
-struct TransactionGroup *newTransactionGroup(enum TransactionCategory category,
+struct TransactionGroup *newTransactionGroup(const char *category,
                                              long long budget) {
   struct TransactionGroup *group =
       (struct TransactionGroup *)malloc(sizeof(struct TransactionGroup));
@@ -16,7 +16,13 @@ struct TransactionGroup *newTransactionGroup(enum TransactionCategory category,
     return NULL;
   }
 
-  group->category = category;
+  if (category != NULL) {
+    strncpy(group->category, category, sizeof(group->category) - 1);
+    group->category[sizeof(group->category) - 1] = '\0';
+  } else {
+    group->category[0] = '\0';
+  }
+
   group->budget = budget;
   group->transactionCount = 0;
   group->transactions = NULL;
@@ -31,7 +37,6 @@ void addTransactionToGroup(struct TransactionGroup *group,
     return;
   }
 
-  // Reallocate memory for the new transaction pointer
   struct Transaction **newTransactions = (struct Transaction **)realloc(
       group->transactions,
       (group->transactionCount + 1) * sizeof(struct Transaction *));
@@ -53,12 +58,10 @@ void removeTransactionFromGroup(struct TransactionGroup *group, int index) {
     return;
   }
 
-  // Free the transaction at the specified index
   if (group->transactions[index] != NULL) {
     free(group->transactions[index]);
   }
 
-  // Shift remaining transactions
   for (int i = index; i < group->transactionCount - 1; i++) {
     group->transactions[i] = group->transactions[i + 1];
   }
@@ -66,16 +69,16 @@ void removeTransactionFromGroup(struct TransactionGroup *group, int index) {
   group->transactionCount--;
 
   if (group->transactionCount > 0) {
-    // Reallocate to smaller size
+
     struct Transaction **newTransactions = (struct Transaction **)realloc(
         group->transactions,
         group->transactionCount * sizeof(struct Transaction *));
     if (newTransactions != NULL) {
       group->transactions = newTransactions;
     }
-    // If realloc fails, we still have the valid smaller array
+
   } else {
-    // No more transactions, free the array
+
     free(group->transactions);
     group->transactions = NULL;
   }
@@ -92,8 +95,7 @@ void updateGroupCalculations(struct TransactionGroup *group) {
 
   for (int i = 0; i < group->transactionCount; i++) {
     if (group->transactions[i] != NULL) {
-      // Sum all transaction amounts regardless of type for group totals
-      // Individual income/expense tracking is handled at report level
+
       group->totalAmount += group->transactions[i]->amount;
     }
   }
@@ -105,13 +107,13 @@ void freeTransactionGroup(struct TransactionGroup *group) {
   }
 
   if (group->transactions != NULL) {
-    // Free each individual transaction
+
     for (int i = 0; i < group->transactionCount; i++) {
       if (group->transactions[i] != NULL) {
         free(group->transactions[i]);
       }
     }
-    // Free the array of pointers
+
     free(group->transactions);
     group->transactions = NULL;
   }
@@ -125,15 +127,13 @@ int validateTransactionForGroup(struct TransactionGroup *group,
     return 0;
   }
 
-  // Income transactions are always valid
   if (transaction->type == TRANSACTION_INCOME) {
     return 1;
   }
 
-  // For expense transactions, check if it would exceed budget
   if (transaction->type == TRANSACTION_EXPENSE) {
     if (group->totalAmount + transaction->amount > group->budget) {
-      return 0; // Would exceed budget
+      return 0;
     }
   }
 
@@ -223,7 +223,6 @@ void sortTransactionsByDate(struct TransactionGroup *group, int ascending) {
     return;
   }
 
-  // Simple bubble sort by date
   for (int i = 0; i < group->transactionCount - 1; i++) {
     for (int j = 0; j < group->transactionCount - i - 1; j++) {
       if (group->transactions[j] != NULL &&
@@ -248,7 +247,6 @@ void sortTransactionsByAmount(struct TransactionGroup *group, int ascending) {
     return;
   }
 
-  // Simple bubble sort by amount
   for (int i = 0; i < group->transactionCount - 1; i++) {
     for (int j = 0; j < group->transactionCount - i - 1; j++) {
       if (group->transactions[j] != NULL &&
