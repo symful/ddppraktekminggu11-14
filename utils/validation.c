@@ -188,15 +188,19 @@ int validateDuplicateMonthReport(struct MonthReportList *list, time_t date) {
     return 0;
   }
 
-  struct tm *newDate = localtime(&date);
-  if (newDate == NULL) {
+  struct tm *newDatePtr = localtime(&date);
+  if (newDatePtr == NULL) {
     return 0;
   }
 
+  // Copy the structure to avoid static buffer overwrite
+  struct tm newDate = *newDatePtr;
+
   for (int i = 0; i < list->count; i++) {
-    struct tm *existingDate = localtime(&list->reports[i]->date);
-    if (existingDate != NULL && existingDate->tm_year == newDate->tm_year &&
-        existingDate->tm_mon == newDate->tm_mon) {
+    struct tm *existingDatePtr = localtime(&list->reports[i]->date);
+    if (existingDatePtr != NULL &&
+        existingDatePtr->tm_year == newDate.tm_year &&
+        existingDatePtr->tm_mon == newDate.tm_mon) {
       return 1;
     }
   }

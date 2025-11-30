@@ -9,12 +9,12 @@
 struct Transaction {
     int id;
     time_t date;
-    char name[50];                      // Increased size for better usability
-    char description[256];              // Increased size for better usability
+    char name[50];
+    char description[256];
     enum TransactionType type;
     enum TransactionCategory category;
     enum TransactionStatus status;
-    long long amount;                   // Main amount field - simplified from multiple cost fields
+    long long amount;
 };
 
 #endif
