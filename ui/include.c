@@ -1,2 +1,5 @@
+#include "./auth_ui.c"
+#include "./colors.c"
 #include "./master.c"
 #include "./month_report.c"
+#include "./screen.c"

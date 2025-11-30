@@ -2,17 +2,15 @@
 #include "../db/transaction_group.c"
 #include "../types/include.c"
 #include "../utils/validation.c"
+#include "./admin_menu_ui.c"
+#include "./auth_ui.c"
+#include "./colors.c"
 #include "./month_report.c"
+#include "./screen.c"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-/* =======================================================
-        MODUL : tampilkanMenu()
-        DESKRIPSI : Membersihkan Layar
-        INITIAL STATE : Terdapat teks pada layar
-        FINAL STATE : Layar dibersihkan menjadi kosong
-   =======================================================*/
 void clearScreen() {
 #ifdef _WIN32
   system("cls");
@@ -21,106 +19,128 @@ void clearScreen() {
 #endif
 }
 
-/* =======================================================
-        MODUL : waitForEnter()
-        DESKRIPSI : Meminta User Untuk Menekan Enter Untuk Lanjut
-        INITIAL STATE :
-        FINAL STATE :
-   =======================================================*/
 void waitForEnter() {
-  printf("\n📱 Tekan Enter untuk melanjutkan...");
+  printf("\n");
+  printInfo("📱 Tekan Enter untuk melanjutkan...");
   clearInputBuffer();
 }
 
-/* =======================================================
-        MODUL : printMainMenuHeader()
-        DESKRIPSI : Mencetak Header Menu Utama
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Header Menu Utama Ditampilkan Ke Layar
-   =======================================================*/
 void printMainMenuHeader() {
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│                    🏠 MENU UTAMA                        │\n");
+  int boxWidth = 59;
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("                    🏠 MENU UTAMA                        ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
 }
 
-/* =======================================================
-        MODUL : printInfoUser()
-        DESKRIPSI : Mencetak Informasi User (Username dan Hak Akses)
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Informasi User Ditampilkan Ke Layar
-   =======================================================*/
 void printInfoUser() {
+  int boxWidth = 59;
+
   if (currentUser == NULL)
     return;
 
   if (currentUser->isAdmin) {
-    printf("│              👑 Admin: %-30s │\n", currentUser->username);
-    printf("│              🚫 Tanpa Folder Pribadi                   │\n");
+    printCentered("│              👑 ", boxWidth);
+    printColored("Admin: ", COLOR_BRIGHT_YELLOW);
+    printColored(currentUser->username, COLOR_BRIGHT_CYAN);
+    for (int i = strlen(currentUser->username); i < 30; i++)
+      printf(" ");
+    printf(" │\n");
+    printCenteredColored(
+        "│              🚫 Tanpa Folder Pribadi                   │\n",
+        boxWidth, COLOR_BRIGHT_WHITE);
   } else {
-    printf("│              👤 Pengguna: %-27s │\n", currentUser->username);
+    printCentered("│              👤 ", boxWidth);
+    printColored("Pengguna: ", COLOR_BRIGHT_YELLOW);
+    printColored(currentUser->username, COLOR_BRIGHT_CYAN);
+    for (int i = strlen(currentUser->username); i < 27; i++)
+      printf(" ");
+    printf(" │\n");
   }
 }
 
-/* =======================================================
-        MODUL : printFiturMenu()
-        DESKRIPSI : Mencetak Fitur-Fitur Pada Menu Sesuai Role
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Fitur-Fitur Pada Menu Dicetak Sesuai Dengan Role
-   =======================================================*/
 void printFiturMenu() {
-  printf("├─────────────────────────────────────────────────────────┤\n");
+  int boxWidth = 59;
+  printCenteredColored(
+      "├─────────────────────────────────────────────────────────┤\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+
   if (currentUser != NULL && currentUser->isAdmin) {
-    printf("│  1. 🚫 Kelola Laporan Bulanan (Admin tidak memiliki)    │\n");
-    printf("│  2. 🚫 Lihat Ringkasan Keuangan (Admin tidak memiliki)  │\n");
-    printf("│  3. 🚫 Pengaturan Budget (Admin tidak memiliki)         │\n");
-    printf("│  4. 🚫 Kelola Kategori (Admin tidak memiliki)           │\n");
-    printf("│  5. ⚙️  Pengaturan Sistem                                │\n");
+    printCenteredColored(
+        "│  1. 🚫 Kelola Laporan Bulanan (Admin tidak memiliki)    │\n",
+        boxWidth, COLOR_DIM);
+    printCenteredColored(
+        "│  2. 🚫 Lihat Ringkasan Keuangan (Admin tidak memiliki)  │\n",
+        boxWidth, COLOR_DIM);
+    printCenteredColored(
+        "│  3. 🚫 Pengaturan Budget (Admin tidak memiliki)         │\n",
+        boxWidth, COLOR_DIM);
+    printCenteredColored(
+        "│  4. 🚫 Kelola Kategori (Admin tidak memiliki)           │\n",
+        boxWidth, COLOR_DIM);
+    printCentered("│  ", boxWidth);
+    printColored("5.", COLOR_BRIGHT_CYAN);
+    printf(" ⚙️  Pengaturan Sistem                                │\n");
   } else {
-    printf("│  1. 📊 Kelola Laporan Bulanan                           │\n");
-    printf("│  2. 📈 Lihat Ringkasan Keuangan                         │\n");
-    printf("│  3. ⚙️  Pengaturan Budget                                │\n");
-    printf("│  4. 🏷️  Kelola Kategori                                 │\n");
-    printf("│  5. 🔧 Pengaturan Sistem                                │\n");
+    printCentered("│  ", boxWidth);
+    printColored("1.", COLOR_BRIGHT_CYAN);
+    printf(" 📊 Kelola Laporan Bulanan                           │\n");
+    printCentered("│  ", boxWidth);
+    printColored("2.", COLOR_BRIGHT_CYAN);
+    printf(" 📈 Lihat Ringkasan Keuangan                         │\n");
+    printCentered("│  ", boxWidth);
+    printColored("3.", COLOR_BRIGHT_CYAN);
+    printf(" ⚙️  Pengaturan Budget                                │\n");
+    printCentered("│  ", boxWidth);
+    printColored("4.", COLOR_BRIGHT_CYAN);
+    printf(" 🏷️  Kelola Kategori                                 │\n");
+    printCentered("│  ", boxWidth);
+    printColored("5.", COLOR_BRIGHT_CYAN);
+    printf(" 🔧 Pengaturan Sistem                                │\n");
   }
 }
 
-/* =======================================================
-        MODUL : printFiturMenuAuth()
-        DESKRIPSI : Mencetak Fitur-Fitur Pada Menu Yang Berkaitan Autentikasi
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Fitur-Fitur Pada Menu Yang Berkaitan Autentikasi Dicetak
-   Sesuai Dengan Role
-   =======================================================*/
 void printFiturMenuAuth() {
+  int boxWidth = 59;
+
   if (currentUser != NULL && currentUser->isAdmin) {
-    printf("│  6. 👑 Admin Panel                                      │\n");
-    printf("│  7. 🔓 Logout                                           │\n");
-    printf("│  8. ❌ Keluar                                           │\n");
+    printCentered("│  ", boxWidth);
+    printColored("6.", COLOR_BRIGHT_CYAN);
+    printf(" 👑 Admin Panel                                      │\n");
+    printCentered("│  ", boxWidth);
+    printColored("7.", COLOR_BRIGHT_CYAN);
+    printf(" 🔓 Logout                                           │\n");
+    printCentered("│  ", boxWidth);
+    printColored("8.", COLOR_BRIGHT_CYAN);
+    printf(" ❌ Keluar                                           │\n");
   } else {
-    printf("│  6. 🔓 Logout                                           │\n");
-    printf("│  7. ❌ Keluar                                           │\n");
+    printCentered("│  ", boxWidth);
+    printColored("6.", COLOR_BRIGHT_CYAN);
+    printf(" 🔓 Logout                                           │\n");
+    printCentered("│  ", boxWidth);
+    printColored("7.", COLOR_BRIGHT_CYAN);
+    printf(" ❌ Keluar                                           │\n");
   }
 }
 
-/* =======================================================
-        MODUL : printMainMenuFooter()
-        DESKRIPSI : Mencetak Footer Main Menu
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Footer Main Menu Dicetak Pada Layar
-   =======================================================*/
 void printMainMenuFooter() {
-  printf("└─────────────────────────────────────────────────────────┘\n");
-  printf("\n💡 Tip: Pilih nomor menu yang diinginkan\n");
-  printf("🎯 Pilihan Anda: ");
+  int boxWidth = 59;
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("💡 Tip: Pilih nomor menu yang diinginkan\n");
+  printCentered("", boxWidth);
+  printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 }
 
-/* =======================================================
-        MODUL : showMainMenu()
-        DESKRIPSI : Menampung Seluruh Modul Yang Menampilkan Main Menu
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Melakukan Pemanggilan
-   Modul) FINAL STATE : Modul yang Terkait Dengan Mencetak Main Menu Dipanggil
-   =======================================================*/
 void showMainMenu() {
+  int contentLines = 14;
+  clearAndCenterVertically(contentLines);
   printMainMenuHeader();
   printInfoUser();
   printFiturMenu();
@@ -128,51 +148,31 @@ void showMainMenu() {
   printMainMenuFooter();
 }
 
-/* =======================================================
-        MODUL : showSuccessMessage()
-        DESKRIPSI : Menampilkan Pesan Sukses
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Pesan Sukses Dicetak Ke Layar, Sesuai Dengan Message Yang
-   Dikirimkan Lewat Parameter
-   =======================================================*/
 void showSuccessMessage(const char *message) {
-  printf("\n✅ %s", message);
+  printf("\n");
+  printSuccess("✅ ");
+  printf("%s", message);
   waitForEnter();
 }
 
-/* =======================================================
-        MODUL : showErrorMessage()
-        DESKRIPSI : Menampilkan Pesan Error
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Pesan Error Dicetak Ke Layar, Sesuai Dengan Message Yang
-   Dikirimkan Lewat Parameter
-   =======================================================*/
 void showErrorMessage(const char *message) {
-  printf("\n❌ %s", message);
+  printf("\n");
+  printError("❌ ");
+  printf("%s", message);
   waitForEnter();
 }
 
-/* =======================================================
-        MODUL : showWarningMessage()
-        DESKRIPSI : Menampilkan Pesan Warning
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Pesan Warning Dicetak Ke Layar, Sesuai Dengan Message Yang
-   Dikirimkan Lewat Parameter
-   =======================================================*/
 void showWarningMessage(const char *message) {
-  printf("\n⚠️  %s", message);
+  printf("\n");
+  printWarning("⚠️  ");
+  printf("%s", message);
   waitForEnter();
 }
 
-/* =======================================================
-        MODUL : showInfoMessage()
-        DESKRIPSI : Menampilkan Pesan Informasi
-        INITIAL STATE : (Tidak Ada Data Yang Diubah, Hanya Menampilkan Teks)
-        FINAL STATE : Pesan Informasi Dicetak Ke Layar, Sesuai Dengan Message
-   Yang Dikirimkan Lewat Parameter
-   =======================================================*/
 void showInfoMessage(const char *message) {
-  printf("\nℹ️  %s", message);
+  printf("\n");
+  printInfo("ℹ️  ");
+  printf("%s", message);
   waitForEnter();
 }
 
@@ -209,16 +209,38 @@ void openSummaryMenu(struct MonthReportList *monthReportList) {
 }
 
 void printBudgetHeader() {
-  clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│                 ⚙️  PENGATURAN BUDGET                    │\n");
-  printf("├─────────────────────────────────────────────────────────┤\n");
-  printf("│  1. 🏷️  Atur Budget per Kategori                         │\n");
-  printf("│  2. 📋 Lihat Budget Saat Ini                            │\n");
-  printf("│  3. 🔄 Reset Semua Budget                               │\n");
-  printf("│  4. ⬅️  Kembali ke Menu Utama                            │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
-  printf("\n🎯 Pilihan Anda: ");
+  int boxWidth = 59;
+  int contentLines = 10;
+  clearAndCenterVertically(contentLines);
+
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("                 ⚙️  PENGATURAN BUDGET                    ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "├─────────────────────────────────────────────────────────┤\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│  ", boxWidth);
+  printColored("1.", COLOR_BRIGHT_CYAN);
+  printf(" 🏷️  Atur Budget per Kategori                         │\n");
+  printCentered("│  ", boxWidth);
+  printColored("2.", COLOR_BRIGHT_CYAN);
+  printf(" 📋 Lihat Budget Saat Ini                            │\n");
+  printCentered("│  ", boxWidth);
+  printColored("3.", COLOR_BRIGHT_CYAN);
+  printf(" 🔄 Reset Semua Budget                               │\n");
+  printCentered("│  ", boxWidth);
+  printColored("4.", COLOR_BRIGHT_CYAN);
+  printf(" ⬅️  Kembali ke Menu Utama                            │\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printf("\n");
+  printCentered("", boxWidth);
+  printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 }
 
 int validasiInputBudget() { return getValidatedMenuChoice(1, 4); }
@@ -264,10 +286,18 @@ bool hasMonthReports(struct MonthReportList *monthReportList) {
 }
 
 void printBudgetCategoryHeader() {
+  int boxWidth = 59;
   clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│             🏷️  ATUR BUDGET PER KATEGORI                │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("             🏷️  ATUR BUDGET PER KATEGORI                ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 }
 
 struct MonthReport *selectMonthReport(struct MonthReportList *monthReportList) {
@@ -291,11 +321,25 @@ bool selectCategory(char *outCategory, size_t bufferSize) {
     return false;
   }
 
-  printf("\n📂 Pilih Kategori untuk Mengatur Budget:\n");
-  printf("─────────────────────────────────────────\n");
+  int boxWidth = 59;
+  printf("\n");
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("        📂 Pilih Kategori untuk Mengatur Budget          ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printf("\n");
   for (int i = 0; i < categories->count; i++) {
-    printf("  %d. %s\n", i + 1, categories->items[i]->displayName);
+    printCentered("  ", boxWidth);
+    printf("%s%d.%s %s\n", COLOR_BRIGHT_CYAN, i + 1, COLOR_RESET,
+           categories->items[i]->displayName);
   }
+  printf("\n");
 
   int categoryChoice;
   if (!readAndValidateInteger("\n🎯 Pilihan kategori: ", 1, categories->count,
@@ -377,10 +421,18 @@ bool hasMonthReportsView(struct MonthReportList *monthReportList) {
 }
 
 void printCurrentBudgetHeader() {
+  int boxWidth = 59;
   clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│                📋 BUDGET SAAT INI                      │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("               📋 LIHAT BUDGET SAAT INI                  ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 }
 
 struct MonthReport *
@@ -398,29 +450,63 @@ selectReportForBudgetView(struct MonthReportList *monthReportList) {
 }
 
 void printBudgetPerCategoryHeader() {
-  printf("\n╔══════════════════════════════════════════════════════════════════"
-         "════════════════╗\n");
-  printf("║                              💰 DETAIL BUDGET PER KATEGORI         "
-         "               ║\n");
-  printf("╠════════════════════════════════════════════════════════════════════"
-         "══════════════╣\n");
-  printf("║ %-20s │ %-15s │ %-15s │ %-15s │ %-10s ║\n", "KATEGORI",
-         "BUDGET (Rp)", "TERPAKAI (Rp)", "SISA (Rp)", "STATUS");
-  printf("╠════════════════════════════════════════════════════════════════════"
-         "══════════════╣\n");
+  int boxWidth = 88;
+  printf("\n");
+  printCenteredColored("╔══════════════════════════════════════════════════════"
+                       "════════════════════════════════╗\n",
+                       boxWidth, COLOR_BRIGHT_CYAN);
+  printCentered("║", boxWidth);
+  printWithBg("                              💰 DETAIL BUDGET PER KATEGORI     "
+              "                      ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("║\n");
+  printCenteredColored("╠══════════════════════════════════════════════════════"
+                       "════════════════════════════════╣\n",
+                       boxWidth, COLOR_BRIGHT_CYAN);
+  printCentered("║ ", boxWidth);
+  printColored("KATEGORI", COLOR_BRIGHT_CYAN);
+  printf("            │ ");
+  printColored("BUDGET (Rp)", COLOR_BRIGHT_CYAN);
+  printf("     │ ");
+  printColored("TERPAKAI (Rp)", COLOR_BRIGHT_CYAN);
+  printf("   │ ");
+  printColored("SISA (Rp)", COLOR_BRIGHT_CYAN);
+  printf("       │ ");
+  printColored("STATUS", COLOR_BRIGHT_CYAN);
+  printf("     ║\n");
+  printCenteredColored("╠══════════════════════════════════════════════════════"
+                       "════════════════════════════════╣\n",
+                       boxWidth, COLOR_BRIGHT_CYAN);
 }
 
 void printBudgetTableRow(const struct TransactionGroup *group) {
+  int boxWidth = 88;
   struct CategoryList *categories = getUserCategoriesCache();
   const char *displayName = getCategoryDisplayName(categories, group->category);
-  printf("║ %-20s │ %-15lld │ %-15lld │ %-15lld │ %-10s ║\n", displayName,
-         group->budget, group->totalAmount, group->budget - group->totalAmount,
-         getGroupBudgetStatus(group));
+  long long remaining = group->budget - group->totalAmount;
+  double percentage = group->budget > 0
+                          ? ((double)group->totalAmount / group->budget) * 100.0
+                          : 0.0;
+  const char *status = getGroupBudgetStatus(group);
+
+  printCentered("║ ", boxWidth);
+  printf("%-20s │ ", displayName);
+  printColored("%-15lld", COLOR_BRIGHT_CYAN);
+  printf(" │ ");
+  printColored("%-15lld",
+               remaining >= 0 ? COLOR_BRIGHT_GREEN : COLOR_BRIGHT_RED);
+  printf(" │ ");
+  printAmount(remaining);
+  printf("%-15s │ ", "");
+  printBudgetStatus(status, percentage);
+  printf("%-10s ║\n", "");
 }
 
 void printBudgetTableFooter() {
-  printf("╚════════════════════════════════════════════════════════════════════"
-         "══════════════╝\n");
+  int boxWidth = 88;
+  printCenteredColored("╚══════════════════════════════════════════════════════"
+                       "════════════════════════════════╝\n",
+                       boxWidth, COLOR_BRIGHT_CYAN);
 }
 
 void printBudgetReport(const struct MonthReport *report) {
@@ -452,6 +538,7 @@ void openViewBudgetMenu(struct MonthReportList *monthReportList) {
 }
 
 void showAllCategories() {
+  int boxWidth = 59;
   clearScreen();
   struct CategoryList *categories = getUserCategoriesCache();
 
@@ -461,56 +548,109 @@ void showAllCategories() {
     return;
   }
 
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│                📋 DAFTAR KATEGORI                       │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("                📋 DAFTAR KATEGORI                       ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
-  printf("\n💰 KATEGORI PENDAPATAN:\n");
-  printf("═══════════════════════════════════════════════════════════\n");
+  printf("\n");
+  printCentered("", boxWidth);
+  printSuccess("💰 KATEGORI PENDAPATAN:\n");
+  printCenteredColored(
+      "═══════════════════════════════════════════════════════════\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
   int incomeCount = 0;
   for (int i = 0; i < categories->count; i++) {
     if (categories->items[i]->type == TRANSACTION_INCOME) {
-      printf("  %d. %-30s %s\n", ++incomeCount,
-             categories->items[i]->displayName,
-             categories->items[i]->isDefault ? "[Default]" : "[Custom]");
+      printCentered("  ", boxWidth);
+      printf("%d.", i + 1);
+      printf(" %-30s ", categories->items[i]->displayName);
+      if (categories->items[i]->isDefault) {
+        printColored("[Default]", COLOR_BRIGHT_WHITE);
+      } else {
+        printColored("[Custom]", COLOR_BRIGHT_YELLOW);
+      }
+      printf("\n");
+      incomeCount++;
     }
   }
   if (incomeCount == 0) {
-    printf("  📭 Tidak ada kategori pendapatan\n");
+    printCentered("  📭 Tidak ada kategori pendapatan\n", boxWidth);
   }
 
-  printf("\n💸 KATEGORI PENGELUARAN:\n");
-  printf("═══════════════════════════════════════════════════════════\n");
+  printf("\n");
+  printCentered("", boxWidth);
+  printError("💸 KATEGORI PENGELUARAN:\n");
+  printCenteredColored(
+      "═══════════════════════════════════════════════════════════\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
   int expenseCount = 0;
   for (int i = 0; i < categories->count; i++) {
     if (categories->items[i]->type == TRANSACTION_EXPENSE) {
-      printf("  %d. %-30s %s\n", ++expenseCount,
-             categories->items[i]->displayName,
-             categories->items[i]->isDefault ? "[Default]" : "[Custom]");
+      printCentered("  ", boxWidth);
+      printf("%d.", i + 1);
+      printf(" %-30s ", categories->items[i]->displayName);
+      if (categories->items[i]->isDefault) {
+        printColored("[Default]", COLOR_BRIGHT_WHITE);
+      } else {
+        printColored("[Custom]", COLOR_BRIGHT_YELLOW);
+      }
+      printf("\n");
+      expenseCount++;
     }
   }
   if (expenseCount == 0) {
-    printf("  📭 Tidak ada kategori pengeluaran\n");
+    printCentered("  📭 Tidak ada kategori pengeluaran\n", boxWidth);
   }
 
-  printf("\n📊 Total: %d kategori (%d pendapatan, %d pengeluaran)\n",
-         categories->count, incomeCount, expenseCount);
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("📊 Total: ");
+  printf("%d kategori (", categories->count);
+  printf("%s%d%s", COLOR_BRIGHT_GREEN, incomeCount, COLOR_RESET);
+  printf(" pendapatan, ");
+  printf("%s%d%s", COLOR_BRIGHT_RED, expenseCount, COLOR_RESET);
+  printf(" pengeluaran)\n");
 }
 
 void openAddCategoryMenu() {
-  clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│               ➕ TAMBAH KATEGORI BARU                    │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  int boxWidth = 59;
+  int contentLines = 12;
+  clearAndCenterVertically(contentLines);
 
-  printf("\n📝 TIPE KATEGORI:\n");
-  printf("  1. 💰 Pendapatan (Income)\n");
-  printf("  2. 💸 Pengeluaran (Expense)\n");
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("               ➕ TAMBAH KATEGORI BARU                    ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("📝 TIPE KATEGORI:\n");
+  printCentered("  ", boxWidth);
+  printColored("1.", COLOR_BRIGHT_CYAN);
+  printf(" 💰 Pendapatan (Income)\n");
+  printCentered("  ", boxWidth);
+  printColored("2.", COLOR_BRIGHT_CYAN);
+  printf(" 💸 Pengeluaran (Expense)\n");
 
   int typeChoice;
-  if (!readAndValidateInteger("\n🎯 Pilihan: ", 1, 2, &typeChoice)) {
+  printf("\n");
+  printCentered("", boxWidth);
+  if (!readAndValidateInteger("🎯 Pilihan: ", 1, 2, &typeChoice)) {
     showErrorMessage("Tipe tidak valid.");
     waitForEnter();
     return;
@@ -520,8 +660,10 @@ void openAddCategoryMenu() {
       (typeChoice == 1) ? TRANSACTION_INCOME : TRANSACTION_EXPENSE;
 
   char displayName[50];
+  printf("\n");
+  printCentered("", boxWidth);
   if (!readCategoryNameSafe(displayName, sizeof(displayName),
-                            "\n📝 Nama kategori (Indonesia): ")) {
+                            "📝 Nama kategori (Indonesia): ")) {
     showErrorMessage("Nama kategori tidak valid.");
     waitForEnter();
     return;
@@ -558,15 +700,27 @@ void openAddCategoryMenu() {
 }
 
 void openDeleteCategoryMenu() {
+  int boxWidth = 59;
   clearScreen();
   struct CategoryList *categories = getUserCategoriesCache();
 
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│               🗑️  HAPUS KATEGORI CUSTOM                 │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("               🗑️  HAPUS KATEGORI CUSTOM                 ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
-  printf("\n📋 KATEGORI CUSTOM:\n");
-  printf("═══════════════════════════════════════════════════════════\n");
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("📋 KATEGORI CUSTOM:\n");
+  printCenteredColored(
+      "═══════════════════════════════════════════════════════════\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
   int customCount = 0;
   int customIndices[100];
@@ -574,10 +728,14 @@ void openDeleteCategoryMenu() {
   for (int i = 0; i < categories->count; i++) {
     if (!categories->items[i]->isDefault) {
       customIndices[customCount] = i;
-      printf("  %d. %s (%s)\n", customCount + 1,
-             categories->items[i]->displayName,
-             categories->items[i]->type == TRANSACTION_INCOME ? "Pendapatan"
-                                                              : "Pengeluaran");
+      printCentered("  ", boxWidth);
+      printf("%d.", i + 1);
+      printf(" %s ", categories->items[i]->displayName);
+      if (categories->items[i]->type == TRANSACTION_INCOME) {
+        printSuccess("(Pendapatan)\n");
+      } else {
+        printError("(Pengeluaran)\n");
+      }
       customCount++;
     }
   }
@@ -588,11 +746,15 @@ void openDeleteCategoryMenu() {
     return;
   }
 
-  printf("\n💡 Catatan: Kategori default tidak dapat dihapus\n");
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("💡 Catatan: Kategori default tidak dapat dihapus\n");
 
   int choice;
+  printf("\n");
+  printCentered("", boxWidth);
   if (!readAndValidateInteger(
-          "\n🎯 Pilih kategori untuk dihapus (0 untuk batal): ", 0, customCount,
+          "🎯 Pilih kategori untuk dihapus (0 untuk batal): ", 0, customCount,
           &choice)) {
     showErrorMessage("Pilihan tidak valid.");
     waitForEnter();
@@ -614,8 +776,11 @@ void openDeleteCategoryMenu() {
     return;
   }
 
-  printf("\n⚠️  Anda yakin ingin menghapus kategori '%s'? (y/n): ",
-         categories->items[categoryIndex]->displayName);
+  printf("\n");
+  printCentered("", boxWidth);
+  printWarning("⚠️  Anda yakin ingin menghapus kategori '");
+  printf("%s", categories->items[categoryIndex]->displayName);
+  printf("'? (y/n): ");
 
   char confirm;
   scanf(" %c", &confirm);
@@ -641,17 +806,38 @@ void openDeleteCategoryMenu() {
 }
 
 void openCategoryManagementMenu() {
+  int boxWidth = 59;
   while (1) {
-    clearScreen();
-    printf("┌─────────────────────────────────────────────────────────┐\n");
-    printf("│                🏷️  KELOLA KATEGORI                      │\n");
-    printf("├─────────────────────────────────────────────────────────┤\n");
-    printf("│  1. 📋 Lihat Semua Kategori                             │\n");
-    printf("│  2. ➕ Tambah Kategori Baru                             │\n");
-    printf("│  3. 🗑️  Hapus Kategori Custom                           │\n");
-    printf("│  4. ⬅️  Kembali ke Menu Utama                            │\n");
-    printf("└─────────────────────────────────────────────────────────┘\n");
-    printf("\n🎯 Pilihan Anda: ");
+    int contentLines = 10;
+    clearAndCenterVertically(contentLines);
+    printCenteredColored(
+        "┌─────────────────────────────────────────────────────────┐\n",
+        boxWidth, COLOR_BRIGHT_CYAN);
+    printCentered("│", boxWidth);
+    printWithBg("                🏷️  KELOLA KATEGORI                      ",
+                COLOR_BRIGHT_WHITE, BG_BLUE);
+    printf("│\n");
+    printCenteredColored(
+        "├─────────────────────────────────────────────────────────┤\n",
+        boxWidth, COLOR_BRIGHT_CYAN);
+    printCentered("│  ", boxWidth);
+    printColored("1.", COLOR_BRIGHT_CYAN);
+    printf(" 📋 Lihat Semua Kategori                             │\n");
+    printCentered("│  ", boxWidth);
+    printColored("2.", COLOR_BRIGHT_CYAN);
+    printf(" ➕ Tambah Kategori Baru                             │\n");
+    printCentered("│  ", boxWidth);
+    printColored("3.", COLOR_BRIGHT_CYAN);
+    printf(" 🗑️  Hapus Kategori Custom                           │\n");
+    printCentered("│  ", boxWidth);
+    printColored("4.", COLOR_BRIGHT_CYAN);
+    printf(" ⬅️  Kembali ke Menu Utama                            │\n");
+    printCenteredColored(
+        "└─────────────────────────────────────────────────────────┘\n",
+        boxWidth, COLOR_BRIGHT_CYAN);
+    printf("\n");
+    printCentered("", boxWidth);
+    printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 
     int choice = getValidatedMenuChoice(1, 4);
     if (choice == -1)
@@ -675,16 +861,31 @@ void openCategoryManagementMenu() {
 }
 
 void openResetBudgetMenu(struct MonthReportList *monthReportList) {
-  clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│              🔄 RESET SEMUA BUDGET                      │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  int boxWidth = 59;
+  int contentLines = 10;
+  clearAndCenterVertically(contentLines);
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("              🔄 RESET SEMUA BUDGET                      ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
-  printf("⚠️  PERINGATAN: Ini akan mengatur semua budget ke nilai default!\n");
-  printf("📊 Budget default untuk setiap kategori: Rp 1,000,000\n\n");
+  printf("\n");
+  printCentered("", boxWidth);
+  printWarning(
+      "⚠️  PERINGATAN: Ini akan mengatur semua budget ke nilai default!\n");
+  printCentered("", boxWidth);
+  printInfo("📊 Budget default untuk setiap kategori: ");
+  printf("%sRp 1,000,000%s\n\n", COLOR_BRIGHT_CYAN, COLOR_RESET);
 
   char confirmation;
-  printf("❓ Apakah Anda yakin? (y/n): ");
+  printCentered("", boxWidth);
+  printColored("❓ Apakah Anda yakin? (y/n): ", COLOR_BRIGHT_YELLOW);
   scanf(" %c", &confirmation);
   clearInputBuffer();
 
@@ -715,19 +916,44 @@ void openResetBudgetMenu(struct MonthReportList *monthReportList) {
 }
 
 void openConfigurationMenu(struct MonthReportList *monthReportList) {
+  int boxWidth = 59;
   while (1) {
-    clearScreen();
-    printf("┌─────────────────────────────────────────────────────────┐\n");
-    printf("│                🔧 PENGATURAN SISTEM                     │\n");
-    printf("├─────────────────────────────────────────────────────────┤\n");
-    printf("│  1. 💰 Atur Minimum Jumlah Uang                         │\n");
-    printf("│  2. 📊 Atur Minimum Budget                              │\n");
-    printf("│  3. 💳 Atur Minimum Transaksi                           │\n");
-    printf("│  4. 📋 Lihat Pengaturan Saat Ini                        │\n");
-    printf("│  5. 🔄 Reset ke Pengaturan Default                      │\n");
-    printf("│  6. ⬅️  Kembali ke Menu Utama                            │\n");
-    printf("└─────────────────────────────────────────────────────────┘\n");
-    printf("\n🎯 Pilihan Anda: ");
+    int contentLines = 12;
+    clearAndCenterVertically(contentLines);
+    printCenteredColored(
+        "┌─────────────────────────────────────────────────────────┐\n",
+        boxWidth, COLOR_BRIGHT_CYAN);
+    printCentered("│", boxWidth);
+    printWithBg("                🔧 PENGATURAN SISTEM                     ",
+                COLOR_BRIGHT_WHITE, BG_BLUE);
+    printf("│\n");
+    printCenteredColored(
+        "├─────────────────────────────────────────────────────────┤\n",
+        boxWidth, COLOR_BRIGHT_CYAN);
+    printCentered("│  ", boxWidth);
+    printColored("1.", COLOR_BRIGHT_CYAN);
+    printf(" 💰 Atur Minimum Jumlah Uang                         │\n");
+    printCentered("│  ", boxWidth);
+    printColored("2.", COLOR_BRIGHT_CYAN);
+    printf(" 📊 Atur Minimum Budget                              │\n");
+    printCentered("│  ", boxWidth);
+    printColored("3.", COLOR_BRIGHT_CYAN);
+    printf(" 💳 Atur Minimum Transaksi                           │\n");
+    printCentered("│  ", boxWidth);
+    printColored("4.", COLOR_BRIGHT_CYAN);
+    printf(" 📋 Lihat Pengaturan Saat Ini                        │\n");
+    printCentered("│  ", boxWidth);
+    printColored("5.", COLOR_BRIGHT_CYAN);
+    printf(" 🔄 Reset ke Pengaturan Default                      │\n");
+    printCentered("│  ", boxWidth);
+    printColored("6.", COLOR_BRIGHT_CYAN);
+    printf(" ⬅️  Kembali ke Menu Utama                            │\n");
+    printCenteredColored(
+        "└─────────────────────────────────────────────────────────┘\n",
+        boxWidth, COLOR_BRIGHT_CYAN);
+    printf("\n");
+    printCentered("", boxWidth);
+    printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 
     int choice = getValidatedMenuChoice(1, 6);
     if (choice == -1)
@@ -759,12 +985,24 @@ void openConfigurationMenu(struct MonthReportList *monthReportList) {
 }
 
 void openSetMinimumAmountMenu() {
-  clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│             💰 ATUR MINIMUM JUMLAH UANG                 │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  int boxWidth = 59;
+  int contentLines = 8;
+  clearAndCenterVertically(contentLines);
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("             💰 ATUR MINIMUM JUMLAH UANG                 ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
-  printf("💰 Minimum saat ini: Rp %lld\n", getMinimumAmount());
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("💰 Minimum saat ini: ");
+  printf("%sRp %lld%s\n", COLOR_BRIGHT_CYAN, getMinimumAmount(), COLOR_RESET);
 
   long long newMinimum;
   if (!readAndValidateLongLong("💰 Masukkan minimum baru (minimal 1): ", 1,
@@ -783,12 +1021,24 @@ void openSetMinimumAmountMenu() {
 }
 
 void openSetMinimumBudgetMenu() {
-  clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│                📊 ATUR MINIMUM BUDGET                   │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  int boxWidth = 59;
+  int contentLines = 8;
+  clearAndCenterVertically(contentLines);
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("                📊 ATUR MINIMUM BUDGET                   ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
-  printf("📊 Minimum saat ini: Rp %lld\n", getMinimumBudget());
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("📊 Minimum saat ini: ");
+  printf("%sRp %lld%s\n", COLOR_BRIGHT_CYAN, getMinimumBudget(), COLOR_RESET);
 
   long long newMinimum;
   if (!readAndValidateLongLong("📊 Masukkan minimum baru (minimal 1): ", 1,
@@ -807,12 +1057,25 @@ void openSetMinimumBudgetMenu() {
 }
 
 void openSetMinimumTransactionMenu() {
-  clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│              💳 ATUR MINIMUM TRANSAKSI                  │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  int boxWidth = 59;
+  int contentLines = 8;
+  clearAndCenterVertically(contentLines);
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("              💳 ATUR MINIMUM TRANSAKSI                  ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
-  printf("💳 Minimum saat ini: Rp %lld\n", globalConfig.money.minimumBudget);
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("💳 Minimum saat ini: ");
+  printf("%sRp %lld%s\n", COLOR_BRIGHT_CYAN, globalConfig.money.minimumBudget,
+         COLOR_RESET);
 
   long long newMinimum;
   if (!readAndValidateLongLong("💳 Masukkan minimum baru (minimal 1): ", 1,
@@ -831,63 +1094,135 @@ void openSetMinimumTransactionMenu() {
 }
 
 void openViewConfigurationMenu() {
+  int boxWidth = 88;
   clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│              📋 PENGATURAN SAAT INI                     │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", 59,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", 59);
+  printWithBg("              📋 PENGATURAN SAAT INI                     ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", 59,
+      COLOR_BRIGHT_CYAN);
 
-  printf("╔════════════════════════════════════════════════════════════════════"
-         "══════════════╗\n");
-  printf("║                              💰 PENGATURAN KEUANGAN                "
-         "            ║\n");
-  printf("╠════════════════════════════════════════════════════════════════════"
-         "══════════════╣\n");
-  printf("║ %-30s │ %-20s │ %-20s ║\n", "KATEGORI", "MINIMUM", "MAXIMUM");
-  printf("╠════════════════════════════════════════════════════════════════════"
-         "══════════════╣\n");
-  printf("║ %-30s │ Rp %-17lld │ Rp %-17lld ║\n", "Jumlah Uang",
-         getMinimumAmount(), getMaximumAmount());
-  printf("║ %-30s │ Rp %-17lld │ Rp %-17lld ║\n", "Budget", getMinimumBudget(),
-         getMaximumBudget());
-  printf("║ %-30s │ Rp %-17lld │ Rp %-17lld ║\n", "Transaksi",
-         globalConfig.money.minimumTransactionAmount,
-         globalConfig.money.maximumTransactionAmount);
-  printf("╚════════════════════════════════════════════════════════════════════"
-         "══════════════╝\n");
+  printf("\n");
+  printCenteredColored(
+      "╔════════════════════════════════════════════════════════════════════"
+      "══════════════╗\n",
+      boxWidth, COLOR_BRIGHT_CYAN);
+  printCentered("║", boxWidth);
+  printWithBg(
+      "                              💰 PENGATURAN KEUANGAN                "
+      "            ",
+      COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("║\n");
+  printCenteredColored(
+      "╠════════════════════════════════════════════════════════════════════"
+      "══════════════╣\n",
+      boxWidth, COLOR_BRIGHT_CYAN);
+  printCentered("║ ", boxWidth);
+  printf("%s%-30s%s", COLOR_BRIGHT_CYAN, "KATEGORI", COLOR_RESET);
+  printf(" │ ");
+  printf("%s%-20s%s", COLOR_BRIGHT_CYAN, "MINIMUM", COLOR_RESET);
+  printf(" │ ");
+  printf("%s%-20s%s", COLOR_BRIGHT_CYAN, "MAXIMUM", COLOR_RESET);
+  printf(" ║\n");
+  printCenteredColored(
+      "╠════════════════════════════════════════════════════════════════════"
+      "══════════════╣\n",
+      boxWidth, COLOR_BRIGHT_CYAN);
+  printCentered("║ ", boxWidth);
+  printf("%-30s │ ", "Jumlah Uang");
+  printf("%sRp %-17lld%s │ ", COLOR_BRIGHT_GREEN, getMinimumAmount(),
+         COLOR_RESET);
+  printf("%sRp %-17lld%s ║\n", COLOR_BRIGHT_GREEN, getMaximumAmount(),
+         COLOR_RESET);
+  printCentered("║ ", boxWidth);
+  printf("%-30s │ ", "Budget");
+  printf("%sRp %-17lld%s │ ", COLOR_BRIGHT_CYAN, getMinimumBudget(),
+         COLOR_RESET);
+  printf("%sRp %-17lld%s ║\n", COLOR_BRIGHT_CYAN, getMaximumBudget(),
+         COLOR_RESET);
+  printCentered("║ ", boxWidth);
+  printf("%-30s │ ", "Transaksi");
+  printf("%sRp %-17lld%s │ ", COLOR_BRIGHT_YELLOW,
+         globalConfig.money.minimumTransactionAmount, COLOR_RESET);
+  printf("%sRp %-17lld%s ║\n", COLOR_BRIGHT_YELLOW,
+         globalConfig.money.maximumTransactionAmount, COLOR_RESET);
+  printCenteredColored(
+      "╚════════════════════════════════════════════════════════════════════"
+      "══════════════╝\n",
+      boxWidth, COLOR_BRIGHT_CYAN);
 
-  printf("\n╔══════════════════════════════════════════════════════════════════"
-         "════════════════╗\n");
-  printf("║                             ⚙️  PENGATURAN VALIDASI                 "
-         "           ║\n");
-  printf("╠════════════════════════════════════════════════════════════════════"
-         "══════════════╣\n");
-  printf("║ %-40s │ %-40d ║\n", "Maksimal Panjang Nama",
-         globalConfig.validation.maxNameLength);
-  printf("║ %-40s │ %-40d ║\n", "Maksimal Panjang Deskripsi",
-         globalConfig.validation.maxDescriptionLength);
-  printf("║ %-40s │ %-40d ║\n", "Maksimal Percobaan Input",
-         globalConfig.validation.maxValidationAttempts);
-  printf("║ %-40s │ %-40d ║\n", "Tahun Minimum",
-         globalConfig.validation.minYear);
-  printf("║ %-40s │ %-40d ║\n", "Tahun Maksimum",
-         globalConfig.validation.maxYear);
-  printf("╚════════════════════════════════════════════════════════════════════"
-         "══════════════╝\n");
+  printf("\n");
+  printCenteredColored(
+      "╔══════════════════════════════════════════════════════════════════"
+      "════════════════╗\n",
+      boxWidth, COLOR_BRIGHT_CYAN);
+  printCentered("║", boxWidth);
+  printWithBg(
+      "                             ⚙️  PENGATURAN VALIDASI                 "
+      "           ",
+      COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("║\n");
+  printCenteredColored(
+      "╠════════════════════════════════════════════════════════════════════"
+      "════════════════╣\n",
+      boxWidth, COLOR_BRIGHT_CYAN);
+  printCentered("║ ", boxWidth);
+  printf("%-40s │ ", "Maksimal Panjang Nama");
+  printf("%s%-40d%s ║\n", COLOR_BRIGHT_CYAN,
+         globalConfig.validation.maxNameLength, COLOR_RESET);
+  printCentered("║ ", boxWidth);
+  printf("%-40s │ ", "Maksimal Panjang Deskripsi");
+  printf("%s%-40d%s ║\n", COLOR_BRIGHT_CYAN,
+         globalConfig.validation.maxDescriptionLength, COLOR_RESET);
+  printCentered("║ ", boxWidth);
+  printf("%-40s │ ", "Maksimal Percobaan Input");
+  printf("%s%-40d%s ║\n", COLOR_BRIGHT_CYAN,
+         globalConfig.validation.maxValidationAttempts, COLOR_RESET);
+  printCentered("║ ", boxWidth);
+  printf("%-40s │ ", "Tahun Minimum");
+  printf("%s%-40d%s ║\n", COLOR_BRIGHT_CYAN, globalConfig.validation.minYear,
+         COLOR_RESET);
+  printCentered("║ ", boxWidth);
+  printf("%-40s │ ", "Tahun Maksimum");
+  printf("%s%-40d%s ║\n", COLOR_BRIGHT_CYAN, globalConfig.validation.maxYear,
+         COLOR_RESET);
+  printCenteredColored(
+      "╚════════════════════════════════════════════════════════════════════"
+      "════════════════╝\n",
+      boxWidth, COLOR_BRIGHT_CYAN);
 
   waitForEnter();
 }
 
 void openResetConfigurationMenu() {
-  clearScreen();
-  printf("┌─────────────────────────────────────────────────────────┐\n");
-  printf("│            🔄 RESET PENGATURAN DEFAULT                  │\n");
-  printf("└─────────────────────────────────────────────────────────┘\n");
+  int boxWidth = 59;
+  int contentLines = 10;
+  clearAndCenterVertically(contentLines);
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("           🔄 RESET PENGATURAN DEFAULT                   ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
 
-  printf(
-      "⚠️  PERINGATAN: Ini akan mereset semua pengaturan ke nilai default!\n\n");
+  printf("\n");
+  printCentered("", boxWidth);
+  printWarning(
+      "⚠️  PERINGATAN: Ini akan mengembalikan semua pengaturan ke nilai "
+      "default!\n\n");
 
   char confirmation;
-  printf("❓ Apakah Anda yakin? (y/n): ");
+  printCentered("", boxWidth);
+  printColored("❓ Apakah Anda yakin? (y/n): ", COLOR_BRIGHT_YELLOW);
   scanf(" %c", &confirmation);
   clearInputBuffer();
 
@@ -899,7 +1234,9 @@ void openResetConfigurationMenu() {
   initializeDefaultConfig();
   saveConfigToFile("./config.txt");
 
-  showSuccessMessage("Semua pengaturan berhasil direset ke nilai default!");
+  showSuccessMessage(
+      "Pengaturan berhasil direset ke nilai default! Silakan restart aplikasi "
+      "untuk melihat perubahan.");
 }
 
 void openMainMenu(struct MonthReportList *monthReportList) {

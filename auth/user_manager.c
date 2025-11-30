@@ -149,17 +149,4 @@ char *getUserReportsPath(const char *username) {
   return reportsPath;
 }
 
-void showUserManagementMenu() {
-  printf("╔══════════════════════════════════════════════════════════╗\n");
-  printf("║                  👥 KELOLA PENGGUNA                     ║\n");
-  printf("╠══════════════════════════════════════════════════════════╣\n");
-  printf("║  1. 📋 Daftar Semua Pengguna                            ║\n");
-  printf("║  2. ➕ Buat Pengguna Baru                               ║\n");
-  printf("║  3. 🔑 Reset Password Pengguna                          ║\n");
-  printf("║  4. 🗑️  Hapus Pengguna                                 ║\n");
-  printf("║  5. 🔙 Kembali ke Menu Admin                            ║\n");
-  printf("╚══════════════════════════════════════════════════════════╝\n");
-  printf("Masukkan pilihan Anda (1-5): ");
-}
-
 #endif

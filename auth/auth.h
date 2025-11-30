@@ -49,19 +49,6 @@ char *getUserReportsDirectory();
 char *getUserReportsPath(const char *username);
 
 
-void showAuthMenu();
-void showLoginMenu();
-void showRegisterMenu();
-void showAdminMenu();
-void showUserManagementMenu();
-int handleAuthMenuChoice();
-int handleLogin();
-int handleRegister();
-int handleAdminLogin();
-int handleAdminUserManagement();
-int handleUserDeletion();
-int handlePasswordReset();
-int handleAdminUserCreation();
-void clearScreen();
+
 
 #endif

@@ -3,6 +3,12 @@
 #include "ui/include.c"
 #include <dirent.h>
 
+/* =======================================================
+    MODUL : main()
+    DESKRIPSI :
+    INITIAL STATE :
+    FINAL STATE :
+    =======================================================*/
 int main() {
   if (!initializeAuthSystem()) {
     printf("Failed to initialize authentication system.\n");
