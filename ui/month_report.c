@@ -14,6 +14,15 @@
 #ifndef UI_MONTH_REPORT_C
 #define UI_MONTH_REPORT_C
 
+/* ---------------------------------------------------------
+   PROSEDUR : renderMonthlyMenuHeader(boxWidth, contentLines)
+   DESKRIPSI : Menampilkan header menu bulanan dengan bingkai dan judul
+   I.S.       : Terminal bersih
+   F.S.       : Header menu bulanan ditampilkan
+   INPUT      : boxWidth = lebar kotak tampilan
+                contentLines = jumlah baris vertikal yang ingin di-clear sebelum
+render
+---------------------------------------------------------*/
 void renderMonthlyMenuHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
   printCenteredColored(
@@ -28,6 +37,13 @@ void renderMonthlyMenuHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : renderMonthlyListHeader(boxWidth)
+   DESKRIPSI : Menampilkan header daftar laporan bulanan
+   I.S.       : Terminal bebas
+   F.S.       : Header daftar laporan bulanan ditampilkan
+   INPUT      : boxWidth = lebar kotak tampilan
+---------------------------------------------------------*/
 void renderMonthlyListHeader(int boxWidth) {
   printf("\n");
   printCenteredColored(
@@ -43,6 +59,13 @@ void renderMonthlyListHeader(int boxWidth) {
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : renderMonthlyMenuOptions(boxWidth)
+   DESKRIPSI : Menampilkan opsi menu bulanan (lihat daftar, buat baru, kembali)
+   I.S.       : Terminal sudah menampilkan header menu
+   F.S.       : Opsi menu ditampilkan
+   INPUT      : boxWidth = lebar kotak tampilan
+---------------------------------------------------------*/
 void renderMonthlyMenuOptions(int boxWidth) {
   printCentered("│  ", boxWidth);
   printColored("1.", COLOR_BRIGHT_CYAN);
@@ -57,6 +80,14 @@ void renderMonthlyMenuOptions(int boxWidth) {
   printf(" ⬅️  Kembali ke Menu Utama                            │\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : renderMonthlyMenuFooter(boxWidth, totalReports)
+   DESKRIPSI : Menampilkan footer menu bulanan beserta jumlah laporan tersimpan
+   I.S.       : Menu bulanan dan opsi sudah ditampilkan
+   F.S.       : Footer dan prompt pilihan ditampilkan
+   INPUT      : boxWidth = lebar kotak tampilan
+                totalReports = jumlah laporan bulanan yang tersimpan
+---------------------------------------------------------*/
 void renderMonthlyMenuFooter(int boxWidth, int totalReports) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
@@ -71,6 +102,13 @@ void renderMonthlyMenuFooter(int boxWidth, int totalReports) {
   printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : renderEmptyMonthlyList(boxWidth)
+   DESKRIPSI : Menampilkan pesan ketika belum ada laporan bulanan
+   I.S.       : Terminal bebas
+   F.S.       : Pesan empty list ditampilkan
+   INPUT      : boxWidth = lebar kotak tampilan
+---------------------------------------------------------*/
 void renderEmptyMonthlyList(int boxWidth) {
   printCentered("", boxWidth);
   printf("📭 Belum ada laporan bulanan.\n");
@@ -79,6 +117,13 @@ void renderEmptyMonthlyList(int boxWidth) {
   printInfo("💡 Tip: Buat laporan baru untuk memulai!\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : renderSingleMonthlyListItem(index, report, boxWidth)
+   DESKRIPSI : Menampilkan satu item laporan bulanan dengan jumlah transaksi dan
+status saldo I.S.       : Terminal sudah menampilkan header daftar F.S.       :
+Satu item laporan bulanan ditampilkan INPUT      : index = nomor urut laporan
+(0-based) report = pointer ke laporan bulanan boxWidth = lebar kotak tampilan
+---------------------------------------------------------*/
 void renderSingleMonthlyListItem(int index, struct MonthReport *report,
                                  int boxWidth) {
   int totalTransactions = getTotalTransactions(report);
@@ -103,6 +148,13 @@ void renderSingleMonthlyListItem(int index, struct MonthReport *report,
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showMonthlyMenu(monthReportList)
+   DESKRIPSI : Menampilkan menu utama bulanan beserta jumlah laporan tersimpan
+   I.S.       : Terminal bebas
+   F.S.       : Menu bulanan ditampilkan
+   INPUT      : monthReportList = daftar laporan bulanan user/admin
+---------------------------------------------------------*/
 void showMonthlyMenu(struct MonthReportList *monthReportList) {
   int boxWidth = 59;
   int contentLines = 11;
@@ -112,6 +164,12 @@ void showMonthlyMenu(struct MonthReportList *monthReportList) {
   renderMonthlyMenuFooter(boxWidth, monthReportList->count);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showMonthlyList(monthReportList)
+   DESKRIPSI : Menampilkan seluruh daftar laporan bulanan, atau pesan kosong
+jika tidak ada I.S.       : Terminal bebas F.S.       : Daftar laporan bulanan
+ditampilkan INPUT      : monthReportList = daftar laporan bulanan user/admin
+---------------------------------------------------------*/
 void showMonthlyList(struct MonthReportList *monthReportList) {
   int boxWidth = 59;
 
