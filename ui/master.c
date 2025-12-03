@@ -1101,10 +1101,9 @@ void printCategoryManagementHeader(int boxWidth, int contentLines) {
 void printCategoryManagementMenuItem(int index, const char *emoji,
                                      const char *label, int boxWidth) {
   printCentered("│  ", boxWidth);
-  printColored("%d.", COLOR_BRIGHT_CYAN);
+  printf("%s%d.%s", COLOR_BRIGHT_CYAN, index, COLOR_RESET);
   printf(" %s %s", emoji, label);
 
-  // Pastikan padding agar tetap rata kanan saat dicetak seperti UI lama.
   int pad = 51 - (int)strlen(label);
   for (int i = 0; i < pad; i++)
     printf(" ");
