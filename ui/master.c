@@ -11,6 +11,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* ---------------------------------------------------------
+   PROSEDUR : clearScreen()
+   DESKRIPSI :
+      Membersihkan layar agar tampilan berikutnya lebih rapi.
+   I.S.  : Layar masih berisi tampilan sebelumnya.
+   F.S.  : Layar bersih.
+   ---------------------------------------------------------*/
 void clearScreen() {
 #ifdef _WIN32
   system("cls");
@@ -19,12 +26,27 @@ void clearScreen() {
 #endif
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : waitForEnter()
+   DESKRIPSI :
+      Menunggu pengguna menekan Enter agar mereka sempat
+      membaca informasi sebelum program berlanjut.
+   I.S.  : Program berhenti menunggu input.
+   F.S.  : Enter ditekan, program dilanjutkan
+   ---------------------------------------------------------*/
 void waitForEnter() {
   printf("\n");
   printInfo("📱 Tekan Enter untuk melanjutkan...");
   clearInputBuffer();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printMainMenuHeader()
+   DESKRIPSI :
+      Menampilkan header menu utama.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printMainMenuHeader() {
   int boxWidth = 59;
   printCenteredColored(
@@ -36,6 +58,13 @@ void printMainMenuHeader() {
   printf("│\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printUserIcon(boxWidth, isAdmin)
+   DESKRIPSI :
+      Menampilkan ikon sesuai jenis pengguna.
+   I.S.  : Ikon belum tampil.
+   F.S.  : Ikon tampil.
+   ---------------------------------------------------------*/
 void printUserIcon(int boxWidth, bool isAdmin) {
   if (isAdmin)
     printCentered("│              👑 ", boxWidth);
@@ -43,6 +72,13 @@ void printUserIcon(int boxWidth, bool isAdmin) {
     printCentered("│              👤 ", boxWidth);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printUserLabel(isAdmin)
+   DESKRIPSI :
+      Menampilkan label user (Admin/Pengguna).
+   I.S.  : Label belum tampil.
+   F.S.  : Label tampil.
+   ---------------------------------------------------------*/
 void printUserLabel(bool isAdmin) {
   if (isAdmin)
     printColored("Admin: ", COLOR_BRIGHT_YELLOW);
@@ -50,6 +86,13 @@ void printUserLabel(bool isAdmin) {
     printColored("Pengguna: ", COLOR_BRIGHT_YELLOW);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printUsernameAligned(username, isAdmin)
+   DESKRIPSI :
+      Menampilkan username dengan perataan kolom yang sesuai.
+   I.S.  : Username belum tampil.
+   F.S.  : Username tampil rapi.
+   ---------------------------------------------------------*/
 void printUsernameAligned(const char *username, bool isAdmin) {
   int targetLength = isAdmin ? 30 : 27;
   printColored(username, COLOR_BRIGHT_CYAN);
@@ -59,12 +102,26 @@ void printUsernameAligned(const char *username, bool isAdmin) {
   printf(" │\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printAdminNoFolderMessage(boxWidth)
+   DESKRIPSI :
+      Menampilkan pesan bahwa admin tidak memiliki folder pribadi.
+   I.S.  : Pesan belum tampil.
+   F.S.  : Pesan tampil.
+   ---------------------------------------------------------*/
 void printAdminNoFolderMessage(int boxWidth) {
   printCenteredColored(
       "│              🚫 Tanpa Folder Pribadi                   │\n", boxWidth,
       COLOR_BRIGHT_WHITE);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printInfoUser()
+   DESKRIPSI :
+      Menampilkan informasi user yang sedang login.
+   I.S.  : Data user tersedia.
+   F.S.  : Info user tampil.
+   ---------------------------------------------------------*/
 void printInfoUser() {
   int boxWidth = 59;
 
@@ -81,12 +138,26 @@ void printInfoUser() {
     printAdminNoFolderMessage(boxWidth);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printMenuHeaderLine(boxWidth)
+   DESKRIPSI :
+      Menampilkan garis pemisah menu.
+   I.S.  : Garis belum tampil.
+   F.S.  : Garis tampil.
+   ---------------------------------------------------------*/
 void printMenuHeaderLine(int boxWidth) {
   printCenteredColored(
       "├─────────────────────────────────────────────────────────┤\n", boxWidth,
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printAdminFiturMenu(boxWidth)
+   DESKRIPSI :
+      Menampilkan daftar fitur khusus admin.
+   I.S.  : Menu belum tampil.
+   F.S.  : Menu tampil.
+   ---------------------------------------------------------*/
 void printAdminFiturMenu(int boxWidth) {
   printCenteredColored(
       "│  1. 🚫 Kelola Laporan Bulanan (Admin tidak memiliki)    │\n", boxWidth,
@@ -105,6 +176,14 @@ void printAdminFiturMenu(int boxWidth) {
   printColored("5.", COLOR_BRIGHT_CYAN);
   printf(" ⚙️  Pengaturan Sistem                                │\n");
 }
+
+/* ---------------------------------------------------------
+   PROSEDUR : printUserFiturMenuRows(boxWidth)
+   DESKRIPSI :
+      Menampilkan daftar fitur yang tersedia untuk pengguna biasa.
+   I.S.  : Menu fitur belum tampil.
+   F.S.  : Baris-baris menu fitur pengguna tampil lengkap.
+   ---------------------------------------------------------*/
 void printUserFiturMenuRows(int boxWidth) {
   const char *labels[] = {
       " 📊 Kelola Laporan Bulanan", " 📈 Lihat Ringkasan Keuangan",
@@ -121,6 +200,14 @@ void printUserFiturMenuRows(int boxWidth) {
   }
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printFiturMenu()
+   DESKRIPSI :
+      Menampilkan menu fitur sesuai tipe user
+      (admin atau pengguna biasa).
+   I.S.  : Belum ada menu fitur yang ditampilkan.
+   F.S.  : Menu fitur yang sesuai tampil di layar.
+   ---------------------------------------------------------*/
 void printFiturMenu() {
   int boxWidth = 59;
   printMenuHeaderLine(boxWidth);
@@ -131,6 +218,14 @@ void printFiturMenu() {
     printUserFiturMenuRows(boxWidth);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printAdminAuthMenu(boxWidth)
+   DESKRIPSI :
+      Menampilkan pilihan menu autentikasi khusus admin
+      seperti Admin Panel, Logout, dan Keluar.
+   I.S.  : Menu autentikasi belum tampil.
+   F.S.  : Menu autentikasi admin tampil.
+   ---------------------------------------------------------*/
 void printAdminAuthMenu(int boxWidth) {
   printCentered("│  ", boxWidth);
   printColored("6.", COLOR_BRIGHT_CYAN);
@@ -145,6 +240,14 @@ void printAdminAuthMenu(int boxWidth) {
   printf(" ❌ Keluar                                           │\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printUserAuthMenu(boxWidth)
+   DESKRIPSI :
+      Menampilkan pilihan autentikasi untuk pengguna biasa
+      (Logout dan Keluar).
+   I.S.  : Menu autentikasi belum tampil.
+   F.S.  : Menu autentikasi pengguna tampil.
+   ---------------------------------------------------------*/
 void printUserAuthMenu(int boxWidth) {
   printCentered("│  ", boxWidth);
   printColored("6.", COLOR_BRIGHT_CYAN);
@@ -155,6 +258,14 @@ void printUserAuthMenu(int boxWidth) {
   printf(" ❌ Keluar                                           │\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printFiturMenuAuth()
+   DESKRIPSI :
+      Menampilkan menu autentikasi sesuai tipe user
+      (admin atau pengguna).
+   I.S.  : Menu autentikasi belum tampil.
+   F.S.  : Menu autentikasi sesuai user tampil.
+   ---------------------------------------------------------*/
 void printFiturMenuAuth() {
   int boxWidth = 59;
 
@@ -164,6 +275,13 @@ void printFiturMenuAuth() {
     printUserAuthMenu(boxWidth);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printMainMenuFooter()
+   DESKRIPSI :
+      Menampilkan footer menu utama beserta tip penggunaan.
+   I.S.  : Footer belum tampil.
+   F.S.  : Footer menu utama tampil di layar.
+   ---------------------------------------------------------*/
 void printMainMenuFooter() {
   int boxWidth = 59;
   printCenteredColored(
@@ -175,7 +293,14 @@ void printMainMenuFooter() {
   printCentered("", boxWidth);
   printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 }
-
+/* ---------------------------------------------------------
+   PROSEDUR : showMainMenu()
+   DESKRIPSI :
+      Menampilkan menu utama lengkap dengan header, info user,
+      daftar fitur, autentikasi, dan footer.
+   I.S.  : Program sedang berjalan, menu belum tampil.
+   F.S.  : Menu utama tampil di layar.
+   ---------------------------------------------------------*/
 void showMainMenu() {
   int contentLines = 14;
   clearAndCenterVertically(contentLines);
@@ -186,56 +311,111 @@ void showMainMenu() {
   printMainMenuFooter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printMessagePrefix(prefix, colorFunc)
+   DESKRIPSI :
+      Mencetak prefix pesan dengan warna tertentu.
+   I.S.  : Prefix dan fungsi warna sudah tersedia.
+   F.S.  : Prefix dicetak di layar sebelum pesan.
+   ---------------------------------------------------------*/
 void printMessagePrefix(const char *prefix, void (*colorFunc)(const char *)) {
   printf("\n");
   colorFunc(prefix);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showSuccessMessage(message)
+   DESKRIPSI :
+      Menampilkan pesan sukses dengan ikon dan warna hijau.
+   I.S.  : Pesan sudah siap ditampilkan.
+   F.S.  : Pesan sukses tampil di layar, menunggu user tekan enter.
+   ---------------------------------------------------------*/
 void showSuccessMessage(const char *message) {
   printMessagePrefix("✅ ", printSuccess);
   printf("%s", message);
   waitForEnter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showErrorMessage(message)
+   DESKRIPSI :
+      Menampilkan pesan error dengan ikon dan warna merah.
+   I.S.  : Pesan sudah siap ditampilkan.
+   F.S.  : Pesan error tampil di layar, menunggu user tekan enter.
+   ---------------------------------------------------------*/
 void showErrorMessage(const char *message) {
   printMessagePrefix("❌ ", printError);
   printf("%s", message);
   waitForEnter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showWarningMessage(message)
+   DESKRIPSI :
+      Menampilkan pesan peringatan dengan ikon dan warna kuning.
+   I.S.  : Pesan sudah siap ditampilkan.
+   F.S.  : Pesan peringatan tampil di layar, menunggu user tekan enter.
+   ---------------------------------------------------------*/
 void showWarningMessage(const char *message) {
   printMessagePrefix("⚠️  ", printWarning);
   printf("%s", message);
   waitForEnter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showInfoMessage(message)
+   DESKRIPSI :
+      Menampilkan pesan informasi dengan ikon dan warna biru.
+   I.S.  : Pesan sudah siap ditampilkan.
+   F.S.  : Pesan informasi tampil di layar, menunggu user tekan enter.
+   ---------------------------------------------------------*/
 void showInfoMessage(const char *message) {
   printMessagePrefix("ℹ️  ", printInfo);
   printf("%s", message);
   waitForEnter();
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : getValidatedMenuChoice(minChoice, maxChoice)
+   DESKRIPSI :
+      Membaca input user untuk menu, memvalidasi sesuai rentang
+      yang diberikan, dan menangani input tidak valid.
+   INPUT  : minChoice (nilai minimal pilihan)
+            maxChoice (nilai maksimal pilihan)
+   OUTPUT : Pilihan user yang valid, atau -1 jika gagal.
+   ---------------------------------------------------------*/
 int getValidatedMenuChoice(int minChoice, int maxChoice) {
   int choice;
-
   if (!readAndValidateInteger("", minChoice, maxChoice, &choice)) {
     showErrorMessage("Input tidak valid atau terlalu banyak percobaan.");
     return -1;
   }
-
   return choice;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openSummaryMenu(monthReportList)
+   DESKRIPSI :
+      Menampilkan ringkasan laporan bulanan jika ada.
+   I.S.  : Daftar laporan bulanan sudah tersedia.
+   F.S.  : Ringkasan laporan tampil, atau info jika kosong.
+   ---------------------------------------------------------*/
 void openSummaryMenu(struct MonthReportList *monthReportList) {
   if (monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan untuk ditampilkan. Buat laporan "
                     "terlebih dahulu.");
     return;
   }
-
   showAllMonthReportSummary(monthReportList);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetHeaderLayout()
+   DESKRIPSI :
+      Mencetak layout header menu pengaturan budget dengan warna.
+   I.S.  : Header belum tampil.
+   F.S.  : Header menu budget tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetHeaderLayout() {
   int boxWidth = 59;
   printCenteredColored(
@@ -252,6 +432,13 @@ void printBudgetHeaderLayout() {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetMenuOptions()
+   DESKRIPSI :
+      Menampilkan daftar pilihan menu pengaturan budget.
+   I.S.  : Menu belum tampil.
+   F.S.  : Pilihan menu budget tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetMenuOptions() {
   int boxWidth = 59;
   printCentered("│  ", boxWidth);
@@ -271,6 +458,13 @@ void printBudgetMenuOptions() {
   printf(" ⬅️  Kembali ke Menu Utama                            │\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetFooter()
+   DESKRIPSI :
+      Menampilkan garis footer menu budget.
+   I.S.  : Footer belum tampil.
+   F.S.  : Footer menu budget tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetFooter() {
   int boxWidth = 59;
   printCenteredColored(
@@ -278,6 +472,13 @@ void printBudgetFooter() {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetPrompt()
+   DESKRIPSI :
+      Mencetak prompt input pilihan user untuk menu budget.
+   I.S.  : Prompt belum tampil.
+   F.S.  : Prompt muncul di layar.
+   ---------------------------------------------------------*/
 void printBudgetPrompt() {
   int boxWidth = 59;
   printf("\n");
@@ -285,6 +486,13 @@ void printBudgetPrompt() {
   printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetHeader()
+   DESKRIPSI :
+      Menampilkan seluruh layout menu budget: header, opsi, footer, dan prompt.
+   I.S.  : Menu budget belum tampil.
+   F.S.  : Menu budget lengkap tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetHeader() {
   int contentLines = 10;
   clearAndCenterVertically(contentLines);
@@ -295,8 +503,21 @@ void printBudgetHeader() {
   printBudgetPrompt();
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : validasiInputBudget()
+   DESKRIPSI :
+      Memvalidasi input user untuk menu budget (1-4).
+   OUTPUT : Pilihan user yang valid, atau -1 jika gagal.
+   ---------------------------------------------------------*/
 int validasiInputBudget() { return getValidatedMenuChoice(1, 4); }
 
+/* ---------------------------------------------------------
+   PROSEDUR : handleInputBudget(choice, monthReportList, shouldExit)
+   DESKRIPSI :
+      Menangani aksi sesuai pilihan user di menu budget.
+   I.S.  : Pilihan user sudah tersedia.
+   F.S.  : Menu terkait dijalankan, atau keluar jika pilih 4.
+   ---------------------------------------------------------*/
 void handleInputBudget(int choice, struct MonthReportList *monthReportList,
                        bool *shouldExit) {
   switch (choice) {
@@ -318,6 +539,13 @@ void handleInputBudget(int choice, struct MonthReportList *monthReportList,
   }
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openBudgetSettingsMenu(monthReportList)
+   DESKRIPSI :
+      Menampilkan menu pengaturan budget dan menunggu input user.
+   I.S.  : Program sedang berjalan.
+   F.S.  : Menu budget tampil dan dijalankan hingga user keluar.
+   ---------------------------------------------------------*/
 void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
   bool shouldExit = false;
 
@@ -333,10 +561,23 @@ void openBudgetSettingsMenu(struct MonthReportList *monthReportList) {
   }
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : hasMonthReports(monthReportList)
+   DESKRIPSI :
+      Mengecek apakah terdapat laporan bulanan.
+   OUTPUT : true jika ada laporan, false jika kosong atau NULL.
+   ---------------------------------------------------------*/
 bool hasMonthReports(struct MonthReportList *monthReportList) {
   return monthReportList != NULL && monthReportList->count > 0;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetCategoryHeader()
+   DESKRIPSI :
+      Menampilkan header menu "Atur Budget per Kategori".
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetCategoryHeader() {
   int boxWidth = 59;
   clearScreen();
@@ -352,6 +593,14 @@ void printBudgetCategoryHeader() {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readMonthReportChoice(max, outIndex)
+   DESKRIPSI :
+      Membaca input user untuk memilih laporan bulanan.
+   INPUT  : max = jumlah laporan
+            outIndex = pointer untuk menyimpan pilihan
+   OUTPUT : true jika valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool readMonthReportChoice(int max, int *outIndex) {
   if (!readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1, max, outIndex)) {
     showErrorMessage("Input tidak valid.");
@@ -360,6 +609,12 @@ bool readMonthReportChoice(int max, int *outIndex) {
   return true;
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : selectMonthReport(monthReportList)
+   DESKRIPSI :
+      Memilih laporan bulanan dari daftar.
+   OUTPUT : Pointer ke MonthReport yang dipilih, NULL jika gagal.
+   ---------------------------------------------------------*/
 struct MonthReport *selectMonthReport(struct MonthReportList *monthReportList) {
   showMonthlyList(monthReportList);
 
@@ -370,10 +625,22 @@ struct MonthReport *selectMonthReport(struct MonthReportList *monthReportList) {
   return monthReportList->reports[reportChoice - 1];
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : hasCategories(categories)
+   DESKRIPSI :
+      Mengecek apakah ada kategori dalam daftar.
+   OUTPUT : true jika ada, false jika kosong atau NULL.
+   ---------------------------------------------------------*/
 bool hasCategories(struct CategoryList *categories) {
   return categories != NULL && categories->count > 0;
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : ensureCategoriesAvailable(categories)
+   DESKRIPSI :
+      Memastikan setidaknya ada satu kategori tersedia.
+   OUTPUT : true jika tersedia, false jika tidak.
+   ---------------------------------------------------------*/
 bool ensureCategoriesAvailable(struct CategoryList *categories) {
   if (!hasCategories(categories)) {
     showErrorMessage("Tidak ada kategori tersedia.");
@@ -382,12 +649,26 @@ bool ensureCategoriesAvailable(struct CategoryList *categories) {
   return true;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryHeaderTop(boxWidth)
+   DESKRIPSI :
+      Mencetak garis atas header kategori.
+   I.S.  : Belum tampil.
+   F.S.  : Garis atas header tampil.
+   ---------------------------------------------------------*/
 void printCategoryHeaderTop(int boxWidth) {
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryHeaderTitle(boxWidth)
+   DESKRIPSI :
+      Mencetak judul header kategori dengan warna dan background.
+   I.S.  : Belum tampil.
+   F.S.  : Judul header tampil.
+   ---------------------------------------------------------*/
 void printCategoryHeaderTitle(int boxWidth) {
   printCentered("│", boxWidth);
   printWithBg("        📂 Pilih Kategori untuk Mengatur Budget          ",
@@ -395,12 +676,26 @@ void printCategoryHeaderTitle(int boxWidth) {
   printf("│\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryHeaderBottom(boxWidth)
+   DESKRIPSI :
+      Mencetak garis bawah header kategori.
+   I.S.  : Belum tampil.
+   F.S.  : Garis bawah header tampil.
+   ---------------------------------------------------------*/
 void printCategoryHeaderBottom(int boxWidth) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryHeader()
+   DESKRIPSI :
+      Menampilkan header lengkap untuk menu kategori.
+   I.S.  : Header belum tampil.
+   F.S.  : Header kategori tampil di layar.
+   ---------------------------------------------------------*/
 void printCategoryHeader() {
   int boxWidth = 59;
   printf("\n");
@@ -410,12 +705,27 @@ void printCategoryHeader() {
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printSingleCategoryItem(item, index, boxWidth)
+   DESKRIPSI :
+      Menampilkan satu item kategori dengan nomor urut.
+   I.S.  : Item kategori tersedia.
+   F.S.  : Item kategori dicetak ke layar.
+   ---------------------------------------------------------*/
 void printSingleCategoryItem(struct CategoryItem *item, int index,
                              int boxWidth) {
   printCentered("  ", boxWidth);
   printf("%s%d.%s %s\n", COLOR_BRIGHT_CYAN, index + 1, COLOR_RESET,
          item->displayName);
 }
+
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryList(categories)
+   DESKRIPSI :
+      Menampilkan daftar semua kategori.
+   I.S.  : Daftar kategori tersedia.
+   F.S.  : Semua kategori tampil di layar.
+   ---------------------------------------------------------*/
 void printCategoryList(struct CategoryList *categories) {
   int boxWidth = 59;
 
@@ -425,17 +735,37 @@ void printCategoryList(struct CategoryList *categories) {
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readCategorySelection(max, choice)
+   DESKRIPSI :
+      Membaca input user untuk memilih kategori.
+   INPUT  : max = jumlah kategori
+            choice = pointer untuk menyimpan pilihan
+   OUTPUT : true jika valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool readCategorySelection(int max, int *choice) {
   return readAndValidateInteger("\n🎯 Pilihan kategori: ", 1, max, choice);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : copyCategoryInternalName(outCategory, internalName, bufferSize)
+   DESKRIPSI :
+      Menyalin nama internal kategori ke buffer dengan aman.
+   I.S.  : Nama internal tersedia.
+   F.S.  : Nama internal tersalin di outCategory.
+   ---------------------------------------------------------*/
 void copyCategoryInternalName(char *outCategory, const char *internalName,
                               size_t bufferSize) {
-
   strncpy(outCategory, internalName, bufferSize - 1);
   outCategory[bufferSize - 1] = '\0';
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : selectCategory(outCategory, bufferSize)
+   DESKRIPSI :
+      Menampilkan daftar kategori dan membiarkan user memilih.
+   OUTPUT : true jika kategori berhasil dipilih, false jika gagal.
+   ---------------------------------------------------------*/
 bool selectCategory(char *outCategory, size_t bufferSize) {
   struct CategoryList *categories = getUserCategoriesCache();
   if (!ensureCategoriesAvailable(categories))
@@ -454,6 +784,12 @@ bool selectCategory(char *outCategory, size_t bufferSize) {
   return true;
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : inputNewBudget(outBudget)
+   DESKRIPSI :
+      Meminta user memasukkan budget baru dan memvalidasinya.
+   OUTPUT : true jika input valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool inputNewBudget(long long *outBudget) {
   InputResult result =
       promptForBudget("💰 Masukkan budget baru (Rp): ", outBudget);
@@ -465,11 +801,24 @@ bool inputNewBudget(long long *outBudget) {
   return true;
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : getBudgetCategoryDisplayName(category)
+   DESKRIPSI :
+      Mengambil nama kategori yang ditampilkan untuk user.
+   OUTPUT : Pointer ke nama display kategori.
+   ---------------------------------------------------------*/
 const char *getBudgetCategoryDisplayName(const char *category) {
   struct CategoryList *categories = getUserCategoriesCache();
   return getCategoryDisplayName(categories, category);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : formatBudgetSuccessMessage(buffer, size, displayName, budget)
+   DESKRIPSI :
+      Membuat pesan sukses ketika budget berhasil diatur.
+   I.S.  : Display name dan budget tersedia.
+   F.S.  : Pesan sukses tersimpan di buffer.
+   ---------------------------------------------------------*/
 void formatBudgetSuccessMessage(char *buffer, size_t size,
                                 const char *displayName, long long budget) {
 
@@ -478,6 +827,13 @@ void formatBudgetSuccessMessage(char *buffer, size_t size,
            displayName, budget);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showSetBudgetSuccessMessage(category, budget)
+   DESKRIPSI :
+      Menampilkan pesan sukses setelah budget kategori diatur.
+   I.S.  : Nama kategori dan budget tersedia.
+   F.S.  : Pesan sukses tampil di layar.
+   ---------------------------------------------------------*/
 void showSetBudgetSuccessMessage(const char *category, long long budget) {
   const char *displayName = getBudgetCategoryDisplayName(category);
 
@@ -487,6 +843,12 @@ void showSetBudgetSuccessMessage(const char *category, long long budget) {
   showSuccessMessage(successMsg);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : ensureHasMonthReports(monthReportList)
+   DESKRIPSI :
+      Mengecek apakah terdapat laporan bulanan, menampilkan info jika kosong.
+   OUTPUT : true jika ada laporan, false jika tidak.
+   ---------------------------------------------------------*/
 bool ensureHasMonthReports(struct MonthReportList *monthReportList) {
   if (monthReportList == NULL || monthReportList->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan. Buat laporan terlebih dahulu.");
@@ -495,16 +857,38 @@ bool ensureHasMonthReports(struct MonthReportList *monthReportList) {
   return true;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : applyBudgetToReport(report, category, budget)
+   DESKRIPSI :
+      Menerapkan budget untuk kategori tertentu di laporan bulanan.
+   I.S.  : Laporan dan kategori tersedia.
+   F.S.  : Budget tersimpan di laporan.
+   ---------------------------------------------------------*/
 void applyBudgetToReport(struct MonthReport *report, const char *category,
                          long long budget) {
 
   setBudgetForCategory(report, category, budget);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : saveUpdatedReport(report)
+   DESKRIPSI :
+      Menyimpan laporan bulanan yang sudah diperbarui.
+   I.S.  : Laporan sudah diperbarui.
+   F.S.  : Laporan tersimpan di sistem.
+   ---------------------------------------------------------*/
 void saveUpdatedReport(struct MonthReport *report) {
   saveUserMonthReport(report);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openSetCategoryBudgetMenu(monthReportList)
+   DESKRIPSI :
+      Menjalankan alur pengaturan budget kategori:
+      pilih laporan, pilih kategori, input budget, simpan, tampilkan sukses.
+   I.S.  : Daftar laporan tersedia.
+   F.S.  : Budget kategori tersimpan, pesan sukses tampil.
+   ---------------------------------------------------------*/
 void openSetCategoryBudgetMenu(struct MonthReportList *monthReportList) {
 
   if (!ensureHasMonthReports(monthReportList))
@@ -528,13 +912,34 @@ void openSetCategoryBudgetMenu(struct MonthReportList *monthReportList) {
   showSetBudgetSuccessMessage(category, budget);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : hasMonthReportsOnly(list)
+   DESKRIPSI :
+      Mengecek apakah ada laporan bulanan tanpa menampilkan pesan.
+   OUTPUT : true jika ada, false jika tidak.
+   ---------------------------------------------------------*/
 bool hasMonthReportsOnly(struct MonthReportList *list) {
   return list != NULL && list->count > 0;
 }
+
+/* ---------------------------------------------------------
+   PROSEDUR : showNoMonthReportsMessage()
+   DESKRIPSI :
+      Menampilkan pesan bahwa tidak ada laporan bulanan.
+   I.S.  : Belum ada info ditampilkan.
+   F.S.  : Pesan info tampil di layar.
+   ---------------------------------------------------------*/
 void showNoMonthReportsMessage() {
   showInfoMessage("Tidak ada laporan bulanan.");
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : hasMonthReportsView(monthReportList)
+   DESKRIPSI :
+      Mengecek laporan bulanan untuk keperluan tampilan,
+      menampilkan pesan jika kosong.
+   OUTPUT : true jika ada laporan, false jika tidak.
+   ---------------------------------------------------------*/
 bool hasMonthReportsView(struct MonthReportList *monthReportList) {
   if (!hasMonthReportsOnly(monthReportList)) {
     showNoMonthReportsMessage();
@@ -543,6 +948,13 @@ bool hasMonthReportsView(struct MonthReportList *monthReportList) {
   return true;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCurrentBudgetHeader()
+   DESKRIPSI :
+      Menampilkan header menu "Lihat Budget Saat Ini".
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printCurrentBudgetHeader() {
   int boxWidth = 59;
   clearScreen();
@@ -558,13 +970,33 @@ void printCurrentBudgetHeader() {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readReportChoice(max, choice)
+   DESKRIPSI :
+      Membaca input user untuk memilih laporan bulanan.
+   OUTPUT : true jika valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool readReportChoice(int max, int *choice) {
   return readAndValidateInteger("\n📅 Pilih nomor laporan: ", 1, max, choice);
 }
+
+/* ---------------------------------------------------------
+   FUNGSI : getReportByIndex(list, index)
+   DESKRIPSI :
+      Mengambil laporan bulanan berdasarkan indeks.
+   OUTPUT : Pointer ke MonthReport yang dipilih.
+   ---------------------------------------------------------*/
 struct MonthReport *getReportByIndex(struct MonthReportList *list, int index) {
   return list->reports[index];
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : selectReportForBudgetView(monthReportList)
+   DESKRIPSI :
+      Menampilkan daftar laporan bulanan, meminta user memilih, dan
+   mengembalikan laporan. OUTPUT : Pointer ke laporan yang dipilih, NULL jika
+   gagal.
+   ---------------------------------------------------------*/
 struct MonthReport *
 selectReportForBudgetView(struct MonthReportList *monthReportList) {
   showMonthlyList(monthReportList);
@@ -576,6 +1008,13 @@ selectReportForBudgetView(struct MonthReportList *monthReportList) {
   return getReportByIndex(monthReportList, reportChoice - 1);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetPerCategoryHeader()
+   DESKRIPSI :
+      Menampilkan header tabel budget per kategori lengkap dengan kolom.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tabel tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetPerCategoryHeader() {
   int boxWidth = 88;
   printf("\n");
@@ -606,20 +1045,46 @@ void printBudgetPerCategoryHeader() {
                        boxWidth, COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : calculateRemainingBudget(group)
+   DESKRIPSI :
+      Menghitung sisa budget untuk kategori.
+   OUTPUT : sisa budget (budget - totalAmount)
+   ---------------------------------------------------------*/
 long long calculateRemainingBudget(const struct TransactionGroup *group) {
   return group->budget - group->totalAmount;
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : calculateBudgetPercentage(group)
+   DESKRIPSI :
+      Menghitung persentase penggunaan budget.
+   OUTPUT : persentase (0.0 jika budget <= 0)
+   ---------------------------------------------------------*/
 double calculateBudgetPercentage(const struct TransactionGroup *group) {
   if (group->budget <= 0)
     return 0.0;
   return ((double)group->totalAmount / group->budget) * 100.0;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetColumnCategory(displayName)
+   DESKRIPSI :
+      Menampilkan kolom nama kategori pada tabel budget.
+   I.S.  : Nama kategori tersedia.
+   F.S.  : Kolom kategori tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetColumnCategory(const char *displayName) {
   printf("%-20s │ ", displayName);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetColumnTotal(total)
+   DESKRIPSI :
+      Menampilkan total pengeluaran/pendapatan kategori.
+   I.S.  : Total tersedia.
+   F.S.  : Kolom total tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetColumnTotal(long long total) {
   char buffer[32];
   snprintf(buffer, sizeof(buffer), "%-15lld", total);
@@ -627,6 +1092,13 @@ void printBudgetColumnTotal(long long total) {
   printf(" │ ");
 }
 
+/* ---------------------------------------------------------
+PROSEDUR : printBudgetColumnRemaining(remaining)
+DESKRIPSI :
+Menampilkan sisa budget dengan warna hijau jika positif, merah jika negatif.
+I.S.  : Sisa budget tersedia.
+F.S.  : Kolom sisa tampil di layar.
+---------------------------------------------------------*/
 void printBudgetColumnRemaining(long long remaining) {
   char buffer[32];
   snprintf(buffer, sizeof(buffer), "%-15lld", remaining);
@@ -637,10 +1109,24 @@ void printBudgetColumnRemaining(long long remaining) {
   printf(" │ ");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetColumnStatus(status, percentage)
+   DESKRIPSI :
+      Menampilkan status budget berdasarkan persentase penggunaan.
+   I.S.  : Status dan persentase tersedia.
+   F.S.  : Kolom status tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetColumnStatus(const char *status, double percentage) {
   printBudgetStatus(status, percentage);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetTableRow(group)
+   DESKRIPSI :
+      Menampilkan satu baris tabel budget untuk kategori tertentu.
+   I.S.  : Data group tersedia.
+   F.S.  : Baris tabel tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetTableRow(const struct TransactionGroup *group) {
   int boxWidth = 88;
 
@@ -661,8 +1147,22 @@ void printBudgetTableRow(const struct TransactionGroup *group) {
   printf("%-10s ║\n", "");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetTableHeader()
+   DESKRIPSI :
+      Menampilkan header tabel budget per kategori.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetTableHeader() { printBudgetPerCategoryHeader(); }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetTableFooter()
+   DESKRIPSI :
+      Menampilkan footer tabel budget per kategori.
+   I.S.  : Footer belum tampil.
+   F.S.  : Footer tampil di layar.
+   ---------------------------------------------------------*/
 void printBudgetTableFooter() {
   int boxWidth = 88;
   printCenteredColored("╚══════════════════════════════════════════════════════"
@@ -670,6 +1170,13 @@ void printBudgetTableFooter() {
                        boxWidth, COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printBudgetReport(report)
+   DESKRIPSI :
+      Menampilkan seluruh tabel budget untuk satu laporan bulanan.
+   I.S.  : Laporan tersedia.
+   F.S.  : Tabel budget tampil lengkap di layar.
+   ---------------------------------------------------------*/
 void printBudgetReport(const struct MonthReport *report) {
   printBudgetTableHeader();
 
@@ -680,6 +1187,13 @@ void printBudgetReport(const struct MonthReport *report) {
   printBudgetTableFooter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openViewBudgetMenu(monthReportList)
+   DESKRIPSI :
+      Menampilkan menu untuk melihat budget saat ini per laporan bulanan.
+   I.S.  : Daftar laporan tersedia.
+   F.S.  : Tabel budget tampil di layar.
+   ---------------------------------------------------------*/
 void openViewBudgetMenu(struct MonthReportList *monthReportList) {
   if (!hasMonthReportsView(monthReportList))
     return;
@@ -693,6 +1207,13 @@ void openViewBudgetMenu(struct MonthReportList *monthReportList) {
   waitForEnter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryListHeader()
+   DESKRIPSI :
+      Menampilkan header daftar kategori.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printCategoryListHeader() {
   int boxWidth = 59;
   clearScreen();
@@ -710,6 +1231,13 @@ void printCategoryListHeader() {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printIncomeHeader(boxWidth)
+   DESKRIPSI :
+      Menampilkan header kategori pendapatan.
+   I.S.  : Header belum tampil.
+   F.S.  : Header pendapatan tampil di layar.
+   ---------------------------------------------------------*/
 void printIncomeHeader(int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -719,6 +1247,13 @@ void printIncomeHeader(int boxWidth) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printExpenseHeader(boxWidth)
+   DESKRIPSI :
+      Menampilkan header kategori pengeluaran.
+   I.S.  : Header belum tampil.
+   F.S.  : Header pengeluaran tampil di layar.
+   ---------------------------------------------------------*/
 void printExpenseHeader(int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -728,6 +1263,13 @@ void printExpenseHeader(int boxWidth) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryRow(cat, index, boxWidth)
+   DESKRIPSI :
+      Menampilkan satu baris kategori dengan tipe Default/Custom.
+   I.S.  : Item kategori tersedia.
+   F.S.  : Baris kategori tampil di layar.
+   ---------------------------------------------------------*/
 void printCategoryRow(struct CategoryItem *cat, int index, int boxWidth) {
   printCentered("  ", boxWidth);
   printf("%d. %-30s ", index + 1, cat->displayName);
@@ -740,6 +1282,12 @@ void printCategoryRow(struct CategoryItem *cat, int index, int boxWidth) {
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : printIncomeCategories(categories, boxWidth)
+   DESKRIPSI :
+      Menampilkan semua kategori pendapatan.
+   OUTPUT : jumlah kategori pendapatan yang tampil.
+   ---------------------------------------------------------*/
 int printIncomeCategories(struct CategoryList *categories, int boxWidth) {
   int count = 0;
   for (int i = 0; i < categories->count; i++) {
@@ -754,6 +1302,12 @@ int printIncomeCategories(struct CategoryList *categories, int boxWidth) {
   return count;
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : printExpenseCategories(categories, boxWidth)
+   DESKRIPSI :
+      Menampilkan semua kategori pengeluaran.
+   OUTPUT : jumlah kategori pengeluaran yang tampil.
+   ---------------------------------------------------------*/
 int printExpenseCategories(struct CategoryList *categories, int boxWidth) {
   int count = 0;
   for (int i = 0; i < categories->count; i++) {
@@ -768,6 +1322,13 @@ int printExpenseCategories(struct CategoryList *categories, int boxWidth) {
   return count;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategorySummary(total, income, expense, boxWidth)
+   DESKRIPSI :
+      Menampilkan ringkasan jumlah kategori pendapatan & pengeluaran.
+   I.S.  : Data kategori tersedia.
+   F.S.  : Ringkasan tampil di layar.
+   ---------------------------------------------------------*/
 void printCategorySummary(int total, int income, int expense, int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -779,6 +1340,13 @@ void printCategorySummary(int total, int income, int expense, int boxWidth) {
   printf(" pengeluaran)\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showAllCategories()
+   DESKRIPSI :
+      Menampilkan seluruh daftar kategori dan ringkasan.
+   I.S.  : Kategori tersedia.
+   F.S.  : Daftar kategori dan ringkasan tampil di layar.
+   ---------------------------------------------------------*/
 void showAllCategories() {
   int boxWidth = 59;
 
@@ -797,6 +1365,13 @@ void showAllCategories() {
   printCategorySummary(categories->count, incomeCount, expenseCount, boxWidth);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printAddCategoryHeader(boxWidth, contentLines)
+   DESKRIPSI :
+      Menampilkan header menu tambah kategori baru.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printAddCategoryHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
 
@@ -814,6 +1389,13 @@ void printAddCategoryHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryTypeOptions(boxWidth)
+   DESKRIPSI :
+      Menampilkan pilihan tipe kategori (pendapatan atau pengeluaran).
+   I.S.  : Belum tampil.
+   F.S.  : Pilihan tipe tampil di layar.
+   ---------------------------------------------------------*/
 void printCategoryTypeOptions(int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -828,6 +1410,12 @@ void printCategoryTypeOptions(int boxWidth) {
   printf(" 💸 Pengeluaran (Expense)\n");
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readCategoryType(type, boxWidth)
+   DESKRIPSI :
+      Membaca input user untuk memilih tipe kategori.
+   OUTPUT : true jika input valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool readCategoryType(enum TransactionType *type, int boxWidth) {
   int choice;
 
@@ -842,6 +1430,12 @@ bool readCategoryType(enum TransactionType *type, int boxWidth) {
   return true;
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readDisplayCategoryName(buffer, size, boxWidth)
+   DESKRIPSI :
+      Membaca nama kategori dari user dengan aman.
+   OUTPUT : true jika nama valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool readDisplayCategoryName(char *buffer, size_t size, int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -849,6 +1443,13 @@ bool readDisplayCategoryName(char *buffer, size_t size, int boxWidth) {
   return readCategoryNameSafe(buffer, size, "📝 Nama kategori (Indonesia): ");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : generateInternalCategoryName(internalName, displayName, size)
+   DESKRIPSI :
+      Menghasilkan nama internal kategori dari nama display dan menormalisasi.
+   I.S.  : Nama display tersedia.
+   F.S.  : Nama internal siap dipakai.
+   ---------------------------------------------------------*/
 void generateInternalCategoryName(char *internalName, const char *displayName,
                                   size_t size) {
   strncpy(internalName, displayName, size - 1);
@@ -856,10 +1457,22 @@ void generateInternalCategoryName(char *internalName, const char *displayName,
   normalizeCategoryName(internalName);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : isDuplicateCategory(list, internalName)
+   DESKRIPSI :
+      Mengecek apakah kategori sudah ada di daftar.
+   OUTPUT : true jika duplikat, false jika tidak.
+   ---------------------------------------------------------*/
 bool isDuplicateCategory(struct CategoryList *list, const char *internalName) {
   return categoryExistsInList(list, internalName);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : addNewCategory(categories, internalName, displayName, type)
+   DESKRIPSI :
+      Menambahkan kategori baru ke daftar dan menyimpan perubahan.
+   OUTPUT : true jika berhasil, false jika gagal.
+   ---------------------------------------------------------*/
 bool addNewCategory(struct CategoryList *categories, const char *internalName,
                     const char *displayName, enum TransactionType type) {
   bool success =
@@ -873,6 +1486,13 @@ bool addNewCategory(struct CategoryList *categories, const char *internalName,
   return success;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showAddCategorySuccess(displayName)
+   DESKRIPSI :
+      Menampilkan pesan sukses setelah kategori berhasil ditambahkan.
+   I.S.  : Nama kategori tersedia.
+   F.S.  : Pesan sukses tampil di layar.
+   ---------------------------------------------------------*/
 void showAddCategorySuccess(const char *displayName) {
   char msg[256];
   snprintf(msg, sizeof(msg), "Kategori '%s' berhasil ditambahkan!",
@@ -880,6 +1500,13 @@ void showAddCategorySuccess(const char *displayName) {
   showSuccessMessage(msg);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openAddCategoryMenu()
+   DESKRIPSI :
+      Menjalankan alur tambah kategori baru
+   I.S.  : Kategori baru belum ditambahkan
+   F.S.  : Kategori baru ditambahkan jika valid
+   ---------------------------------------------------------*/
 void openAddCategoryMenu() {
   int boxWidth = 59;
   int contentLines = 12;
@@ -929,6 +1556,13 @@ void openAddCategoryMenu() {
   waitForEnter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printDeleteCategoryHeader(boxWidth)
+   DESKRIPSI :
+      Menampilkan header menu hapus kategori custom.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printDeleteCategoryHeader(int boxWidth) {
   clearScreen();
   printCenteredColored(
@@ -945,6 +1579,13 @@ void printDeleteCategoryHeader(int boxWidth) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCustomCategoryListHeader(boxWidth)
+   DESKRIPSI :
+      Menampilkan header daftar kategori custom.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printCustomCategoryListHeader(int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -954,6 +1595,13 @@ void printCustomCategoryListHeader(int boxWidth) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCustomCategoryItem(cat, index, boxWidth)
+   DESKRIPSI :
+      Menampilkan satu kategori custom beserta tipe (pendapatan/pengeluaran).
+   I.S.  : Item kategori tersedia.
+   F.S.  : Baris kategori tampil di layar.
+   ---------------------------------------------------------*/
 void printCustomCategoryItem(struct CategoryItem *cat, int index,
                              int boxWidth) {
   printCentered("  ", boxWidth);
@@ -965,12 +1613,27 @@ void printCustomCategoryItem(struct CategoryItem *cat, int index,
     printError("(Pengeluaran)\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printDefaultCategoryNote(boxWidth)
+   DESKRIPSI :
+      Menampilkan catatan bahwa kategori default tidak bisa dihapus.
+   I.S.  : Catatan belum tampil.
+   F.S.  : Catatan tampil di layar.
+   ---------------------------------------------------------*/
 void printDefaultCategoryNote(int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
   printInfo("💡 Catatan: Kategori default tidak dapat dihapus\n");
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : collectCustomCategoryIndices(list, outIndices)
+   DESKRIPSI :
+      Mengumpulkan indeks semua kategori custom.
+   INPUT  : list = daftar kategori.
+            outIndices = array untuk menampung indeks custom.
+   OUTPUT : jumlah kategori custom.
+   ---------------------------------------------------------*/
 int collectCustomCategoryIndices(struct CategoryList *list, int *outIndices) {
   int count = 0;
 
@@ -983,6 +1646,13 @@ int collectCustomCategoryIndices(struct CategoryList *list, int *outIndices) {
   return count;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printAllCustomCategories(list, indices, count, boxWidth)
+   DESKRIPSI :
+      Menampilkan semua kategori custom berdasarkan indeks.
+   I.S.  : Data kategori custom tersedia.
+   F.S.  : Semua kategori custom tampil di layar.
+   ---------------------------------------------------------*/
 void printAllCustomCategories(struct CategoryList *list, int *indices,
                               int count, int boxWidth) {
   for (int i = 0; i < count; i++) {
@@ -991,6 +1661,14 @@ void printAllCustomCategories(struct CategoryList *list, int *indices,
   }
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readDeleteCategoryChoice(max, choice, boxWidth)
+   DESKRIPSI :
+      Membaca input user untuk memilih kategori yang ingin dihapus.
+   INPUT  : max = jumlah kategori custom, boxWidth = lebar tampilan.
+   OUTPUT : true jika input valid, false jika gagal.
+            choice = indeks pilihan kategori (0 untuk batal).
+   ---------------------------------------------------------*/
 bool readDeleteCategoryChoice(int max, int *choice, int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -998,6 +1676,13 @@ bool readDeleteCategoryChoice(int max, int *choice, int boxWidth) {
       "🎯 Pilih kategori untuk dihapus (0 untuk batal): ", 0, max, choice);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readDeleteConfirmation(categoryName, boxWidth)
+   DESKRIPSI :
+      Meminta konfirmasi user sebelum menghapus kategori.
+   INPUT  : categoryName = nama kategori, boxWidth = lebar tampilan.
+   OUTPUT : true jika user konfirmasi y/Y, false jika n/N.
+   ---------------------------------------------------------*/
 bool readDeleteConfirmation(const char *categoryName, int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -1011,6 +1696,13 @@ bool readDeleteConfirmation(const char *categoryName, int boxWidth) {
   return (c == 'y' || c == 'Y');
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : deleteCategoryByInternalName(internalName)
+   DESKRIPSI :
+      Menghapus kategori dari daftar berdasarkan internal name.
+   INPUT  : internalName = nama internal kategori.
+   OUTPUT : true jika berhasil, false jika gagal.
+   ---------------------------------------------------------*/
 bool deleteCategoryByInternalName(const char *internalName) {
   struct CategoryList *fullList = loadUserCategories();
   bool success = false;
@@ -1025,6 +1717,13 @@ bool deleteCategoryByInternalName(const char *internalName) {
   return success;
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openDeleteCategoryMenu()
+   DESKRIPSI :
+      Menjalankan alur hapus kategori custom
+   I.S.  : Daftar kategori tersedia.
+   F.S.  : Kategori berhasil dihapus jika valid
+   ---------------------------------------------------------*/
 void openDeleteCategoryMenu() {
   int boxWidth = 59;
   struct CategoryList *categories = getUserCategoriesCache();
@@ -1081,6 +1780,13 @@ void openDeleteCategoryMenu() {
   waitForEnter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryManagementHeader(boxWidth, contentLines)
+   DESKRIPSI :
+      Menampilkan header menu kelola kategori.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printCategoryManagementHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
 
@@ -1098,6 +1804,13 @@ void printCategoryManagementHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryManagementMenuItem(index, emoji, label, boxWidth)
+   DESKRIPSI :
+      Menampilkan satu item menu kelola kategori dengan nomor dan emoji.
+   I.S.  : Menu belum tampil.
+   F.S.  : Item menu tampil di layar.
+   ---------------------------------------------------------*/
 void printCategoryManagementMenuItem(int index, const char *emoji,
                                      const char *label, int boxWidth) {
   printCentered("│  ", boxWidth);
@@ -1111,6 +1824,13 @@ void printCategoryManagementMenuItem(int index, const char *emoji,
   printf("│\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printCategoryManagementFooter(boxWidth)
+   DESKRIPSI :
+      Menampilkan footer menu kelola kategori dan prompt input.
+   I.S.  : Footer belum tampil.
+   F.S.  : Footer tampil dan siap input.
+   ---------------------------------------------------------*/
 void printCategoryManagementFooter(int boxWidth) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
@@ -1121,8 +1841,22 @@ void printCategoryManagementFooter(int boxWidth) {
   printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readCategoryManagementChoice()
+   DESKRIPSI :
+      Membaca pilihan menu kelola kategori (1-4).
+   INPUT  : -
+   OUTPUT : pilihan valid (1-4), -1 jika gagal.
+   ---------------------------------------------------------*/
 int readCategoryManagementChoice() { return getValidatedMenuChoice(1, 4); }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openCategoryManagementMenu()
+   DESKRIPSI :
+      Menjalankan alur menu kelola kategori (lihat, tambah, hapus, kembali).
+   I.S.  : Menu kategori belum tampil.
+   F.S.  : Menu selesai dijalankan sesuai pilihan.
+   ---------------------------------------------------------*/
 void openCategoryManagementMenu() {
   int boxWidth = 59;
 
@@ -1156,6 +1890,13 @@ void openCategoryManagementMenu() {
   }
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printResetBudgetHeader(boxWidth, contentLines)
+   DESKRIPSI :
+      Menampilkan header menu reset semua budget.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printResetBudgetHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
 
@@ -1173,6 +1914,13 @@ void printResetBudgetHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printResetBudgetWarnings(boxWidth)
+   DESKRIPSI :
+      Menampilkan peringatan dan info default budget.
+   I.S.  : Peringatan belum tampil.
+   F.S.  : Peringatan tampil di layar.
+   ---------------------------------------------------------*/
 void printResetBudgetWarnings(int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -1184,6 +1932,13 @@ void printResetBudgetWarnings(int boxWidth) {
   printf("%sRp 1,000,000%s\n\n", COLOR_BRIGHT_CYAN, COLOR_RESET);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readResetBudgetConfirmation(boxWidth)
+   DESKRIPSI :
+      Membaca konfirmasi user untuk reset semua budget.
+   INPUT  : boxWidth = lebar tampilan.
+   OUTPUT : true jika user yakin (y/Y), false jika tidak.
+   ---------------------------------------------------------*/
 bool readResetBudgetConfirmation(int boxWidth) {
   char c;
 
@@ -1196,6 +1951,13 @@ bool readResetBudgetConfirmation(int boxWidth) {
   return (c == 'y' || c == 'Y');
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : resetBudgetForReport(report, categories)
+   DESKRIPSI :
+      Mengatur semua kategori pada satu laporan menjadi default Rp 1,000,000.
+   I.S.  : Laporan dan kategori tersedia.
+   F.S.  : Semua budget di laporan direset dan tersimpan.
+   ---------------------------------------------------------*/
 void resetBudgetForReport(struct MonthReport *report,
                           struct CategoryList *categories) {
   for (int i = 0; i < categories->count; i++) {
@@ -1207,6 +1969,13 @@ void resetBudgetForReport(struct MonthReport *report,
   saveUserMonthReport(report);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : resetBudgetForAllReports(monthReportList, categories)
+   DESKRIPSI :
+      Mengatur semua budget di semua laporan menjadi default.
+   I.S.  : Daftar laporan dan kategori tersedia.
+   F.S.  : Semua budget di semua laporan direset.
+   ---------------------------------------------------------*/
 void resetBudgetForAllReports(struct MonthReportList *monthReportList,
                               struct CategoryList *categories) {
   for (int i = 0; i < monthReportList->count; i++) {
@@ -1214,6 +1983,14 @@ void resetBudgetForAllReports(struct MonthReportList *monthReportList,
   }
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openResetBudgetMenu(monthReportList)
+   DESKRIPSI :
+      Menjalankan alur reset semua budget:
+      menampilkan header, peringatan, konfirmasi, reset, dan pesan sukses.
+   I.S.  : Laporan dan kategori tersedia.
+   F.S.  : Semua budget direset jika user konfirmasi, pesan tampil.
+   ---------------------------------------------------------*/
 void openResetBudgetMenu(struct MonthReportList *monthReportList) {
   int boxWidth = 59;
   int contentLines = 10;
@@ -1237,6 +2014,13 @@ void openResetBudgetMenu(struct MonthReportList *monthReportList) {
   showSuccessMessage("Semua budget berhasil direset ke Rp 1,000,000!");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printConfigurationHeader(boxWidth, contentLines)
+   DESKRIPSI :
+      Menampilkan header menu pengaturan sistem.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printConfigurationHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
 
@@ -1254,6 +2038,13 @@ void printConfigurationHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printConfigurationMenuItem(index, emoji, label, boxWidth)
+   DESKRIPSI :
+      Menampilkan satu item menu pengaturan sistem.
+   I.S.  : Item belum tampil.
+   F.S.  : Item tampil di layar.
+   ---------------------------------------------------------*/
 void printConfigurationMenuItem(int index, const char *emoji, const char *label,
                                 int boxWidth) {
   printCentered("│  ", boxWidth);
@@ -1267,6 +2058,13 @@ void printConfigurationMenuItem(int index, const char *emoji, const char *label,
   printf("│\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printConfigurationFooter(boxWidth)
+   DESKRIPSI :
+      Menampilkan footer menu pengaturan sistem dan prompt input.
+   I.S.  : Footer belum tampil.
+   F.S.  : Footer tampil dan siap input.
+   ---------------------------------------------------------*/
 void printConfigurationFooter(int boxWidth) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
@@ -1277,8 +2075,23 @@ void printConfigurationFooter(int boxWidth) {
   printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readConfigurationChoice()
+   DESKRIPSI :
+      Membaca pilihan menu pengaturan sistem (1-6).
+   INPUT  : -
+   OUTPUT : pilihan valid (1-6), -1 jika gagal.
+   ---------------------------------------------------------*/
 int readConfigurationChoice() { return getValidatedMenuChoice(1, 6); }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openConfigurationMenu(monthReportList)
+   DESKRIPSI :
+      Menjalankan alur menu pengaturan sistem sesuai pilihan:
+      set minimum amount/budget/transaction, lihat pengaturan, reset, kembali.
+   I.S.  : Menu belum tampil.
+   F.S.  : Menu selesai dijalankan sesuai pilihan user.
+   ---------------------------------------------------------*/
 void openConfigurationMenu(struct MonthReportList *monthReportList) {
   int boxWidth = 59;
 
@@ -1321,6 +2134,13 @@ void openConfigurationMenu(struct MonthReportList *monthReportList) {
   }
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printMinimumAmountHeader(boxWidth, contentLines)
+   DESKRIPSI :
+      Menampilkan header menu untuk mengatur minimum jumlah uang.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printMinimumAmountHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
   printCenteredColored(
@@ -1335,6 +2155,13 @@ void printMinimumAmountHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printMinimumBudgetHeader(boxWidth, contentLines)
+   DESKRIPSI :
+      Menampilkan header menu untuk mengatur minimum budget.
+   I.S.  : Header belum tampil.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printMinimumBudgetHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
   printCenteredColored(
@@ -1349,28 +2176,63 @@ void printMinimumBudgetHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showCurrentMinimumAmount(boxWidth)
+   DESKRIPSI :
+      Menampilkan nilai minimum jumlah uang saat ini.
+   INPUT  : boxWidth = lebar tampilan.
+   F.S.  : Nilai minimum saat ini ditampilkan.
+   ---------------------------------------------------------*/
 void showCurrentMinimumAmount(int boxWidth) {
   printCentered("", boxWidth);
   printInfo("💰 Minimum saat ini: ");
   printf("%sRp %lld%s\n", COLOR_BRIGHT_CYAN, getMinimumAmount(), COLOR_RESET);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showCurrentMinimumBudget(boxWidth)
+   DESKRIPSI :
+      Menampilkan nilai minimum budget saat ini.
+   INPUT  : boxWidth = lebar tampilan.
+   F.S.  : Nilai minimum saat ini ditampilkan.
+   ---------------------------------------------------------*/
 void showCurrentMinimumBudget(int boxWidth) {
   printCentered("", boxWidth);
   printInfo("📊 Minimum saat ini: ");
   printf("%sRp %lld%s\n", COLOR_BRIGHT_CYAN, getMinimumBudget(), COLOR_RESET);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readNewMinimumAmount(outValue)
+   DESKRIPSI :
+      Membaca input user untuk nilai minimum jumlah uang baru.
+   INPUT  : outValue = pointer untuk menyimpan nilai.
+   OUTPUT : true jika input valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool readNewMinimumAmount(long long *outValue) {
   return readAndValidateLongLong("💰 Masukkan minimum baru (minimal 1): ", 1,
                                  getMaximumAmount(), outValue);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readNewMinimumBudget(outValue)
+   DESKRIPSI :
+      Membaca input user untuk nilai minimum budget baru.
+   INPUT  : outValue = pointer untuk menyimpan nilai.
+   OUTPUT : true jika input valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool readNewMinimumBudget(long long *outValue) {
   return readAndValidateLongLong("📊 Masukkan minimum baru (minimal 1): ", 1,
                                  getMaximumBudget(), outValue);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : applyNewMinimumAmount(value)
+   DESKRIPSI :
+      Menyimpan nilai minimum jumlah uang baru dan menampilkan pesan sukses.
+   INPUT  : value = nilai minimum baru.
+   F.S.  : Konfigurasi tersimpan di file dan pesan sukses ditampilkan.
+   ---------------------------------------------------------*/
 void applyNewMinimumAmount(long long value) {
   setMinimumAmount(value);
   saveConfigToFile("./config.txt");
@@ -1381,6 +2243,13 @@ void applyNewMinimumAmount(long long value) {
   showSuccessMessage(msg);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : applyNewMinimumBudget(value)
+   DESKRIPSI :
+      Menyimpan nilai minimum budget baru dan menampilkan pesan sukses.
+   INPUT  : value = nilai minimum baru.
+   F.S.  : Konfigurasi tersimpan di file dan pesan sukses ditampilkan.
+   ---------------------------------------------------------*/
 void applyNewMinimumBudget(long long value) {
   setMinimumBudget(value);
   saveConfigToFile("./config.txt");
@@ -1391,6 +2260,14 @@ void applyNewMinimumBudget(long long value) {
   showSuccessMessage(msg);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openSetMinimumAmountMenu()
+   DESKRIPSI :
+      Menjalankan alur menu untuk mengatur minimum jumlah uang:
+      menampilkan header, nilai saat ini, membaca input, dan menyimpan.
+   I.S.  : Menu belum tampil.
+   F.S.  : Nilai minimum diupdate sesuai input user.
+   ---------------------------------------------------------*/
 void openSetMinimumAmountMenu() {
   int boxWidth = 59;
   int contentLines = 8;
@@ -1407,6 +2284,14 @@ void openSetMinimumAmountMenu() {
   applyNewMinimumAmount(value);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openSetMinimumBudgetMenu()
+   DESKRIPSI :
+      Menjalankan alur menu untuk mengatur minimum budget:
+      menampilkan header, nilai saat ini, membaca input, dan menyimpan.
+   I.S.  : Menu belum tampil.
+   F.S.  : Nilai minimum budget diupdate sesuai input user.
+   ---------------------------------------------------------*/
 void openSetMinimumBudgetMenu() {
   int boxWidth = 59;
   int contentLines = 8;
@@ -1422,6 +2307,15 @@ void openSetMinimumBudgetMenu() {
   applyNewMinimumBudget(value);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printMinimumTransactionHeader(boxWidth, contentLines)
+   DESKRIPSI :
+      Menampilkan header menu untuk mengatur minimum transaksi.
+   INPUT  :
+      boxWidth = lebar tampilan.
+      contentLines = jumlah baris kosong vertikal di atas.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printMinimumTransactionHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
   printCenteredColored(
@@ -1436,6 +2330,13 @@ void printMinimumTransactionHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : showCurrentMinimumTransaction(boxWidth)
+   DESKRIPSI :
+      Menampilkan nilai minimum transaksi saat ini.
+   INPUT  : boxWidth = lebar tampilan.
+   F.S.  : Nilai minimum transaksi ditampilkan.
+   ---------------------------------------------------------*/
 void showCurrentMinimumTransaction(int boxWidth) {
   printCentered("", boxWidth);
   printInfo("💳 Minimum saat ini: ");
@@ -1443,11 +2344,25 @@ void showCurrentMinimumTransaction(int boxWidth) {
          COLOR_RESET);
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readNewMinimumTransaction(outValue)
+   DESKRIPSI :
+      Membaca input user untuk nilai minimum transaksi baru.
+   INPUT  : outValue = pointer untuk menyimpan nilai.
+   OUTPUT : true jika input valid, false jika gagal.
+   ---------------------------------------------------------*/
 bool readNewMinimumTransaction(long long *outValue) {
   return readAndValidateLongLong("💳 Masukkan minimum baru (minimal 1): ", 1,
                                  globalConfig.money.minimumBudget, outValue);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : applyNewMinimumTransaction(value)
+   DESKRIPSI :
+      Menyimpan nilai minimum transaksi baru dan menampilkan pesan sukses.
+   INPUT  : value = nilai minimum transaksi baru.
+   F.S.  : Konfigurasi tersimpan di file dan pesan sukses ditampilkan.
+   ---------------------------------------------------------*/
 void applyNewMinimumTransaction(long long value) {
   globalConfig.money.minimumBudget = value;
   saveConfigToFile("./config.txt");
@@ -1458,6 +2373,14 @@ void applyNewMinimumTransaction(long long value) {
   showSuccessMessage(msg);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openSetMinimumTransactionMenu()
+   DESKRIPSI :
+      Menjalankan alur menu untuk mengatur minimum transaksi:
+      menampilkan header, nilai saat ini, membaca input, dan menyimpan.
+   I.S.  : Menu belum tampil.
+   F.S.  : Nilai minimum transaksi diupdate sesuai input user.
+   ---------------------------------------------------------*/
 void openSetMinimumTransactionMenu() {
   int boxWidth = 59;
   int contentLines = 8;
@@ -1473,6 +2396,13 @@ void openSetMinimumTransactionMenu() {
   applyNewMinimumTransaction(newMin);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printConfigurationHeaderKeuangan(boxWidth)
+   DESKRIPSI :
+      Menampilkan header umum menu pengaturan saat ini (keuangan & validasi).
+   INPUT  : boxWidth = lebar tampilan.
+   F.S.  : Header tampil di layar.
+   ---------------------------------------------------------*/
 void printConfigurationHeaderKeuangan(int boxWidth) {
   clearScreen();
   printCenteredColored(
@@ -1487,6 +2417,13 @@ void printConfigurationHeaderKeuangan(int boxWidth) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printFinanceConfigHeader(boxWidth)
+   DESKRIPSI :
+      Menampilkan header tabel pengaturan keuangan.
+   INPUT  : boxWidth = lebar tampilan.
+   F.S.  : Header tabel tampil di layar.
+   ---------------------------------------------------------*/
 void printFinanceConfigHeader(int boxWidth) {
   printf("\n");
   printCenteredColored("╔══════════════════════════════════════════════════════"
@@ -1509,6 +2446,13 @@ void printFinanceConfigHeader(int boxWidth) {
   printf("%s%-20s%s ║\n", COLOR_BRIGHT_CYAN, "MAXIMUM", COLOR_RESET);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printFinanceConfigRows(boxWidth)
+   DESKRIPSI :
+      Menampilkan nilai minimum dan maksimum untuk jumlah uang, budget, dan
+   transaksi. INPUT  : boxWidth = lebar tampilan. F.S.  : Semua nilai keuangan
+   ditampilkan.
+   ---------------------------------------------------------*/
 void printFinanceConfigRows(int boxWidth) {
   printCentered("║ ", boxWidth);
   printf("%-30s │ ", "Jumlah Uang");
@@ -1532,6 +2476,13 @@ void printFinanceConfigRows(int boxWidth) {
          globalConfig.money.maximumTransactionAmount, COLOR_RESET);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printValidationConfigHeader(boxWidth)
+   DESKRIPSI :
+      Menampilkan header tabel pengaturan validasi input.
+   INPUT  : boxWidth = lebar tampilan.
+   F.S.  : Header validasi tampil di layar.
+   ---------------------------------------------------------*/
 void printValidationConfigHeader(int boxWidth) {
   printCenteredColored("╚══════════════════════════════════════════════════════"
                        "══════════════════════════════╝\n",
@@ -1553,6 +2504,13 @@ void printValidationConfigHeader(int boxWidth) {
                        boxWidth, COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printValidationConfigRows(boxWidth)
+   DESKRIPSI :
+      Menampilkan pengaturan validasi input, seperti panjang nama, deskripsi,
+   percobaan, dan tahun. INPUT  : boxWidth = lebar tampilan. F.S.  : Semua
+   pengaturan validasi ditampilkan.
+   ---------------------------------------------------------*/
 void printValidationConfigRows(int boxWidth) {
   printCentered("║ ", boxWidth);
   printf("%-40s │ ", "Maksimal Panjang Nama");
@@ -1584,6 +2542,16 @@ void printValidationConfigRows(int boxWidth) {
                        boxWidth, COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openViewConfigurationMenu()
+   DESKRIPSI :
+      Menampilkan seluruh konfigurasi saat ini:
+      1. Keuangan (minimum & maksimum jumlah uang, budget, transaksi)
+      2. Validasi input
+      Menunggu user menekan enter untuk kembali.
+   I.S.  : Menu belum tampil.
+   F.S.  : Semua pengaturan saat ini ditampilkan.
+   ---------------------------------------------------------*/
 void openViewConfigurationMenu() {
   int boxWidth = 88;
 
@@ -1595,6 +2563,15 @@ void openViewConfigurationMenu() {
   waitForEnter();
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printResetConfigHeader(boxWidth, contentLines)
+   DESKRIPSI :
+      Menampilkan header menu reset pengaturan ke default.
+   INPUT  :
+      boxWidth = lebar tampilan
+      contentLines = jumlah baris kosong vertikal
+   F.S.  : Header reset tampil di layar
+   ---------------------------------------------------------*/
 void printResetConfigHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
 
@@ -1612,6 +2589,13 @@ void printResetConfigHeader(int boxWidth, int contentLines) {
       COLOR_BRIGHT_CYAN);
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printResetConfigWarning(boxWidth)
+   DESKRIPSI :
+      Menampilkan peringatan bahwa semua konfigurasi akan dikembalikan ke
+   default. INPUT  : boxWidth = lebar tampilan F.S.  : Peringatan ditampilkan di
+   layar
+   ---------------------------------------------------------*/
 void printResetConfigWarning(int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
@@ -1619,6 +2603,15 @@ void printResetConfigWarning(int boxWidth) {
                "nilai default!\n\n");
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readResetConfigConfirmation(boxWidth, outConfirm)
+   DESKRIPSI :
+      Membaca konfirmasi user untuk reset konfigurasi (y/n)
+   INPUT  :
+      boxWidth = lebar tampilan
+      outConfirm = pointer char untuk menyimpan input user
+   OUTPUT : true jika user mengonfirmasi 'y' atau 'Y', false jika tidak
+   ---------------------------------------------------------*/
 bool readResetConfigConfirmation(int boxWidth, char *outConfirm) {
   printCentered("", boxWidth);
   printColored("❓ Apakah Anda yakin? (y/n): ", COLOR_BRIGHT_YELLOW);
@@ -1629,6 +2622,14 @@ bool readResetConfigConfirmation(int boxWidth, char *outConfirm) {
   return (*outConfirm == 'y' || *outConfirm == 'Y');
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : applyResetConfiguration()
+   DESKRIPSI :
+      Mengembalikan semua pengaturan ke nilai default, menyimpan ke file,
+      dan menampilkan pesan sukses.
+   INPUT  : -
+   F.S.  : Konfigurasi tersimpan ke default, pesan sukses tampil
+   ---------------------------------------------------------*/
 void applyResetConfiguration() {
   initializeDefaultConfig();
   saveConfigToFile("./config.txt");
@@ -1637,10 +2638,24 @@ void applyResetConfiguration() {
                      "restart aplikasi untuk melihat perubahan.");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printResetCancelledMessage()
+   DESKRIPSI :
+      Menampilkan pesan bahwa reset konfigurasi dibatalkan.
+   INPUT  : -
+   F.S.  : Pesan ditampilkan di layar
+   ---------------------------------------------------------*/
 void printResetCancelledMessage() {
   showInfoMessage("Reset pengaturan dibatalkan.");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openResetConfigurationMenu()
+   DESKRIPSI :
+      Menjalankan alur menu reset konfigurasi
+   I.S.  : Konfigurasi belum direset
+   F.S.  : Konfigurasi direset atau dibatalkan sesuai pilihan user
+   ---------------------------------------------------------*/
 void openResetConfigurationMenu() {
   int boxWidth = 59;
   int contentLines = 10;
@@ -1658,10 +2673,31 @@ void openResetConfigurationMenu() {
   applyResetConfiguration();
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : isAdmin()
+   DESKRIPSI :
+      Mengecek apakah user saat ini adalah admin.
+   OUTPUT : true jika admin, false jika bukan
+   ---------------------------------------------------------*/
 bool isAdmin() { return currentUser && currentUser->isAdmin; }
 
+/* ---------------------------------------------------------
+   FUNGSI : getMainMenuMaxChoice()
+   DESKRIPSI :
+      Mengembalikan jumlah pilihan menu utama berdasarkan status user.
+   OUTPUT : 8 jika admin, 7 jika user biasa
+   ---------------------------------------------------------*/
 int getMainMenuMaxChoice() { return isAdmin() ? 8 : 7; }
 
+/* ---------------------------------------------------------
+   PROSEDUR : handleMenuChoiceUser(choice, monthReportList)
+   DESKRIPSI :
+      Menangani pilihan menu utama untuk user biasa.
+   I.S :
+      choice = pilihan menu
+      monthReportList = pointer daftar laporan bulanan
+   F.S.  : Menu terkait dijalankan, logout/exit jika dipilih
+   ---------------------------------------------------------*/
 void handleMenuChoiceUser(int choice, struct MonthReportList *monthReportList) {
   switch (choice) {
   case 1:
@@ -1690,11 +2726,23 @@ void handleMenuChoiceUser(int choice, struct MonthReportList *monthReportList) {
   }
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printAdminMenuScreen()
+   DESKRIPSI : Menampilkan layar menu admin.
+   I.S.       : Layar bisa berisi data apa saja
+   F.S.       : Layar menampilkan menu admin
+---------------------------------------------------------*/
 void printAdminMenuScreen() {
   clearScreen();
   showAdminMenu();
 }
 
+/* ---------------------------------------------------------
+   FUNGSI : readAdminMenuChoice(outChoice)
+   DESKRIPSI : Membaca pilihan menu admin dari input user.
+   INPUT  : outChoice = pointer ke variabel untuk menyimpan pilihan
+   OUTPUT : true jika input valid (integer), false jika tidak
+---------------------------------------------------------*/
 bool readAdminMenuChoice(int *outChoice) {
   int ch;
   if (scanf("%d", outChoice) != 1)
@@ -1705,6 +2753,12 @@ bool readAdminMenuChoice(int *outChoice) {
   return true;
 }
 
+/* ---------------------------------------------------------
+PROSEDUR : handleAdminPanelSelection(adminChoice)
+DESKRIPSI : Menjalankan aksi sesuai pilihan panel admin.
+I.S.       : Admin menu ditampilkan
+F.S.       : Aksi panel admin dijalankan sesuai pilihan
+---------------------------------------------------------*/
 void handleAdminPanelSelection(int adminChoice) {
   switch (adminChoice) {
   case 1:
@@ -1724,6 +2778,12 @@ void handleAdminPanelSelection(int adminChoice) {
   }
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printUserLogoutScreen()
+   DESKRIPSI : Menampilkan layar logout untuk user biasa.
+   I.S.       : User masih login
+   F.S.       : Layar menampilkan logout user dan info kembali ke login
+---------------------------------------------------------*/
 void printUserLogoutScreen() {
   clearScreen();
   printf("╔══════════════════════════════════════════════════════════╗\n");
@@ -1737,6 +2797,12 @@ void printUserLogoutScreen() {
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printAdminLogoutScreen()
+   DESKRIPSI : Menampilkan layar logout untuk admin.
+   I.S.       : Admin masih login
+   F.S.       : Layar menampilkan logout admin dan info kembali ke login
+---------------------------------------------------------*/
 void printAdminLogoutScreen() {
   clearScreen();
   printf("╔══════════════════════════════════════════════════════════╗\n");
@@ -1750,6 +2816,12 @@ void printAdminLogoutScreen() {
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printUserExitScreen()
+   DESKRIPSI : Menampilkan layar ucapan terima kasih untuk user saat keluar
+aplikasi. I.S.       : User masih menggunakan aplikasi F.S.       : Layar
+menampilkan pesan perpisahan
+---------------------------------------------------------*/
 void printUserExitScreen() {
   clearScreen();
   printf("╔══════════════════════════════════════════════════════════╗\n");
@@ -1762,6 +2834,12 @@ void printUserExitScreen() {
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : printAdminExitScreen()
+   DESKRIPSI : Menampilkan layar ucapan terima kasih untuk admin saat keluar
+aplikasi. I.S.       : Admin masih menggunakan aplikasi F.S.       : Layar
+menampilkan pesan perpisahan
+---------------------------------------------------------*/
 void printAdminExitScreen() {
   clearScreen();
   printf("╔══════════════════════════════════════════════════════════╗\n");
@@ -1774,6 +2852,12 @@ void printAdminExitScreen() {
   printf("\n");
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : handleMenuChoiceAdmin(choice, monthReportList)
+   DESKRIPSI : Menangani pilihan menu utama untuk admin.
+   I.S.       : Admin menu ditampilkan
+   F.S.       : Pilihan dijalankan
+---------------------------------------------------------*/
 void handleMenuChoiceAdmin(int choice,
                            struct MonthReportList *monthReportList) {
   switch (choice) {
@@ -1810,6 +2894,12 @@ void handleMenuChoiceAdmin(int choice,
   }
 }
 
+/* ---------------------------------------------------------
+   PROSEDUR : openMainMenu(monthReportList)
+   DESKRIPSI : Menampilkan menu utama
+   I.S.       : Layar Kosong
+   F.S.       : Menu utama Ditampilkan
+---------------------------------------------------------*/
 void openMainMenu(struct MonthReportList *monthReportList) {
   while (1) {
     showMainMenu();
