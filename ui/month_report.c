@@ -14,11 +14,8 @@
 #ifndef UI_MONTH_REPORT_C
 #define UI_MONTH_REPORT_C
 
-void showMonthlyMenu(struct MonthReportList *monthReportList) {
-  int boxWidth = 59;
-  int contentLines = 11;
+void renderMonthlyMenuHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
-
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
       COLOR_BRIGHT_CYAN);
@@ -29,28 +26,9 @@ void showMonthlyMenu(struct MonthReportList *monthReportList) {
   printCenteredColored(
       "├─────────────────────────────────────────────────────────┤\n", boxWidth,
       COLOR_BRIGHT_CYAN);
-  printCentered("│  ", boxWidth);
-  printColored("1.", COLOR_BRIGHT_CYAN);
-  printf(" 📋 Lihat Daftar Laporan Bulanan                     │\n");
-  printCentered("│  ", boxWidth);
-  printColored("2.", COLOR_BRIGHT_CYAN);
-  printf(" ➕ Buat Laporan Bulanan Baru                        │\n");
-  printCentered("│  ", boxWidth);
-  printColored("3.", COLOR_BRIGHT_CYAN);
-  printf(" ⬅️  Kembali ke Menu Utama                            │\n");
-  printCenteredColored(
-      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
-      COLOR_BRIGHT_CYAN);
-  printf("\n");
-  printCentered("", boxWidth);
-  printInfo("📈 Total laporan tersimpan: ");
-  printf("%s%d%s\n", COLOR_BRIGHT_CYAN, monthReportList->count, COLOR_RESET);
-  printCentered("", boxWidth);
-  printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
 }
 
-void showMonthlyList(struct MonthReportList *monthReportList) {
-  int boxWidth = 59;
+void renderMonthlyListHeader(int boxWidth) {
   printf("\n");
   printCenteredColored(
       "╔══════════════════════════════════════════════════════════╗\n",
@@ -63,179 +41,263 @@ void showMonthlyList(struct MonthReportList *monthReportList) {
       "╚══════════════════════════════════════════════════════════╝\n",
       boxWidth, COLOR_BRIGHT_CYAN);
   printf("\n");
+}
+
+void renderMonthlyMenuOptions(int boxWidth) {
+  printCentered("│  ", boxWidth);
+  printColored("1.", COLOR_BRIGHT_CYAN);
+  printf(" 📋 Lihat Daftar Laporan Bulanan                     │\n");
+
+  printCentered("│  ", boxWidth);
+  printColored("2.", COLOR_BRIGHT_CYAN);
+  printf(" ➕ Buat Laporan Bulanan Baru                        │\n");
+
+  printCentered("│  ", boxWidth);
+  printColored("3.", COLOR_BRIGHT_CYAN);
+  printf(" ⬅️  Kembali ke Menu Utama                            │\n");
+}
+
+void renderMonthlyMenuFooter(int boxWidth, int totalReports) {
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+
+  printf("\n");
+  printCentered("", boxWidth);
+  printInfo("📈 Total laporan tersimpan: ");
+  printf("%s%d%s\n", COLOR_BRIGHT_CYAN, totalReports, COLOR_RESET);
+
+  printCentered("", boxWidth);
+  printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
+}
+
+void renderEmptyMonthlyList(int boxWidth) {
+  printCentered("", boxWidth);
+  printf("📭 Belum ada laporan bulanan.\n");
+
+  printCentered("", boxWidth);
+  printInfo("💡 Tip: Buat laporan baru untuk memulai!\n");
+}
+
+void renderSingleMonthlyListItem(int index, struct MonthReport *report,
+                                 int boxWidth) {
+  int totalTransactions = getTotalTransactions(report);
+
+  printCentered("  ", boxWidth);
+  printColored(index + 1 < 10 ? " " : "", COLOR_BRIGHT_CYAN);
+  printf("%s%d.%s", COLOR_BRIGHT_CYAN, index + 1, COLOR_RESET);
+
+  printf(" 📊 %s", dateToMonthYearString(report->date));
+  printf(" (%d transaksi)", totalTransactions);
+
+  if (report->balance > 0) {
+    printf(" %s💚 Surplus:%s %sRp %lld%s", COLOR_BRIGHT_GREEN, COLOR_RESET,
+           COLOR_BRIGHT_GREEN, report->balance, COLOR_RESET);
+  } else if (report->balance < 0) {
+    printf(" %s❤️  Defisit:%s %sRp %lld%s", COLOR_BRIGHT_RED, COLOR_RESET,
+           COLOR_BRIGHT_RED, -report->balance, COLOR_RESET);
+  } else {
+    printf(" %s⚖️  Seimbang%s", COLOR_BRIGHT_YELLOW, COLOR_RESET);
+  }
+
+  printf("\n");
+}
+
+void showMonthlyMenu(struct MonthReportList *monthReportList) {
+  int boxWidth = 59;
+  int contentLines = 11;
+
+  renderMonthlyMenuHeader(boxWidth, contentLines);
+  renderMonthlyMenuOptions(boxWidth);
+  renderMonthlyMenuFooter(boxWidth, monthReportList->count);
+}
+
+void showMonthlyList(struct MonthReportList *monthReportList) {
+  int boxWidth = 59;
+
+  renderMonthlyListHeader(boxWidth);
 
   if (monthReportList->count == 0) {
-    printCentered("", boxWidth);
-    printf("📭 Belum ada laporan bulanan.\n");
-    printCentered("", boxWidth);
-    printInfo("💡 Tip: Buat laporan baru untuk memulai!\n");
+    renderEmptyMonthlyList(boxWidth);
     return;
   }
 
   for (int i = 0; i < monthReportList->count; i++) {
-    struct MonthReport *report = monthReportList->reports[i];
-    int totalTransactions = getTotalTransactions(report);
-    printCentered("  ", boxWidth);
-    printColored(i + 1 < 10 ? " " : "", COLOR_BRIGHT_CYAN);
-    printf("%s%d.%s", COLOR_BRIGHT_CYAN, i + 1, COLOR_RESET);
-    printf(" 📊 %s", dateToMonthYearString(report->date));
-    printf(" (%d transaksi)", totalTransactions);
-
-    if (report->balance > 0) {
-      printf(" ");
-      printf("%s💚 Surplus:%s", COLOR_BRIGHT_GREEN, COLOR_RESET);
-      printf(" %sRp %lld%s", COLOR_BRIGHT_GREEN, report->balance, COLOR_RESET);
-    } else if (report->balance < 0) {
-      printf(" ");
-      printf("%s❤️  Defisit:%s", COLOR_BRIGHT_RED, COLOR_RESET);
-      printf(" %sRp %lld%s", COLOR_BRIGHT_RED, -report->balance, COLOR_RESET);
-    } else {
-      printf(" ");
-      printf("%s⚖️  Seimbang%s", COLOR_BRIGHT_YELLOW, COLOR_RESET);
-    }
-    printf("\n");
+    renderSingleMonthlyListItem(i, monthReportList->reports[i], boxWidth);
   }
+
   printf("\n");
   printCenteredColored(
       "──────────────────────────────────────────────────────────\n", boxWidth,
       COLOR_BRIGHT_CYAN);
 }
 
-void showTransactionGroupsList(struct MonthReport *monthReport) {
-  int boxWidth = 100;
+void renderTransactionGroupsHeader(int boxWidth) {
   printf("\n");
   printCenteredColored("╔══════════════════════════════════════════════════════"
                        "══════════════════════════════════════════════╗\n",
                        boxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("║", boxWidth);
   printWithBg("                                    📂 KATEGORI TRANSAKSI       "
               "                               ",
               COLOR_BRIGHT_WHITE, BG_BLUE);
   printf("║\n");
+
   printCenteredColored("╠══════════════════════════════════════════════════════"
                        "══════════════════════════════════════════════╣\n",
                        boxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("║ ", boxWidth);
   printColored("No.", COLOR_BRIGHT_CYAN);
-  printf(" │ ");
-  printf("%s%-15s%s", COLOR_BRIGHT_CYAN, "KATEGORI", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-12s%s", COLOR_BRIGHT_CYAN, "BUDGET", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-12s%s", COLOR_BRIGHT_CYAN, "TERPAKAI", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-12s%s", COLOR_BRIGHT_CYAN, "SISA", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-8s%s", COLOR_BRIGHT_CYAN, "TRANSAKSI", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-12s%s", COLOR_BRIGHT_CYAN, "STATUS", COLOR_RESET);
-  printf(" ║\n");
+  printf(" │ %s%-15s%s │ %s%-12s%s │ %s%-12s%s │ %s%-12s%s │ %s%-8s%s │ "
+         "%s%-12s%s ║\n",
+         COLOR_BRIGHT_CYAN, "KATEGORI", COLOR_RESET, COLOR_BRIGHT_CYAN,
+         "BUDGET", COLOR_RESET, COLOR_BRIGHT_CYAN, "TERPAKAI", COLOR_RESET,
+         COLOR_BRIGHT_CYAN, "SISA", COLOR_RESET, COLOR_BRIGHT_CYAN, "TRANSAKSI",
+         COLOR_RESET, COLOR_BRIGHT_CYAN, "STATUS", COLOR_RESET);
+
   printCenteredColored("╠══════════════════════════════════════════════════════"
                        "══════════════════════════════════════════════╣\n",
                        boxWidth, COLOR_BRIGHT_CYAN);
+}
 
-  if (monthReport->groupCount == 0) {
-    printCentered("║", boxWidth);
-    printColored("                           📭 Belum ada transaksi            "
-                 "                       ",
-                 COLOR_BRIGHT_YELLOW);
-    printf("║\n");
-  } else {
-    for (int i = 0; i < monthReport->groupCount; i++) {
-      struct TransactionGroup *group = monthReport->groups[i];
-      const char *status = getGroupBudgetStatus(group);
-      long long remaining = group->budget - group->totalAmount;
-      double percentage =
-          group->budget > 0
-              ? ((double)group->totalAmount / group->budget) * 100.0
-              : 0.0;
+void renderEmptyTransactionGroups(int boxWidth) {
+  printCentered("║", boxWidth);
+  printColored("                           📭 Belum ada transaksi              "
+               "              ",
+               COLOR_BRIGHT_YELLOW);
+  printf("║\n");
+}
 
-      struct CategoryList *categories = getUserCategoriesCache();
-      const char *displayName =
-          getCategoryDisplayName(categories, group->category);
+void renderTransactionGroupRow(int index, struct TransactionGroup *group,
+                               int boxWidth) {
+  struct CategoryList *categories = getUserCategoriesCache();
+  const char *displayName = getCategoryDisplayName(categories, group->category);
 
-      printCentered("", boxWidth);
-      printf("║ %-3d │ %-15s │ ", i + 1, displayName);
-      printf("%s%-12lld%s", COLOR_BRIGHT_CYAN, group->budget, COLOR_RESET);
-      printf(" │ ");
-      printf("%s%-12lld%s", COLOR_BRIGHT_YELLOW, group->totalAmount,
-             COLOR_RESET);
-      printf(" │ ");
-      printAmount(remaining);
-      printf("%-12s │ %-9d │ ", "", group->transactionCount);
-      printBudgetStatus(status, percentage);
-      printf("%-12s ║\n", "");
-    }
-  }
+  const char *status = getGroupBudgetStatus(group);
+  long long remaining = group->budget - group->totalAmount;
+  double percentage = group->budget > 0
+                          ? ((double)group->totalAmount / group->budget) * 100.0
+                          : 0.0;
+
+  printCentered("", boxWidth);
+  printf("║ %-3d │ %-15s │ ", index + 1, displayName);
+  printf("%s%-12lld%s │ ", COLOR_BRIGHT_CYAN, group->budget, COLOR_RESET);
+  printf("%s%-12lld%s │ ", COLOR_BRIGHT_YELLOW, group->totalAmount,
+         COLOR_RESET);
+
+  printAmount(remaining);
+  printf("%-12s │ %-9d │ ", "", group->transactionCount);
+
+  printBudgetStatus(status, percentage);
+  printf("%-12s ║\n", "");
+}
+
+void renderTransactionGroupsFooter(int boxWidth) {
   printCenteredColored("╚══════════════════════════════════════════════════════"
                        "══════════════════════════════════════════════╝\n",
                        boxWidth, COLOR_BRIGHT_CYAN);
   printf("\n");
 }
 
+void showTransactionGroupsList(struct MonthReport *monthReport) {
+  int boxWidth = 100;
+
+  renderTransactionGroupsHeader(boxWidth);
+
+  if (monthReport->groupCount == 0) {
+    renderEmptyTransactionGroups(boxWidth);
+  } else {
+    for (int i = 0; i < monthReport->groupCount; i++) {
+      renderTransactionGroupRow(i, monthReport->groups[i], boxWidth);
+    }
+  }
+  renderTransactionGroupsFooter(boxWidth);
+}
+
+void renderMonthReportMenu(struct MonthReport *monthReport) {
+  showMonthReport(monthReport);
+}
+
+int handleMonthReportChoice(struct MonthReport *monthReport, int choice) {
+  switch (choice) {
+  case 1:
+    openTransactionViewMenu(monthReport);
+    break;
+  case 2:
+    openTransactionAddToReportMenu(monthReport);
+    break;
+  case 3:
+    openTransactionEditMenu(monthReport);
+    break;
+  case 4:
+    openTransactionDeleteMenu(monthReport);
+    break;
+  case 5:
+    openCategoryBudgetMenu(monthReport);
+    break;
+  case 6:
+    showMonthReportSummary2(monthReport);
+    break;
+  case 7:
+    return 0; // Selesai
+  default:
+    showErrorMessage("Pilihan tidak valid.");
+    break;
+  }
+  return 1; // lanjut loop
+}
+
 void openMonthReport(struct MonthReport *monthReport) {
   while (1) {
-    showMonthReport(monthReport);
+    renderMonthReportMenu(monthReport);
 
     int choice = getValidatedMenuChoice(1, 7);
     if (choice == -1)
       continue;
 
-    switch (choice) {
-    case 1:
-      openTransactionViewMenu(monthReport);
-      break;
-    case 2:
-      openTransactionAddToReportMenu(monthReport);
-      break;
-    case 3:
-      openTransactionEditMenu(monthReport);
-      break;
-    case 4:
-      openTransactionDeleteMenu(monthReport);
-      break;
-    case 5:
-      openCategoryBudgetMenu(monthReport);
-      break;
-    case 6:
-      showMonthReportSummary2(monthReport);
-      break;
-    case 7:
+    if (!handleMonthReportChoice(monthReport, choice))
       return;
-    default:
-      showErrorMessage("Pilihan tidak valid.");
-      break;
-    }
   }
+}
+
+void renderMonthlyMainMenu(struct MonthReportList *monthReportList) {
+  showMonthlyMenu(monthReportList);
+}
+
+int handleMonthlyMenuChoice(struct MonthReportList *monthReportList,
+                            int choice) {
+  switch (choice) {
+  case 1:
+    openMonthlyListMenu(monthReportList);
+    break;
+  case 2:
+    openTransactionAddMenu(monthReportList);
+    break;
+  case 3:
+    return 0; // kembali
+  default:
+    showErrorMessage("Pilihan tidak valid.");
+    break;
+  }
+  return 1;
 }
 
 void openMonthlyMenu(struct MonthReportList *monthReportList) {
   while (1) {
-    showMonthlyMenu(monthReportList);
+    renderMonthlyMainMenu(monthReportList);
 
     int choice = getValidatedMenuChoice(1, 3);
     if (choice == -1)
       continue;
 
-    switch (choice) {
-    case 1:
-      openMonthlyListMenu(monthReportList);
-      break;
-    case 2:
-      openTransactionAddMenu(monthReportList);
-      break;
-    case 3:
+    if (!handleMonthlyMenuChoice(monthReportList, choice))
       return;
-    default:
-      showErrorMessage("Pilihan tidak valid.");
-      break;
-    }
   }
 }
 
-void openTransactionAddMenu(struct MonthReportList *monthReportList) {
-  int boxWidth = 59;
-  int contentLines = 10;
+void renderTransactionAddMenuHeader(int boxWidth, int contentLines) {
   clearAndCenterVertically(contentLines);
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
@@ -247,6 +309,47 @@ void openTransactionAddMenu(struct MonthReportList *monthReportList) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
+
+int readNewMonthYear(char *buffer, size_t bufferSize, time_t *outDate,
+                     int boxWidth) {
+  printf("\n");
+  printCentered("", boxWidth);
+
+  if (!readAndValidateString("📅 Masukkan bulan dan tahun (MM/YYYY): ", buffer,
+                             bufferSize)) {
+    showErrorMessage("Input tidak valid.");
+    return 0;
+  }
+
+  if (!validateMonthYearFormat(buffer, outDate)) {
+    showErrorMessage("Format tanggal tidak valid. Gunakan format MM/YYYY.");
+    return 0;
+  }
+
+  return 1;
+}
+
+int validateMonthUniqueness(struct MonthReportList *list, time_t date) {
+  if (validateDuplicateMonthReport(list, date)) {
+    showErrorMessage("Laporan untuk bulan ini sudah ada.");
+    return 0;
+  }
+  return 1;
+}
+
+void saveNewMonthReport(struct MonthReportList *list,
+                        struct MonthReport *report) {
+  addMonthReportToList(list, report);
+  saveUserMonthReport(report);
+  showSuccessMessage("Laporan bulanan berhasil dibuat! 🎉");
+}
+
+void openTransactionAddMenu(struct MonthReportList *monthReportList) {
+  int boxWidth = 59;
+  int contentLines = 10;
+
+  renderTransactionAddMenuHeader(boxWidth, contentLines);
 
   struct MonthReport *newReport = newMonthReport();
   if (newReport == NULL) {
@@ -256,119 +359,146 @@ void openTransactionAddMenu(struct MonthReportList *monthReportList) {
 
   char temp_input[100];
   time_t newDate;
-  printf("\n");
-  printCentered("", boxWidth);
-  if (!readAndValidateString("📅 Masukkan bulan dan tahun (MM/YYYY): ",
-                             temp_input, sizeof(temp_input))) {
-    showErrorMessage("Input tidak valid.");
+
+  if (!readNewMonthYear(temp_input, sizeof(temp_input), &newDate, boxWidth)) {
     freeMonthReport(newReport);
     return;
   }
 
-  if (!validateMonthYearFormat(temp_input, &newDate)) {
-    showErrorMessage("Format tanggal tidak valid. Gunakan format MM/YYYY.");
-    freeMonthReport(newReport);
-    return;
-  }
-
-  if (validateDuplicateMonthReport(monthReportList, newDate)) {
-    showErrorMessage("Laporan untuk bulan ini sudah ada.");
+  if (!validateMonthUniqueness(monthReportList, newDate)) {
     freeMonthReport(newReport);
     return;
   }
 
   newReport->date = newDate;
-  addMonthReportToList(monthReportList, newReport);
-  saveUserMonthReport(newReport);
 
-  showSuccessMessage("Laporan bulanan berhasil dibuat! 🎉");
+  saveNewMonthReport(monthReportList, newReport);
+}
+
+void renderMonthlyListMenuHeader(int boxWidth) {
+  printCenteredColored(
+      "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printCentered("│", boxWidth);
+  printWithBg("             📋 KELOLA LAPORAN BULANAN                   ",
+              COLOR_BRIGHT_WHITE, BG_BLUE);
+  printf("│\n");
+  printCenteredColored(
+      "├─────────────────────────────────────────────────────────┤\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+}
+
+void renderMonthlyListMenuOptions(int boxWidth) {
+  printCentered("│  ", boxWidth);
+  printColored("1.", COLOR_BRIGHT_CYAN);
+  printf(" 👁️  Lihat Detail Laporan                             │\n");
+
+  printCentered("│  ", boxWidth);
+  printColored("2.", COLOR_BRIGHT_CYAN);
+  printf(" ➕ Buat Laporan Baru                                │\n");
+
+  printCentered("│  ", boxWidth);
+  printColored("3.", COLOR_BRIGHT_CYAN);
+  printf(" ✏️  Edit Tanggal Laporan                             │\n");
+
+  printCentered("│  ", boxWidth);
+  printColored("4.", COLOR_BRIGHT_CYAN);
+  printf(" 🗑️  Hapus Laporan                                    │\n");
+
+  printCentered("│  ", boxWidth);
+  printColored("5.", COLOR_BRIGHT_CYAN);
+  printf(" ⬅️  Kembali                                          │\n");
+}
+
+void renderMonthlyListMenuFooter(int boxWidth) {
+  printCenteredColored(
+      "└─────────────────────────────────────────────────────────┘\n", boxWidth,
+      COLOR_BRIGHT_CYAN);
+  printf("\n");
+
+  printCentered("", boxWidth);
+  printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
+}
+
+int handleMonthlyListMenuChoice(int choice, struct MonthReportList *list) {
+  switch (choice) {
+  case 1:
+    openSelectReportMenu(list);
+    break;
+  case 2:
+    openTransactionAddMenu(list);
+    break;
+  case 3:
+    openMonthReportEditMenu(list);
+    break;
+  case 4:
+    openMonthReportDeleteMenu(list);
+    break;
+  case 5:
+    return 0;
+  default:
+    showErrorMessage("Pilihan tidak valid.");
+    break;
+  }
+  return 1;
 }
 
 void openMonthlyListMenu(struct MonthReportList *monthReportList) {
   int boxWidth = 59;
+
   while (1) {
     clearScreen();
     showMonthlyList(monthReportList);
 
-    printf("\n");
-    printCenteredColored(
-        "┌─────────────────────────────────────────────────────────┐\n",
-        boxWidth, COLOR_BRIGHT_CYAN);
-    printCentered("│", boxWidth);
-    printWithBg("             📋 KELOLA LAPORAN BULANAN                   ",
-                COLOR_BRIGHT_WHITE, BG_BLUE);
-    printf("│\n");
-    printCenteredColored(
-        "├─────────────────────────────────────────────────────────┤\n",
-        boxWidth, COLOR_BRIGHT_CYAN);
-    printCentered("│  ", boxWidth);
-    printColored("1.", COLOR_BRIGHT_CYAN);
-    printf(" 👁️  Lihat Detail Laporan                             │\n");
-    printCentered("│  ", boxWidth);
-    printColored("2.", COLOR_BRIGHT_CYAN);
-    printf(" ➕ Buat Laporan Baru                                │\n");
-    printCentered("│  ", boxWidth);
-    printColored("3.", COLOR_BRIGHT_CYAN);
-    printf(" ✏️  Edit Tanggal Laporan                             │\n");
-    printCentered("│  ", boxWidth);
-    printColored("4.", COLOR_BRIGHT_CYAN);
-    printf(" 🗑️  Hapus Laporan                                    │\n");
-    printCentered("│  ", boxWidth);
-    printColored("5.", COLOR_BRIGHT_CYAN);
-    printf(" ⬅️  Kembali                                          │\n");
-    printCenteredColored(
-        "└─────────────────────────────────────────────────────────┘\n",
-        boxWidth, COLOR_BRIGHT_CYAN);
-    printf("\n");
-    printCentered("", boxWidth);
-    printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
+    renderMonthlyListMenuHeader(boxWidth);
+    renderMonthlyListMenuOptions(boxWidth);
+    renderMonthlyListMenuFooter(boxWidth);
 
     int choice = getValidatedMenuChoice(1, 5);
     if (choice == -1)
       continue;
 
-    switch (choice) {
-    case 1:
-      openSelectReportMenu(monthReportList);
-      break;
-    case 2:
-      openTransactionAddMenu(monthReportList);
-      break;
-    case 3:
-      openMonthReportEditMenu(monthReportList);
-      break;
-    case 4:
-      openMonthReportDeleteMenu(monthReportList);
-      break;
-    case 5:
+    if (!handleMonthlyListMenuChoice(choice, monthReportList))
       return;
-    default:
-      showErrorMessage("Pilihan tidak valid.");
-      break;
-    }
   }
+}
+
+int ensureReportsExist(struct MonthReportList *list) {
+  if (list->count == 0) {
+    showInfoMessage("Tidak ada laporan bulanan. Buat laporan terlebih dahulu.");
+    return 0;
+  }
+  return 1;
+}
+
+void renderReportSelectionList(struct MonthReportList *list) {
+  showMonthlyList(list);
+}
+
+int readReportSelection(int *index, struct MonthReportList *list) {
+  return readAndValidateInteger("\n📊 Pilih nomor laporan: ", 1, list->count,
+                                index);
+}
+
+void openSelectedMonthReport(struct MonthReportList *list, int index) {
+  openMonthReport(list->reports[index - 1]);
 }
 
 void openSelectReportMenu(struct MonthReportList *monthReportList) {
-  if (monthReportList->count == 0) {
-    showInfoMessage("Tidak ada laporan bulanan. Buat laporan terlebih dahulu.");
+  if (!ensureReportsExist(monthReportList))
     return;
-  }
 
-  showMonthlyList(monthReportList);
+  renderReportSelectionList(monthReportList);
 
   int reportIndex;
-  if (!readAndValidateInteger("\n📊 Pilih nomor laporan: ", 1,
-                              monthReportList->count, &reportIndex)) {
+  if (!readReportSelection(&reportIndex, monthReportList)) {
     showErrorMessage("Input tidak valid.");
     return;
   }
-
-  openMonthReport(monthReportList->reports[reportIndex - 1]);
+  openSelectedMonthReport(monthReportList, reportIndex);
 }
 
-void openTransactionViewMenu(struct MonthReport *monthReport) {
-  int boxWidth = 59;
+void renderTransactionViewHeader(int boxWidth) {
   clearScreen();
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
@@ -380,115 +510,173 @@ void openTransactionViewMenu(struct MonthReport *monthReport) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
 
-  showTransactionGroupsList(monthReport);
+void renderTransactionGroupList(struct MonthReport *report) {
+  showTransactionGroupsList(report);
+}
 
-  if (monthReport->groupCount == 0) {
+int ensureTransactionGroupsExist(struct MonthReport *report) {
+  if (report->groupCount == 0) {
     showInfoMessage("Belum ada transaksi di laporan ini.");
-    return;
+    return 0;
   }
+  return 1;
+}
 
-  int groupIndex;
-  if (!readAndValidateInteger(
-          "\n📂 Pilih nomor kategori untuk melihat detail: ", 1,
-          monthReport->groupCount, &groupIndex)) {
-    showErrorMessage("Input tidak valid.");
-    return;
-  }
+int readTransactionGroupSelection(struct MonthReport *report, int *index) {
+  return readAndValidateInteger(
+      "\n📂 Pilih nomor kategori untuk melihat detail: ", 1, report->groupCount,
+      index);
+}
 
-  struct TransactionGroup *group = monthReport->groups[groupIndex - 1];
+void showSelectedGroupDetails(struct MonthReport *report, int index) {
+  struct TransactionGroup *group = report->groups[index - 1];
   showTransactionDetails(group);
 }
 
-void showTransactionDetails(struct TransactionGroup *group) {
+void openTransactionViewMenu(struct MonthReport *monthReport) {
   int boxWidth = 59;
+
+  renderTransactionViewHeader(boxWidth);
+  renderTransactionGroupList(monthReport);
+
+  if (!ensureTransactionGroupsExist(monthReport))
+    return;
+
+  int groupIndex;
+  if (!readTransactionGroupSelection(monthReport, &groupIndex)) {
+    showErrorMessage("Input tidak valid.");
+    return;
+  }
+  showSelectedGroupDetails(monthReport, groupIndex);
+}
+
+void renderTransactionDetailsHeader(int boxWidth, const char *categoryStr) {
   clearScreen();
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
       COLOR_BRIGHT_CYAN);
 
-  struct CategoryList *categories = getUserCategoriesCache();
-  const char *categoryStr = getCategoryDisplayName(categories, group->category);
-
   printCentered("│", boxWidth);
   printWithBg("           💳 DETAIL TRANSAKSI - ", COLOR_BRIGHT_WHITE, BG_BLUE);
   printf("%s", categoryStr);
+
   int remainingSpaces = 27 - strlen(categoryStr);
   for (int i = 0; i < remainingSpaces; i++) {
     printf(" ");
   }
+
   printf("│\n");
+
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
 
-  printf("\n");
+void renderTransactionSummary(struct TransactionGroup *group, int boxWidth) {
   printCentered("", boxWidth);
   printInfo("💰 Budget: ");
   printf("%sRp %lld%s\n", COLOR_BRIGHT_CYAN, group->budget, COLOR_RESET);
+
   printCentered("", boxWidth);
   printWarning("💸 Terpakai: ");
   printf("%sRp %lld%s\n", COLOR_BRIGHT_YELLOW, group->totalAmount, COLOR_RESET);
+
   printCentered("", boxWidth);
   printf("💵 Sisa: ");
   printAmount(group->budget - group->totalAmount);
   printf("\n");
+
   printCentered("", boxWidth);
   printf("📊 Status: ");
-  double percentage = group->budget > 0
+
+  double percentage = (group->budget > 0)
                           ? ((double)group->totalAmount / group->budget) * 100.0
                           : 0.0;
+
   printBudgetStatus(getGroupBudgetStatus(group), percentage);
   printf("\n");
+}
 
-  if (group->transactionCount == 0) {
-    printf("\n");
-    printCentered("", boxWidth);
-    printf("📭 Belum ada transaksi di kategori ini.\n");
-    waitForEnter();
-    return;
+int renderEmptyTransactionsMessage(int boxWidth) {
+  if (boxWidth) { /* avoid unused param */
   }
 
-  int tableWidth = 100;
   printf("\n");
+  printCentered("", boxWidth);
+  printf("📭 Belum ada transaksi di kategori ini.\n");
+
+  waitForEnter();
+  return 1;
+}
+
+void renderTransactionTableHeader(int tableWidth) {
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
       tableWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("", tableWidth);
-  printf("║ %sNo.%s │ %s%-12s%s │ %s%-15s%s │ %s%-10s%s │ %s%-15s%s │ "
-         "%s%-30s%s ║\n",
+  printf("║ %sNo.%s │ %s%-12s%s │ %s%-15s%s │ %s%-10s%s │ "
+         "%s%-15s%s │ %s%-30s%s ║\n",
          COLOR_BRIGHT_CYAN, COLOR_RESET, COLOR_BRIGHT_CYAN, "TANGGAL",
          COLOR_RESET, COLOR_BRIGHT_CYAN, "NAMA", COLOR_RESET, COLOR_BRIGHT_CYAN,
          "JENIS", COLOR_RESET, COLOR_BRIGHT_CYAN, "NOMINAL", COLOR_RESET,
          COLOR_BRIGHT_CYAN, "DESKRIPSI", COLOR_RESET);
+
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
       tableWidth, COLOR_BRIGHT_CYAN);
+}
+
+void renderTransactionRow(struct Transaction *t, int index, int tableWidth) {
+  const char *typeIcon =
+      (t->type == TRANSACTION_INCOME) ? "💚 Masuk" : "❤️  Keluar";
+  char *dateStr = dateToString(t->date);
+
+  printCentered("", tableWidth);
+  printf("║ %-3d │ %-12s │ %-15s │ %-15s │ Rp %-12lld │ %-30s ║\n", index + 1,
+         dateStr, t->name, typeIcon, t->amount, t->description);
+
+  free(dateStr);
+}
+
+void renderTransactionTableFooter(int tableWidth) {
+  printCenteredColored(
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+      tableWidth, COLOR_BRIGHT_CYAN);
+}
+
+void showTransactionDetails(struct TransactionGroup *group) {
+  int boxWidth = 59;
+  int tableWidth = 100;
+
+  struct CategoryList *categories = getUserCategoriesCache();
+  const char *categoryStr = getCategoryDisplayName(categories, group->category);
+
+  renderTransactionDetailsHeader(boxWidth, categoryStr);
+  renderTransactionSummary(group, boxWidth);
+
+  if (group->transactionCount == 0) {
+    renderEmptyTransactionsMessage(boxWidth);
+    return;
+  }
+
+  renderTransactionTableHeader(tableWidth);
 
   for (int i = 0; i < group->transactionCount; i++) {
-    struct Transaction *t = group->transactions[i];
-    const char *typeIcon =
-        (t->type == TRANSACTION_INCOME) ? "💚 Masuk" : "❤️  Keluar";
-    char *dateStr = dateToString(t->date);
-
-    printCentered("", tableWidth);
-    printf("║ %-3d │ %-12s │ %-15s │ %-15s │ Rp %-12lld │ %-30s ║\n", i + 1,
-           dateStr, t->name, typeIcon, t->amount, t->description);
-
-    free(dateStr);
+    renderTransactionRow(group->transactions[i], i, tableWidth);
   }
-  printCenteredColored(
-      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
-      tableWidth, COLOR_BRIGHT_CYAN);
+
+  renderTransactionTableFooter(tableWidth);
 
   waitForEnter();
 }
 
-void openTransactionEditMenu(struct MonthReport *monthReport) {
-  int boxWidth = 59;
+void renderTransactionEditHeader(int boxWidth) {
   clearScreen();
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
@@ -500,86 +688,122 @@ void openTransactionEditMenu(struct MonthReport *monthReport) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
 
+struct TransactionGroup *
+handleTransactionGroupSelection(struct MonthReport *monthReport) {
   showTransactionGroupsList(monthReport);
-
   if (monthReport->groupCount == 0) {
     showInfoMessage("Belum ada transaksi untuk diedit.");
-    return;
+    return NULL;
   }
-
   int groupIndex;
   if (!readAndValidateInteger("\n📂 Pilih nomor kategori: ", 1,
                               monthReport->groupCount, &groupIndex)) {
     showErrorMessage("Input tidak valid.");
-    return;
+    return NULL;
   }
+  return monthReport->groups[groupIndex - 1];
+}
 
-  struct TransactionGroup *group = monthReport->groups[groupIndex - 1];
-
+struct Transaction *handleTransactionSelection(struct TransactionGroup *group) {
   if (group->transactionCount == 0) {
     showInfoMessage("Tidak ada transaksi di kategori ini.");
-    return;
+    return NULL;
   }
 
   showTransactionDetails(group);
-
   int transactionIndex;
+
   if (!readAndValidateInteger("\n💳 Pilih nomor transaksi yang ingin diedit: ",
-                              1, group->totalAmount, &transactionIndex)) {
+                              1, group->transactionCount, &transactionIndex)) {
     showErrorMessage("Input tidak valid.");
-    return;
+    return NULL;
   }
+  return group->transactions[transactionIndex - 1];
+}
 
-  struct Transaction *transaction = group->transactions[transactionIndex - 1];
-
+void renderTransactionEditTitle(struct Transaction *transaction, int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
   printColored("✏️  Edit Transaksi ID ", COLOR_BRIGHT_CYAN);
   printf("%d:\n", transaction->id);
   printCenteredColored("─────────────────────────\n", boxWidth,
                        COLOR_BRIGHT_CYAN);
-  printf("\n");
-  char dateChoice;
+}
+
+void editTransactionDate(struct Transaction *transaction, int boxWidth) {
+  char choice;
   printCentered("", boxWidth);
   printColored("📅 Edit tanggal? (y/n): ", COLOR_BRIGHT_YELLOW);
-  scanf(" %c", &dateChoice);
+  scanf(" %c", &choice);
   clearInputBuffer();
 
-  if (dateChoice == 'y' || dateChoice == 'Y') {
+  if (choice == 'y' || choice == 'Y') {
     time_t newDate;
     if (readAndValidateDate("📅 Tanggal baru (DD/MM/YYYY): ", &newDate)) {
       transaction->date = newDate;
     }
   }
+}
 
+void editTransactionName(struct Transaction *transaction) {
   char newName[20];
   if (readAndValidateString("💼 Nama baru (kosongkan jika tidak ingin ubah): ",
                             newName, sizeof(newName))) {
     strcpy(transaction->name, newName);
   }
+}
 
+void editTransactionDescription(struct Transaction *transaction) {
   char newDescription[200];
   if (readAndValidateString(
           "📝 Deskripsi baru (kosongkan jika tidak ingin ubah): ",
           newDescription, sizeof(newDescription))) {
     strcpy(transaction->description, newDescription);
   }
+}
 
-  long long newAmount;
+void editTransactionAmount(struct Transaction *transaction, int boxWidth) {
+  char choice;
   printCentered("", boxWidth);
   printColored("💰 Edit nominal? (y/n): ", COLOR_BRIGHT_YELLOW);
-  char editChoice;
-  scanf(" %c", &editChoice);
+  scanf(" %c", &choice);
   clearInputBuffer();
 
-  if (editChoice == 'y' || editChoice == 'Y') {
+  if (choice == 'y' || choice == 'Y') {
+    long long newAmount;
     InputResult result =
         promptForTransaction("💰 Nominal baru (Rp): ", &newAmount);
+
     if (result == INPUT_SUCCESS) {
       transaction->amount = newAmount;
     }
   }
+}
+
+void performTransactionEditing(struct Transaction *transaction, int boxWidth) {
+  renderTransactionEditTitle(transaction, boxWidth);
+  editTransactionDate(transaction, boxWidth);
+  editTransactionName(transaction);
+  editTransactionDescription(transaction);
+  editTransactionAmount(transaction, boxWidth);
+}
+
+void openTransactionEditMenu(struct MonthReport *monthReport) {
+  int boxWidth = 59;
+
+  renderTransactionEditHeader(boxWidth);
+
+  struct TransactionGroup *group = handleTransactionGroupSelection(monthReport);
+  if (!group)
+    return;
+
+  struct Transaction *transaction = handleTransactionSelection(group);
+  if (!transaction)
+    return;
+
+  performTransactionEditing(transaction, boxWidth);
 
   updateGroupCalculations(group);
   updateReportCalculations(monthReport);
@@ -588,8 +812,7 @@ void openTransactionEditMenu(struct MonthReport *monthReport) {
   showSuccessMessage("Transaksi berhasil diubah! 📝");
 }
 
-void openTransactionDeleteMenu(struct MonthReport *monthReport) {
-  int boxWidth = 59;
+void renderDeleteTransactionHeader(int boxWidth) {
   clearScreen();
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
@@ -601,49 +824,52 @@ void openTransactionDeleteMenu(struct MonthReport *monthReport) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
 
-  showTransactionGroupsList(monthReport);
-
+bool selectTransactionGroupForDelete(struct MonthReport *monthReport,
+                                     int *groupIndex) {
   if (monthReport->groupCount == 0) {
     showInfoMessage("Belum ada transaksi untuk dihapus.");
-    return;
+    return false;
   }
 
-  int groupIndex;
   if (!readAndValidateInteger("\n📂 Pilih nomor kategori: ", 1,
-                              monthReport->groupCount, &groupIndex)) {
+                              monthReport->groupCount, groupIndex)) {
     showErrorMessage("Input tidak valid.");
-    return;
+    return false;
   }
 
-  struct TransactionGroup *group = monthReport->groups[groupIndex - 1];
+  return true;
+}
 
+bool selectTransactionInGroupForDelete(struct TransactionGroup *group,
+                                       int *transactionIndex) {
   if (group->transactionCount == 0) {
     showInfoMessage("Tidak ada transaksi di kategori ini.");
-    return;
+    return false;
   }
 
-  showTransactionDetails(group);
-
-  int transactionIndex;
   if (!readAndValidateInteger(
           "\n🗑️  Pilih nomor transaksi yang ingin dihapus: ", 1,
-          group->transactionCount, &transactionIndex)) {
+          group->transactionCount, transactionIndex)) {
     showErrorMessage("Input tidak valid.");
-    return;
+    return false;
   }
 
+  return true;
+}
+
+bool renderDeleteConfirmation(struct Transaction *transaction, int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
   printWarning("⚠️  KONFIRMASI HAPUS\n");
   printCenteredColored("───────────────────\n", boxWidth, COLOR_BRIGHT_CYAN);
-  char *dateStr = dateToString(group->transactions[transactionIndex - 1]->date);
+
+  char *dateStr = dateToString(transaction->date);
   printCentered("", boxWidth);
   printf("Tanggal: %s\n", dateStr);
   printCentered("", boxWidth);
-  printf("Transaksi: %s - Rp %lld\n",
-         group->transactions[transactionIndex - 1]->name,
-         group->transactions[transactionIndex - 1]->amount);
+  printf("Transaksi: %s - Rp %lld\n", transaction->name, transaction->amount);
   free(dateStr);
 
   char confirmation;
@@ -653,20 +879,40 @@ void openTransactionDeleteMenu(struct MonthReport *monthReport) {
   scanf(" %c", &confirmation);
   clearInputBuffer();
 
-  if (confirmation != 'y' && confirmation != 'Y') {
+  return (confirmation == 'y' || confirmation == 'Y');
+}
+
+void performTransactionDeletion(struct MonthReport *monthReport, int groupIndex,
+                                int transactionIndex) {
+  removeUserMonthReportTransaction(monthReport, groupIndex, transactionIndex);
+  saveUserMonthReport(monthReport);
+}
+
+void openTransactionDeleteMenu(struct MonthReport *monthReport) {
+  int boxWidth = 59;
+  renderDeleteTransactionHeader(boxWidth);
+  showTransactionGroupsList(monthReport);
+
+  int groupIndex;
+  if (!selectTransactionGroupForDelete(monthReport, &groupIndex))
+    return;
+
+  struct TransactionGroup *group = monthReport->groups[groupIndex - 1];
+  showTransactionDetails(group);
+  int transactionIndex;
+  if (!selectTransactionInGroupForDelete(group, &transactionIndex))
+    return;
+
+  struct Transaction *transaction = group->transactions[transactionIndex - 1];
+  if (!renderDeleteConfirmation(transaction, boxWidth)) {
     showInfoMessage("Penghapusan dibatalkan.");
     return;
   }
-
-  removeUserMonthReportTransaction(monthReport, groupIndex - 1,
-                                   transactionIndex - 1);
-  saveUserMonthReport(monthReport);
-
+  performTransactionDeletion(monthReport, groupIndex - 1, transactionIndex - 1);
   showSuccessMessage("Transaksi berhasil dihapus! 🗑️");
 }
 
-void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
-  int boxWidth = 59;
+void renderAddTransactionHeader(int boxWidth) {
   clearScreen();
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
@@ -678,35 +924,36 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
 
-  struct Transaction newTransaction;
-
-  if (!readAndValidateString("💼 Nama transaksi: ", newTransaction.name,
-                             sizeof(newTransaction.name))) {
+bool inputTransactionBasicData(struct Transaction *t) {
+  if (!readAndValidateString("💼 Nama transaksi: ", t->name, sizeof(t->name))) {
     showErrorMessage("Nama transaksi tidak valid.");
-    return;
+    return false;
   }
 
-  if (!readAndValidateDate("📅 Tanggal transaksi (DD/MM/YYYY): ",
-                           &newTransaction.date)) {
+  if (!readAndValidateDate("📅 Tanggal transaksi (DD/MM/YYYY): ", &t->date)) {
     showErrorMessage("Format tanggal tidak valid.");
-    return;
+    return false;
   }
 
-  if (!readAndValidateString("📝 Deskripsi: ", newTransaction.description,
-                             sizeof(newTransaction.description))) {
+  if (!readAndValidateString("📝 Deskripsi: ", t->description,
+                             sizeof(t->description))) {
     showErrorMessage("Deskripsi tidak valid.");
-    return;
+    return false;
   }
 
-  InputResult result =
-      promptForTransaction("💰 Nominal (Rp): ", &newTransaction.amount);
+  InputResult result = promptForTransaction("💰 Nominal (Rp): ", &t->amount);
+
   if (result != INPUT_SUCCESS) {
-    showErrorMessage(
-        "Nominal transaksi tidak valid atau di bawah minimum yang diizinkan.");
-    return;
+    showErrorMessage("Nominal transaksi tidak valid atau kurang dari minimum.");
+    return false;
   }
 
+  return true;
+}
+
+void renderTransactionTypeSelector(int boxWidth) {
   printf("\n");
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
@@ -718,35 +965,43 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+
   printf("\n");
   printCentered("  ", boxWidth);
   printColored("1.", COLOR_BRIGHT_CYAN);
   printf(" 💚 Pemasukan\n");
+
   printCentered("  ", boxWidth);
   printColored("2.", COLOR_BRIGHT_CYAN);
-  printf(" ❤️ Pengeluaran\n");
-  printf("\n");
+  printf(" ❤️ Pengeluaran\n\n");
+}
 
-  int typeChoice;
-  if (!readAndValidateInteger("🎯 Pilihan: ", 1, 2, &typeChoice)) {
+bool selectTransactionType(enum TransactionType *typeOut) {
+  int choice;
+  if (!readAndValidateInteger("🎯 Pilihan: ", 1, 2, &choice)) {
     showErrorMessage("Jenis transaksi tidak valid.");
-    return;
-  }
-  newTransaction.type =
-      (typeChoice == 1) ? TRANSACTION_INCOME : TRANSACTION_EXPENSE;
-
-  struct CategoryList *allCategories = getUserCategoriesCache();
-  struct CategoryList *filteredCategories =
-      getCategoriesByType(allCategories, newTransaction.type);
-
-  if (filteredCategories == NULL || filteredCategories->count == 0) {
-    showErrorMessage("Tidak ada kategori tersedia untuk tipe transaksi ini.");
-    if (filteredCategories != NULL) {
-      freeCategoryList(filteredCategories);
-    }
-    return;
+    return false;
   }
 
+  *typeOut = (choice == 1) ? TRANSACTION_INCOME : TRANSACTION_EXPENSE;
+  return true;
+}
+
+struct CategoryList *getFilteredCategories(int transactionType) {
+  struct CategoryList *all = getUserCategoriesCache();
+  struct CategoryList *filtered = getCategoriesByType(all, transactionType);
+
+  if (filtered == NULL || filtered->count == 0) {
+    showErrorMessage("Tidak ada kategori untuk jenis transaksi ini.");
+    if (filtered != NULL)
+      freeCategoryList(filtered);
+    return NULL;
+  }
+
+  return filtered;
+}
+
+void renderCategorySelectionHeader(int boxWidth) {
   printf("\n");
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
@@ -759,58 +1014,113 @@ void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
   printf("\n");
-  for (int i = 0; i < filteredCategories->count; i++) {
+}
+
+void renderCategoryList(struct CategoryList *filtered, int boxWidth) {
+  for (int i = 0; i < filtered->count; i++) {
     printCentered("  ", boxWidth);
     printf("%s%d.%s %s\n", COLOR_BRIGHT_CYAN, i + 1, COLOR_RESET,
-           filteredCategories->items[i]->displayName);
+           filtered->items[i]->displayName);
   }
   printf("\n");
+}
+
+bool promptCategoryChoice(int *categoryChoice, int maxChoice) {
+  if (!readAndValidateInteger("🎯 Pilihan: ", 1, maxChoice, categoryChoice)) {
+    showErrorMessage("Kategori tidak valid.");
+    return false;
+  }
+  return true;
+}
+
+void assignCategoryToTransaction(struct Transaction *t,
+                                 struct CategoryList *filtered,
+                                 int categoryChoice) {
+  strncpy(t->category, filtered->items[categoryChoice - 1]->internalName,
+          sizeof(t->category) - 1);
+  t->category[sizeof(t->category) - 1] = '\0';
+}
+
+bool selectTransactionCategory(struct Transaction *t, int boxWidth,
+                               int transactionType) {
+
+  struct CategoryList *filtered = getFilteredCategories(transactionType);
+  if (filtered == NULL)
+    return false;
+
+  renderCategorySelectionHeader(boxWidth);
+  renderCategoryList(filtered, boxWidth);
 
   int categoryChoice;
-  if (!readAndValidateInteger("🎯 Pilihan: ", 1, filteredCategories->count,
-                              &categoryChoice)) {
-    showErrorMessage("Kategori tidak valid.");
-    freeCategoryList(filteredCategories);
-    return;
+  if (!promptCategoryChoice(&categoryChoice, filtered->count)) {
+    freeCategoryList(filtered);
+    return false;
   }
 
-  strncpy(newTransaction.category,
-          filteredCategories->items[categoryChoice - 1]->internalName,
-          sizeof(newTransaction.category) - 1);
-  newTransaction.category[sizeof(newTransaction.category) - 1] = '\0';
+  assignCategoryToTransaction(t, filtered, categoryChoice);
 
-  freeCategoryList(filteredCategories);
+  freeCategoryList(filtered);
+  return true;
+}
 
-  newTransaction.id = getTotalTransactions(monthReport) + 1;
+bool validateBudgetForExpense(struct MonthReport *monthReport,
+                              struct Transaction *t, int boxWidth) {
+  if (t->type != TRANSACTION_EXPENSE)
+    return true;
 
-  if (newTransaction.type == TRANSACTION_EXPENSE) {
-    struct TransactionGroup *group =
-        findGroupByCategory(monthReport, newTransaction.category);
-    if (group != NULL && validateBudgetExceeded(group, newTransaction.amount)) {
-      showWarningMessage("⚠️  Transaksi ini akan melebihi budget kategori!");
+  struct TransactionGroup *group =
+      findGroupByCategory(monthReport, t->category);
 
-      char proceed;
-      printCentered("", boxWidth);
-      printColored("❓ Lanjutkan? (y/n): ", COLOR_BRIGHT_YELLOW);
-      scanf(" %c", &proceed);
-      clearInputBuffer();
+  if (group == NULL)
+    return true;
 
-      if (proceed != 'y' && proceed != 'Y') {
-        showInfoMessage("Transaksi dibatalkan.");
-        return;
-      }
-    }
-  }
+  if (!validateBudgetExceeded(group, t->amount))
+    return true;
 
-  addUserMonthReportTransaction(monthReport, &newTransaction);
+  showWarningMessage("⚠️  Transaksi ini akan melebihi budget kategori!");
+  printCentered("", boxWidth);
+
+  char proceed;
+  printColored("❓ Lanjutkan? (y/n): ", COLOR_BRIGHT_YELLOW);
+  scanf(" %c", &proceed);
+  clearInputBuffer();
+
+  return (proceed == 'y' || proceed == 'Y');
+}
+
+void performTransactionInsertion(struct MonthReport *monthReport,
+                                 struct Transaction *t) {
+  addUserMonthReportTransaction(monthReport, t);
   saveUserMonthReport(monthReport);
+}
 
+void openTransactionAddToReportMenu(struct MonthReport *monthReport) {
+  int boxWidth = 59;
+  struct Transaction t;
+
+  renderAddTransactionHeader(boxWidth);
+
+  if (!inputTransactionBasicData(&t))
+    return;
+
+  renderTransactionTypeSelector(boxWidth);
+
+  if (!selectTransactionType(&t.type))
+    return;
+
+  if (!selectTransactionCategory(&t, boxWidth, t.type))
+    return;
+
+  t.id = getTotalTransactions(monthReport) + 1;
+
+  if (!validateBudgetForExpense(monthReport, &t, boxWidth))
+    return;
+
+  performTransactionInsertion(monthReport, &t);
   showSuccessMessage("Transaksi berhasil ditambahkan! 🎉");
 }
 
-void openCategoryBudgetMenu(struct MonthReport *monthReport) {
-  int boxWidth = 59;
-  clearScreen();
+void renderCategoryBudgetHeader(int boxWidth) {
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
       COLOR_BRIGHT_CYAN);
@@ -821,36 +1131,70 @@ void openCategoryBudgetMenu(struct MonthReport *monthReport) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
 
-  showTransactionGroupsList(monthReport);
-
-  struct CategoryList *categories = getUserCategoriesCache();
-
+bool listAllCategories(struct CategoryList *categories) {
   if (categories == NULL || categories->count == 0) {
     showErrorMessage("Tidak ada kategori tersedia.");
-    return;
+    return false;
   }
 
   printf("\n📂 Pilih kategori untuk mengatur budget:\n");
   for (int i = 0; i < categories->count; i++) {
     printf("  %d. %s\n", i + 1, categories->items[i]->displayName);
   }
+  return true;
+}
 
+bool promptCategorySelection(struct CategoryList *categories,
+                             char *outCategoryBuffer, size_t bufferSize) {
   int categoryChoice;
+
   if (!readAndValidateInteger("🎯 Pilihan: ", 1, categories->count,
                               &categoryChoice)) {
     showErrorMessage("Kategori tidak valid.");
-    return;
+    return false;
   }
 
+  strncpy(outCategoryBuffer,
+          categories->items[categoryChoice - 1]->internalName, bufferSize - 1);
+  outCategoryBuffer[bufferSize - 1] = '\0';
+  return true;
+}
+
+bool promptNewBudget(long long *budget) {
+  return readAndValidateLongLong("💰 Budget baru (Rp): ", 1, 1000000000000LL,
+                                 budget);
+}
+
+void showBudgetSuccess(struct CategoryList *categories, const char *category,
+                       long long budget) {
+
+  char successMsg[200];
+  const char *displayName = getCategoryDisplayName(categories, category);
+  snprintf(successMsg, sizeof(successMsg),
+           "Budget kategori '%s' berhasil diatur menjadi Rp %lld", displayName,
+           budget);
+  showSuccessMessage(successMsg);
+}
+
+void openCategoryBudgetMenu(struct MonthReport *monthReport) {
+  int boxWidth = 59;
+  clearScreen();
+  renderCategoryBudgetHeader(boxWidth);
+
+  showTransactionGroupsList(monthReport);
+
+  struct CategoryList *categories = getUserCategoriesCache();
+  if (!listAllCategories(categories))
+    return;
+
   char category[50];
-  strncpy(category, categories->items[categoryChoice - 1]->internalName,
-          sizeof(category) - 1);
-  category[sizeof(category) - 1] = '\0';
+  if (!promptCategorySelection(categories, category, sizeof(category)))
+    return;
 
   long long newBudget;
-  if (!readAndValidateLongLong("💰 Budget baru (Rp): ", 1, 1000000000000LL,
-                               &newBudget)) {
+  if (!promptNewBudget(&newBudget)) {
     showErrorMessage("Budget tidak valid.");
     return;
   }
@@ -858,20 +1202,10 @@ void openCategoryBudgetMenu(struct MonthReport *monthReport) {
   setBudgetForCategory(monthReport, category, newBudget);
   saveUserMonthReport(monthReport);
 
-  char successMsg[200];
-  const char *displayName = getCategoryDisplayName(categories, category);
-  snprintf(successMsg, sizeof(successMsg),
-           "Budget kategori '%s' berhasil diatur menjadi Rp %lld", displayName,
-           newBudget);
-  showSuccessMessage(successMsg);
+  showBudgetSuccess(categories, category, newBudget);
 }
 
-void openMonthReportEditMenu(struct MonthReportList *monthReportList) {
-  int boxWidth = 59;
-  clearScreen();
-  showMonthlyList(monthReportList);
-
-  printf("\n");
+void renderReportEditHeader(int boxWidth) {
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
       COLOR_BRIGHT_CYAN);
@@ -882,44 +1216,61 @@ void openMonthReportEditMenu(struct MonthReportList *monthReportList) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
 
-  if (monthReportList->count == 0) {
+bool selectReportFromList(struct MonthReportList *list, int *outIndex) {
+  if (list->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan.");
-    return;
+    return false;
   }
+  if (!readAndValidateInteger("📅 Pilih nomor laporan: ", 1, list->count,
+                              outIndex)) {
+    showErrorMessage("Input tidak valid.");
+    return false;
+  }
+  return true;
+}
+
+bool promptForNewMonthYear(char *buffer, size_t size, time_t *outDate) {
+  if (!readAndValidateString("📅 Tanggal baru (MM/YYYY): ", buffer, size)) {
+    showErrorMessage("Input tidak valid.");
+    return false;
+  }
+  if (!validateMonthYearFormat(buffer, outDate)) {
+    showErrorMessage("Format tanggal tidak valid.");
+    return false;
+  }
+  return true;
+}
+
+void applyNewReportDate(struct MonthReport *report, time_t newDate) {
+  deleteUserMonthReport(report);
+  report->date = newDate;
+  saveUserMonthReport(report);
+}
+
+void openMonthReportEditMenu(struct MonthReportList *monthReportList) {
+  int boxWidth = 59;
+  clearScreen();
+  showMonthlyList(monthReportList);
+  renderReportEditHeader(boxWidth);
 
   int reportIndex;
-  if (!readAndValidateInteger("📅 Pilih nomor laporan: ", 1,
-                              monthReportList->count, &reportIndex)) {
-    showErrorMessage("Input tidak valid.");
+  if (!selectReportFromList(monthReportList, &reportIndex))
     return;
-  }
 
   struct MonthReport *report = monthReportList->reports[reportIndex - 1];
 
   char newDateStr[20];
-  if (!readAndValidateString("📅 Tanggal baru (MM/YYYY): ", newDateStr,
-                             sizeof(newDateStr))) {
-    showErrorMessage("Input tidak valid.");
-    return;
-  }
-
   time_t newDate;
-  if (!validateMonthYearFormat(newDateStr, &newDate)) {
-    showErrorMessage("Format tanggal tidak valid.");
+  if (!promptForNewMonthYear(newDateStr, sizeof(newDateStr), &newDate))
     return;
-  }
 
-  deleteUserMonthReport(report);
-  report->date = newDate;
-  saveUserMonthReport(report);
-
+  applyNewReportDate(report, newDate);
   showSuccessMessage("Tanggal laporan berhasil diubah! 📅");
 }
 
-void openMonthReportDeleteMenu(struct MonthReportList *monthReportList) {
-  int boxWidth = 59;
-  clearScreen();
+void renderDeleteReportHeader(int boxWidth) {
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n", boxWidth,
       COLOR_BRIGHT_CYAN);
@@ -930,105 +1281,140 @@ void openMonthReportDeleteMenu(struct MonthReportList *monthReportList) {
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n", boxWidth,
       COLOR_BRIGHT_CYAN);
+}
 
-  if (monthReportList->count == 0) {
+bool promptSelectReportToDelete(struct MonthReportList *list, int *outIndex) {
+  if (list->count == 0) {
     showInfoMessage("Tidak ada laporan bulanan.");
-    return;
+    return false;
   }
 
-  showMonthlyList(monthReportList);
+  showMonthlyList(list);
 
-  int reportIndex;
   if (!readAndValidateInteger("\n🗑️  Pilih nomor laporan yang ingin dihapus: ",
-                              1, monthReportList->count, &reportIndex)) {
+                              1, list->count, outIndex)) {
     showErrorMessage("Input tidak valid.");
-    return;
+    return false;
   }
 
-  struct MonthReport *reportToDelete =
-      monthReportList->reports[reportIndex - 1];
+  return true;
+}
 
+void renderDeleteConfirmationScreen(struct MonthReport *report, int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
   printWarning("⚠️  KONFIRMASI HAPUS\n");
   printCenteredColored("───────────────────\n", boxWidth, COLOR_BRIGHT_CYAN);
-  printCentered("", boxWidth);
-  printf("Laporan: %s\n", dateToMonthYearString(reportToDelete->date));
-  printCentered("", boxWidth);
-  printf("Total transaksi: %d\n", getTotalTransactions(reportToDelete));
 
+  printCentered("", boxWidth);
+  printf("Laporan: %s\n", dateToMonthYearString(report->date));
+
+  printCentered("", boxWidth);
+  printf("Total transaksi: %d\n", getTotalTransactions(report));
+}
+
+bool confirmDelete(int boxWidth) {
   char confirmation;
+
   printf("\n");
   printCentered("", boxWidth);
   printColored("❓ Yakin ingin menghapus? (y/n): ", COLOR_BRIGHT_YELLOW);
+
   scanf(" %c", &confirmation);
   clearInputBuffer();
 
   if (confirmation != 'y' && confirmation != 'Y') {
     showInfoMessage("Penghapusan dibatalkan.");
+    return false;
+  }
+
+  return true;
+}
+
+void deleteReportFromList(struct MonthReportList *list, int index) {
+  struct MonthReport *report = list->reports[index];
+
+  deleteUserMonthReport(report);
+  freeMonthReport(report);
+
+  for (int i = index; i < list->count - 1; i++) {
+    list->reports[i] = list->reports[i + 1];
+  }
+
+  list->count--;
+}
+
+void openMonthReportDeleteMenu(struct MonthReportList *monthReportList) {
+  int boxWidth = 59;
+  clearScreen();
+  renderDeleteReportHeader(boxWidth);
+
+  int reportIndex;
+  if (!promptSelectReportToDelete(monthReportList, &reportIndex))
     return;
-  }
 
-  deleteUserMonthReport(reportToDelete);
-  freeMonthReport(reportToDelete);
+  struct MonthReport *reportToDelete =
+      monthReportList->reports[reportIndex - 1];
 
-  for (int i = reportIndex - 1; i < monthReportList->count - 1; i++) {
-    monthReportList->reports[i] = monthReportList->reports[i + 1];
-  }
-  monthReportList->count--;
+  renderDeleteConfirmationScreen(reportToDelete, boxWidth);
+
+  if (!confirmDelete(boxWidth))
+    return;
+
+  deleteReportFromList(monthReportList, reportIndex - 1);
 
   showSuccessMessage("Laporan berhasil dihapus! 🗑️");
 }
 
-void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
-  int boxWidth = 88;
-  clearScreen();
-  if (monthReportList->count == 0) {
-    showInfoMessage("Tidak ada laporan bulanan.");
-    return;
-  }
-
+void renderAllSummaryHeader(int boxWidth) {
   printCenteredColored(
       "╔════════════════════════════════════════════════════════════════════"
       "══════════════╗\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("║", boxWidth);
   printWithBg(
       "                           📊 RINGKASAN KEUANGAN KESELURUHAN        "
       "             ",
       COLOR_BRIGHT_WHITE, BG_BLUE);
   printf("║\n");
+
   printCenteredColored(
       "╚════════════════════════════════════════════════════════════════════"
       "══════════════╝\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+}
 
-  long long totalIncome = 0, totalExpense = 0;
-  int totalTransactions = 0;
+bool allocateSummaryArrays(struct CategoryList *categories,
+                           long long **categoryTotals,
+                           long long **categoryMaximums,
+                           int **categoryTransactions) {
+  *categoryTotals = calloc(categories->count, sizeof(long long));
+  *categoryMaximums = calloc(categories->count, sizeof(long long));
+  *categoryTransactions = calloc(categories->count, sizeof(int));
 
-  struct CategoryList *categories = getUserCategoriesCache();
-  if (categories == NULL) {
-    return;
+  if (!*categoryTotals || !*categoryMaximums || !*categoryTransactions) {
+    free(*categoryTotals);
+    free(*categoryMaximums);
+    free(*categoryTransactions);
+    return false;
   }
+  return true;
+}
 
-  long long *categoryTotals =
-      (long long *)calloc(categories->count, sizeof(long long));
-  long long *categoryMaximums =
-      (long long *)calloc(categories->count, sizeof(long long));
-  int *categoryTransactions = (int *)calloc(categories->count, sizeof(int));
+void accumulateReportData(struct MonthReportList *list,
+                          struct CategoryList *categories,
+                          long long *totalIncome, long long *totalExpense,
+                          int *totalTransactions, long long *categoryTotals,
+                          long long *categoryMaximums,
+                          int *categoryTransactions) {
 
-  if (!categoryTotals || !categoryMaximums || !categoryTransactions) {
-    free(categoryTotals);
-    free(categoryMaximums);
-    free(categoryTransactions);
-    return;
-  }
+  for (int i = 0; i < list->count; i++) {
+    struct MonthReport *report = list->reports[i];
 
-  for (int i = 0; i < monthReportList->count; i++) {
-    struct MonthReport *report = monthReportList->reports[i];
-    totalIncome += report->totalIncome;
-    totalExpense += report->totalExpenses;
-    totalTransactions += getTotalTransactions(report);
+    *totalIncome += report->totalIncome;
+    *totalExpense += report->totalExpenses;
+    *totalTransactions += getTotalTransactions(report);
 
     for (int j = 0; j < report->groupCount; j++) {
       struct TransactionGroup *group = report->groups[j];
@@ -1043,99 +1429,151 @@ void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
       }
     }
   }
+}
+
+void renderFinancialSummary(long long totalIncome, long long totalExpense,
+                            int totalTransactions, int boxWidth) {
 
   long long finalBalance = totalIncome - totalExpense;
 
   printf("\n");
   printCentered("", boxWidth);
   printSuccess("💰 RINGKASAN FINANSIAL:\n");
+
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       "━━━━━━━━━━━━━━━━━━\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("", boxWidth);
   printSuccess("💚 Total Pemasukan: ");
-  printf("%s", COLOR_BRIGHT_GREEN);
-  printf("Rp %lld", totalIncome);
-  printf("%s\n", COLOR_RESET);
+  printf("%sRp %lld%s\n", COLOR_BRIGHT_GREEN, totalIncome, COLOR_RESET);
+
   printCentered("", boxWidth);
   printError("❤️  Total Pengeluaran: ");
-  printf("%s", COLOR_BRIGHT_RED);
-  printf("Rp %lld", totalExpense);
-  printf("%s\n", COLOR_RESET);
+  printf("%sRp %lld%s\n", COLOR_BRIGHT_RED, totalExpense, COLOR_RESET);
+
   printCentered("", boxWidth);
   printf("💵 Saldo Akhir: ");
   printAmount(finalBalance);
   printf("\n");
+
   printCentered("", boxWidth);
   printInfo("📊 Total Transaksi: ");
   printf("%s%d%s\n", COLOR_BRIGHT_CYAN, totalTransactions, COLOR_RESET);
 
   printCentered("", boxWidth);
-  if (finalBalance > 0) {
+  if (finalBalance > 0)
     printSuccess("✅ Status: Surplus (Kondisi Baik)\n");
-  } else if (finalBalance < 0) {
+  else if (finalBalance < 0)
     printError("⚠️  Status: Defisit (Perlu Perhatian)\n");
-  } else {
+  else
     printWarning("⚖️  Status: Seimbang\n");
-  }
+}
 
+void renderCategoryBudgetHeader2(int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
   printSuccess("📂 BUDGET PER KATEGORI:\n");
+
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       "━━━━━━━━━━━━━━━━━━\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("║ ", boxWidth);
-  printf("%s%-20s%s", COLOR_BRIGHT_CYAN, "KATEGORI", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-15s%s", COLOR_BRIGHT_CYAN, "BUDGET", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-15s%s", COLOR_BRIGHT_CYAN, "TERPAKAI", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-15s%s", COLOR_BRIGHT_CYAN, "SISA", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-10s%s", COLOR_BRIGHT_CYAN, "TRANSAKSI", COLOR_RESET);
-  printf(" │ ");
-  printf("%s%-10s%s", COLOR_BRIGHT_CYAN, "STATUS", COLOR_RESET);
-  printf(" ║\n");
+  printf("%s%-20s%s │ ", COLOR_BRIGHT_CYAN, "KATEGORI", COLOR_RESET);
+  printf("%s%-15s%s │ ", COLOR_BRIGHT_CYAN, "BUDGET", COLOR_RESET);
+  printf("%s%-15s%s │ ", COLOR_BRIGHT_CYAN, "TERPAKAI", COLOR_RESET);
+  printf("%s%-15s%s │ ", COLOR_BRIGHT_CYAN, "SISA", COLOR_RESET);
+  printf("%s%-10s%s │ ", COLOR_BRIGHT_CYAN, "TRANSAKSI", COLOR_RESET);
+  printf("%s%-10s%s ║\n", COLOR_BRIGHT_CYAN, "STATUS", COLOR_RESET);
+
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       "━━━━━━━━━━━━━━━━━━\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+}
 
-  for (int category = 0; category < categories->count; category++) {
-    if (categoryTransactions[category] > 0 || categoryMaximums[category] > 0) {
-      long long remaining =
-          categoryMaximums[category] - categoryTotals[category];
-      const char *status = remaining >= 0 ? "✅ Aman" : "⚠️ Melebihi";
-      double percentage = categoryMaximums[category] > 0
-                              ? ((double)categoryTotals[category] /
-                                 categoryMaximums[category]) *
-                                    100.0
-                              : 0.0;
+void renderCategoryBudgetSummary(struct CategoryList *categories,
+                                 long long *categoryTotals,
+                                 long long *categoryMaximums,
+                                 int *categoryTransactions, int boxWidth) {
 
-      const char *displayName = getCategoryDisplayName(
-          categories, categories->items[category]->internalName);
-      printCentered("║ ", boxWidth);
-      printf("%-20s │ ", displayName);
-      printf("%s%-15lld%s", COLOR_BRIGHT_CYAN, categoryMaximums[category],
-             COLOR_RESET);
-      printf(" │ ");
-      printf("%s%-15lld%s", COLOR_BRIGHT_YELLOW, categoryTotals[category],
-             COLOR_RESET);
-      printf(" │ ");
-      printAmount(remaining);
-      printf("%-15s │ %-10d │ ", "", categoryTransactions[category]);
-      printBudgetStatus(status, percentage);
-      printf("%-10s ║\n", "");
-    }
+  for (int i = 0; i < categories->count; i++) {
+    if (categoryTransactions[i] == 0 && categoryMaximums[i] == 0)
+      continue;
+
+    long long remaining = categoryMaximums[i] - categoryTotals[i];
+    double percentage =
+        (categoryMaximums[i] > 0)
+            ? (double)categoryTotals[i] / categoryMaximums[i] * 100.0
+            : 0.0;
+
+    const char *displayName =
+        getCategoryDisplayName(categories, categories->items[i]->internalName);
+
+    printCentered("║ ", boxWidth);
+    printf("%-20s │ ", displayName);
+
+    printf("%s%-15lld%s │ ", COLOR_BRIGHT_CYAN, categoryMaximums[i],
+           COLOR_RESET);
+
+    printf("%s%-15lld%s │ ", COLOR_BRIGHT_YELLOW, categoryTotals[i],
+           COLOR_RESET);
+
+    printAmount(remaining);
+
+    printf("%-15s │ %-10d │ ", "", categoryTransactions[i]);
+
+    printBudgetStatus(remaining >= 0 ? "Aman" : "Melebihi", percentage);
+
+    printf("%-10s ║\n", "");
   }
+
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-      "━━━━━━━━━━━━━━━━━━\n\n",
+      "━━━━━━━━━━━━━━━━━━\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+}
+
+void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
+  int boxWidth = 88;
+  clearScreen();
+
+  if (monthReportList->count == 0) {
+    showInfoMessage("Tidak ada laporan bulanan.");
+    return;
+  }
+
+  renderAllSummaryHeader(boxWidth);
+
+  struct CategoryList *categories = getUserCategoriesCache();
+  if (!categories)
+    return;
+
+  long long *categoryTotals;
+  long long *categoryMaximums;
+  int *categoryTransactions;
+
+  if (!allocateSummaryArrays(categories, &categoryTotals, &categoryMaximums,
+                             &categoryTransactions))
+    return;
+
+  long long totalIncome = 0, totalExpense = 0;
+  int totalTransactions = 0;
+
+  accumulateReportData(monthReportList, categories, &totalIncome, &totalExpense,
+                       &totalTransactions, categoryTotals, categoryMaximums,
+                       categoryTransactions);
+
+  renderFinancialSummary(totalIncome, totalExpense, totalTransactions,
+                         boxWidth);
+
+  renderCategoryBudgetHeader2(boxWidth);
+
+  renderCategoryBudgetSummary(categories, categoryTotals, categoryMaximums,
+                              categoryTransactions, boxWidth);
 
   free(categoryTotals);
   free(categoryMaximums);
@@ -1144,9 +1582,9 @@ void showAllMonthReportSummary(struct MonthReportList *monthReportList) {
   waitForEnter();
 }
 
-void showMonthReportSummary2(struct MonthReport *monthReport) {
-  int boxWidth = 88;
-  clearScreen();
+/* ================= HEADER RINGKASAN ================= */
+
+void renderMonthSummaryHeader(struct MonthReport *monthReport, int boxWidth) {
   printCenteredColored(
       "╔════════════════════════════════════════════════════════════════════"
       "══════════════╗\n",
@@ -1154,7 +1592,7 @@ void showMonthReportSummary2(struct MonthReport *monthReport) {
 
   char *monthStr = dateToMonthYearString(monthReport->date);
   int monthStrLen = strlen(monthStr);
-  int totalWidth = 88;
+  int totalWidth = boxWidth;
   int prefixLen = 21;
   int remainingSpaces = totalWidth - prefixLen - monthStrLen;
 
@@ -1162,9 +1600,10 @@ void showMonthReportSummary2(struct MonthReport *monthReport) {
   printWithBg("                    📊 RINGKASAN LAPORAN ", COLOR_BRIGHT_WHITE,
               BG_BLUE);
   printf("%s", monthStr);
-  for (int i = 0; i < remainingSpaces; i++) {
+
+  for (int i = 0; i < remainingSpaces; i++)
     printf(" ");
-  }
+
   printf("║\n");
 
   printCenteredColored(
@@ -1172,112 +1611,159 @@ void showMonthReportSummary2(struct MonthReport *monthReport) {
       "══════════════╝\n",
       boxWidth, COLOR_BRIGHT_CYAN);
 
+  free(monthStr);
+}
+
+/* ================= RINGKASAN FINANSIAL ================= */
+
+void renderMonthFinancialSummary(struct MonthReport *monthReport,
+                                 int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
   printSuccess("💰 RINGKASAN FINANSIAL:\n");
+
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       "━━━━━━━━━━━━━━━━━━\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("", boxWidth);
   printSuccess("💚 Total Pemasukan: ");
-  printf("%s", COLOR_BRIGHT_GREEN);
-  printf("Rp %lld", monthReport->totalIncome);
-  printf("%s\n", COLOR_RESET);
+  printf("%sRp %lld%s\n", COLOR_BRIGHT_GREEN, monthReport->totalIncome,
+         COLOR_RESET);
+
   printCentered("", boxWidth);
   printError("❤️  Total Pengeluaran: ");
-  printf("%s", COLOR_BRIGHT_RED);
-  printf("Rp %lld", monthReport->totalExpenses);
-  printf("%s\n", COLOR_RESET);
+  printf("%sRp %lld%s\n", COLOR_BRIGHT_RED, monthReport->totalExpenses,
+         COLOR_RESET);
+
   printCentered("", boxWidth);
   printf("💵 Saldo: ");
   printAmount(monthReport->balance);
   printf("\n");
+
   printCentered("", boxWidth);
   printInfo("📊 Total Transaksi: ");
   printf("%s%d%s\n", COLOR_BRIGHT_CYAN, getTotalTransactions(monthReport),
          COLOR_RESET);
+}
 
-  showTransactionGroupsList(monthReport);
+/* ================= ANALISIS KONDISI ================= */
 
-  const char *financialCondition;
-  const char *financialConclusion;
+void analyzeMonthFinancialCondition(struct MonthReport *monthReport,
+                                    const char **condition,
+                                    const char **conclusion) {
 
   if (monthReport->balance < 0) {
-    double deficitPercentage =
+    double deficitPercent =
         ((double)(-monthReport->balance) / monthReport->totalIncome) * 100;
-    if (deficitPercentage > 10) {
-      financialCondition = "⚠️  Defisit besar (Pengeluaran >> Pemasukan)";
-      financialConclusion = "🚨 Kondisi keuangan kurang sehat. Kurangi "
-                            "pengeluaran dan cari tambahan pemasukan.";
+
+    if (deficitPercent > 10) {
+      *condition = "⚠️  Defisit besar (Pengeluaran >> Pemasukan)";
+      *conclusion = "🚨 Kondisi keuangan kurang sehat. Kurangi pengeluaran dan "
+                    "cari tambahan pemasukan.";
     } else {
-      financialCondition = "⚠️  Defisit ringan (Pengeluaran > Pemasukan)";
-      financialConclusion =
-          "💡 Anda mulai boros, perhatikan pengeluaran harian.";
-    }
-  } else if (monthReport->balance == 0) {
-    financialCondition = "⚖️  Seimbang (Tanpa sisa uang)";
-    financialConclusion = "✅ Keuangan Anda seimbang, tetap waspada terhadap "
-                          "pengeluaran tidak perlu.";
-  } else {
-    double surplusPercentage =
-        ((double)monthReport->balance / monthReport->totalIncome) * 100;
-    if (surplusPercentage > 25) {
-      financialCondition = "💚 Surplus besar (Memiliki sisa uang)";
-      financialConclusion = "🎉 Anda termasuk mahasiswa hemat dan produktif.";
-    } else {
-      financialCondition = "💚 Surplus kecil (Memiliki sisa uang)";
-      financialConclusion = "✅ Keuangan Anda seimbang, tetap waspada terhadap "
-                            "pengeluaran tidak perlu.";
+      *condition = "⚠️  Defisit ringan (Pengeluaran > Pemasukan)";
+      *conclusion = "💡 Anda mulai boros, perhatikan pengeluaran harian.";
     }
   }
+
+  else if (monthReport->balance == 0) {
+    *condition = "⚖️  Seimbang (Tanpa sisa uang)";
+    *conclusion = "✅ Keuangan Anda seimbang, tetap waspada terhadap "
+                  "pengeluaran tidak perlu.";
+  }
+
+  else {
+    double surplusPercent =
+        ((double)monthReport->balance / monthReport->totalIncome) * 100;
+
+    if (surplusPercent > 25) {
+      *condition = "💚 Surplus besar (Memiliki sisa uang)";
+      *conclusion = "🎉 Anda termasuk mahasiswa hemat dan produktif.";
+    } else {
+      *condition = "💚 Surplus kecil (Memiliki sisa uang)";
+      *conclusion = "✅ Keuangan Anda seimbang, tetap waspada terhadap "
+                    "pengeluaran tidak perlu.";
+    }
+  }
+}
+
+/* ================= RENDER BAGIAN ANALISIS ================= */
+
+void renderMonthConditionSection(struct MonthReport *monthReport,
+                                 const char *condition, const char *conclusion,
+                                 int boxWidth) {
 
   printf("\n");
   printCentered("", boxWidth);
   printInfo("🏥 KONDISI KEUANGAN:\n");
+
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       "━━━━━━━━━━━━━━━━━━\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("", boxWidth);
+
   if (monthReport->balance < 0) {
     printError("📊 Status: ");
-    printf("%s\n", financialCondition);
   } else if (monthReport->balance == 0) {
     printWarning("📊 Status: ");
-    printf("%s\n", financialCondition);
   } else {
     printSuccess("📊 Status: ");
-    printf("%s\n", financialCondition);
   }
+  printf("%s\n", condition);
+
   printCentered("", boxWidth);
   printInfo("💡 Kesimpulan: ");
-  printf("%s\n", financialConclusion);
+  printf("%s\n", conclusion);
+
   printCenteredColored(
       "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       "━━━━━━━━━━━━━━━━━━\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+}
+
+/* ================= FUNGSI UTAMA ================= */
+
+void showMonthReportSummary2(struct MonthReport *monthReport) {
+  int boxWidth = 88;
+  clearScreen();
+
+  renderMonthSummaryHeader(monthReport, boxWidth);
+  renderMonthFinancialSummary(monthReport, boxWidth);
+
+  showTransactionGroupsList(monthReport);
+
+  const char *condition;
+  const char *conclusion;
+
+  analyzeMonthFinancialCondition(monthReport, &condition, &conclusion);
+  renderMonthConditionSection(monthReport, condition, conclusion, boxWidth);
 
   waitForEnter();
 }
 
-void showMonthReport(struct MonthReport *monthReport) {
-  int boxWidth = 88;
-  clearScreen();
+/* ================= HEADER LAPORAN ================= */
+
+void renderMonthReportHeader(struct MonthReport *monthReport, int boxWidth) {
   printCenteredColored(
       "╔════════════════════════════════════════════════════════════════════"
       "══════════════╗\n",
       boxWidth, COLOR_BRIGHT_CYAN);
 
   char *monthStr = dateToMonthYearString(monthReport->date);
+
   printCentered("║", boxWidth);
   printWithBg("                           📊 LAPORAN ", COLOR_BRIGHT_WHITE,
               BG_BLUE);
   printf("%s", monthStr);
+
   int remainingSpaces = 45 - strlen(monthStr);
-  for (int i = 0; i < remainingSpaces; i++) {
+  for (int i = 0; i < remainingSpaces; i++)
     printf(" ");
-  }
+
   printf("║\n");
 
   printCenteredColored(
@@ -1285,70 +1771,109 @@ void showMonthReport(struct MonthReport *monthReport) {
       "══════════════╝\n",
       boxWidth, COLOR_BRIGHT_CYAN);
 
+  free(monthStr);
+}
+
+/* ================= RINGKASAN SINGKAT ================= */
+
+void renderMonthBriefSummary(struct MonthReport *monthReport, int boxWidth) {
   printf("\n");
   printCentered("", boxWidth);
   printSuccess("💰 RINGKASAN:\n");
+
   printCenteredColored(
       "─────────────────────────────────────────────────────────────────\n",
       boxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("", boxWidth);
   printSuccess("💚 Total Pemasukan: ");
   printf("%sRp %lld%s\n", COLOR_BRIGHT_GREEN, monthReport->totalIncome,
          COLOR_RESET);
+
   printCentered("", boxWidth);
   printError("❤️  Total Pengeluaran: ");
   printf("%sRp %lld%s\n", COLOR_BRIGHT_RED, monthReport->totalExpenses,
          COLOR_RESET);
+
   printCentered("", boxWidth);
   printf("💵 Saldo: ");
   printAmount(monthReport->balance);
   printf("\n");
+
   printCentered("", boxWidth);
   printInfo("📊 Total Transaksi: ");
   printf("%s%d%s\n", COLOR_BRIGHT_CYAN, getTotalTransactions(monthReport),
          COLOR_RESET);
+}
 
-  showTransactionGroupsList(monthReport);
+/* ================= MENU LAPORAN ================= */
 
-  printf("\n");
-  int menuBoxWidth = 59;
+void renderMonthReportMenu2(int menuBoxWidth) {
   printCenteredColored(
       "┌─────────────────────────────────────────────────────────┐\n",
       menuBoxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("│", menuBoxWidth);
   printWithBg("                   ⚙️  MENU LAPORAN                       ",
               COLOR_BRIGHT_WHITE, BG_BLUE);
   printf("│\n");
+
   printCenteredColored(
       "├─────────────────────────────────────────────────────────┤\n",
       menuBoxWidth, COLOR_BRIGHT_CYAN);
+
   printCentered("│  ", menuBoxWidth);
   printColored("1.", COLOR_BRIGHT_CYAN);
   printf(" 👁️  Lihat Detail Transaksi                           │\n");
+
   printCentered("│  ", menuBoxWidth);
   printColored("2.", COLOR_BRIGHT_CYAN);
   printf(" ➕ Tambah Transaksi Baru                            │\n");
+
   printCentered("│  ", menuBoxWidth);
   printColored("3.", COLOR_BRIGHT_CYAN);
   printf(" ✏️  Edit Transaksi                                   │\n");
+
   printCentered("│  ", menuBoxWidth);
   printColored("4.", COLOR_BRIGHT_CYAN);
   printf(" 🗑️  Hapus Transaksi                                  │\n");
+
   printCentered("│  ", menuBoxWidth);
   printColored("5.", COLOR_BRIGHT_CYAN);
   printf(" 💰 Atur Budget Kategori                             │\n");
+
   printCentered("│  ", menuBoxWidth);
   printColored("6.", COLOR_BRIGHT_CYAN);
   printf(" 📊 Ringkasan Detail                                 │\n");
+
   printCentered("│  ", menuBoxWidth);
   printColored("7.", COLOR_BRIGHT_CYAN);
   printf(" ⬅️  Kembali                                          │\n");
+
   printCenteredColored(
       "└─────────────────────────────────────────────────────────┘\n",
       menuBoxWidth, COLOR_BRIGHT_CYAN);
+
   printf("\n");
   printCentered("", menuBoxWidth);
   printColored("🎯 Pilihan Anda: ", COLOR_BRIGHT_YELLOW);
+}
+
+/* ================= FUNGSI UTAMA ================= */
+
+void showMonthReport(struct MonthReport *monthReport) {
+  int boxWidth = 88;
+  int menuBoxWidth = 59;
+
+  clearScreen();
+
+  renderMonthReportHeader(monthReport, boxWidth);
+  renderMonthBriefSummary(monthReport, boxWidth);
+
+  showTransactionGroupsList(monthReport);
+
+  printf("\n");
+  renderMonthReportMenu2(menuBoxWidth);
 }
 
 char temp_input[100];
