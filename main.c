@@ -3,18 +3,7 @@
 #include "ui/include.c"
 #include <dirent.h>
 
-/* =======================================================
-    MODUL : main()
-    DESKRIPSI :
-    INITIAL STATE :
-    FINAL STATE :
-    =======================================================*/
-int main() {
-  if (!initializeAuthSystem()) {
-    printf("Failed to initialize authentication system.\n");
-    return 1;
-  }
-
+void handleUserAuthentication() {
   while (currentUser == NULL) {
     clearScreen();
     showAuthMenu();
@@ -25,7 +14,11 @@ int main() {
       getchar();
     }
   }
+}
+
+void loadUserConfiguration() {
   initializeDefaultConfig();
+
   if (currentUser != NULL && !currentUser->isAdmin) {
     char userConfigPath[512];
     snprintf(userConfigPath, sizeof(userConfigPath), "%s/%s/config.txt",
@@ -34,22 +27,25 @@ int main() {
   } else {
     loadConfigFromFile("./config.txt");
   }
+}
 
-  struct MonthReportList *monthReportList;
+struct MonthReportList *loadUserReports() {
+  struct MonthReportList *list;
+
   if (currentUser != NULL && !currentUser->isAdmin) {
-
-    monthReportList = listUserMonthReports();
+    list = listUserMonthReports();
   } else {
-
-    monthReportList = listAllUsersReports();
+    list = listAllUsersReports();
   }
 
-  if (monthReportList == NULL) {
-    monthReportList = createMonthReportList();
+  if (list == NULL) {
+    list = createMonthReportList();
   }
 
-  openMainMenu(monthReportList);
+  return list;
+}
 
+void saveUserConfiguration() {
   if (currentUser != NULL && !currentUser->isAdmin) {
     char userConfigPath[512];
     snprintf(userConfigPath, sizeof(userConfigPath), "%s/%s/config.txt",
@@ -58,8 +54,30 @@ int main() {
   } else {
     saveConfigToFile("./config.txt");
   }
+}
 
+void runApplication() {
+
+  if (!initializeAuthSystem()) {
+    printf("Failed to initialize authentication system.\n");
+    return;
+  }
+
+  handleUserAuthentication();
+  loadUserConfiguration();
+
+  struct MonthReportList *monthReportList = loadUserReports();
+
+  openMainMenu(monthReportList);
+
+  saveUserConfiguration();
   logoutUser();
+}
 
+/* =======================================================
+    PROGRAM MAIN
+   =======================================================*/
+int main() {
+  runApplication();
   return 0;
 }
