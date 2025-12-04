@@ -234,7 +234,8 @@ void renderTransactionGroupRow(int index, struct TransactionGroup *group,
   const char *displayName = getCategoryDisplayName(categories, group->category);
 
   const char *status = getGroupBudgetStatus(group);
-  long long remaining = group->budget - group->totalAmount;
+  long long remaining =
+      group->budget > 0 ? group->budget - group->totalAmount : 0;
   double percentage = group->budget > 0
                           ? ((double)group->totalAmount / group->budget) * 100.0
                           : 0.0;
