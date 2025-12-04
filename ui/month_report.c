@@ -243,9 +243,9 @@ void renderTransactionGroupRow(int index, struct TransactionGroup *group,
   printCentered("", boxWidth);
   printf("║ %-3d │ %-15s │ ", index + 1, displayName);
   printf("%s%-12lld%s │ ", COLOR_BRIGHT_CYAN,
-         group->budget > 0 ? group->budget : group->totalAmount, COLOR_RESET);
-  printf("%s%-12lld%s │ ", COLOR_BRIGHT_YELLOW,
-         group->budget > 0 ? group->totalAmount : 0, COLOR_RESET);
+         group->budget > 0 ? group->budget : 0, COLOR_RESET);
+  printf("%s%-12lld%s │ ", COLOR_BRIGHT_YELLOW, group->totalAmount,
+         COLOR_RESET);
 
   printAmount(remaining);
   printf("%-12s │ %-9d │ ", "", group->transactionCount);
